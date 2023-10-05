@@ -16,6 +16,9 @@ class CeilingLightsApp(App):
                 grid_layout.add_widget(button)
 
         self.buttons = grid_layout.children
+        for i in range(4):
+            for j in range(4):
+                self.buttons[i * 4 + j].background_color = (0.5, 0.5, 0.5, 1)
         return grid_layout
 
     def toggle_light(self, instance):
