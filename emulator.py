@@ -54,4 +54,5 @@ class CeilingLightsApp(App):
 
 
 if __name__ == '__main__':
-    CeilingLightsApp().run()
+    app = CeilingLightsApp()
+    app.run()
