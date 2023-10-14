@@ -1,0 +1,197 @@
+
+<ScreenLogin>
+   # name: 'login'
+    canvas.before :
+        Rectangle :
+            pos: self.pos
+            size: self.size
+            source: 'gradient.jpg'
+    MDCard:
+        md_bg_color: [30/255, 30/255, 30/255, 1]  # Czarny kolor tła karty
+        size_hint: None, None
+        size: 420, 500
+        pos_hint: {"center_x": .5, "center_y": .5}
+        elevation: 5
+        padding: 20
+        spacing: 30
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            #padding_top: dp(40)
+            BoxLayout:  # Dodaj pusty BoxLayout jako odstęp
+                size_hint_y: None
+                height: dp(40)
+            MDLabel:
+                text: 'LOGOWANIE'
+                font_style: 'Button'
+                font_size: 45
+                #height: self.texture_size[1] + dp(40)
+                halign: "center"
+                size_hint_y: None
+                height: self.texture_size[1]
+                color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tekstu
+            MDTextField:
+                mode : "rectangle"
+                text_color_normal: (1,1,1,1)
+                line_color_normal: app.theme_cls.primary_color
+                hint_text: "nazwa użytkownika"
+                hint_text_color_normal: app.theme_cls.primary_color
+                icon_right_color_normal : app.theme_cls.primary_color
+                icon_right: "account"
+                size_hint_x: None
+                width: 280
+                font_size: 20
+                pos_hint: {"center_x": .5}
+            MDTextField:
+                mode : "rectangle"
+                spacing: 20
+                text_color_normal: (1,1,1,1)
+                line_color_normal: app.theme_cls.primary_color
+                hint_text_color_normal: app.theme_cls.primary_color
+                icon_right_color_normal : app.theme_cls.primary_color
+                hint_text: "hasło"
+                icon_right: "eye-off"
+                size_hint_x: None
+                width: 280
+                font_size: 20
+                pos_hint: {"center_x": .5}
+                password: True
+            MDFillRoundFlatButton:
+               # border: (10,10,10,10)
+               # font_size: "18sp"
+                #spacing : 40
+                text: 'ZALOGUJ SIĘ'
+                pos_hint: {"center_x": .5}
+                spacing: 20
+                font_size: 17
+                theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
+                md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
+                elevation_normal: 10
+            MDTextButton:
+                text: "Nie masz konta? Zarejestruj się"
+                font_size: 16
+                height: self.texture_size[1] + dp(20)
+                color: [128/255, 0/255, 128/255, 1]
+                pos_hint: {"center_x": .5}
+                #on_release: app.root.current = 'registration'  # Przekierowanie do ekranu rejestracji
+                on_press: root.manager.current = 'screenregister'
+            Widget:
+                size_hint_y: None
+                height: 30
+
+<ScreenRegister>:
+    #name: 'registration'
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: [30/255, 30/255, 30/255, 1]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            #pos_hint: 'center'
+            pos_hint: {"center_y": .7}  # Ta linia ustawia kontener na środku ekranu
+
+
+            MDLabel:
+                text: 'REJESTRACJA'
+                font_style: 'Button'
+                font_size: 45
+                halign: "center"
+                size_hint_y: None
+                height: self.texture_size[1]
+                color: [128/255, 0/255, 128/255, 1]
+
+            MDTextField:
+                mode : "rectangle"
+                text_color_normal: (1,1,1,1)
+                line_color_normal: app.theme_cls.primary_color
+                hint_text: "nazwa użytkownika"
+                hint_text_color_normal: app.theme_cls.primary_color
+                icon_right_color_normal : app.theme_cls.primary_color
+                icon_right: "account"
+                size_hint_x: None
+                width: 280
+                font_size: 20
+                pos_hint: {"center_x": .5}
+
+            MDTextField:
+                mode : "rectangle"
+                spacing: 20
+                text_color_normal: (1,1,1,1)
+                line_color_normal: app.theme_cls.primary_color
+                hint_text_color_normal: app.theme_cls.primary_color
+                icon_right_color_normal : app.theme_cls.primary_color
+                hint_text: "adres e-mail"
+                icon_right: "email"
+                size_hint_x: None
+                width: 280
+                font_size: 20
+                pos_hint: {"center_x": .5}
+
+            MDTextField:
+                mode : "rectangle"
+                spacing: 20
+                text_color_normal: (1,1,1,1)
+                line_color_normal: app.theme_cls.primary_color
+                hint_text_color_normal: app.theme_cls.primary_color
+                icon_right_color_normal : app.theme_cls.primary_color
+                hint_text: "hasło"
+                icon_right: "eye-off"
+                size_hint_x: None
+                width: 280
+                font_size: 20
+                pos_hint: {"center_x": .5}
+                password: True
+
+            MDTextField:
+                mode : "rectangle"
+                spacing: 20
+                text_color_normal: (1,1,1,1)
+                line_color_normal: app.theme_cls.primary_color
+                hint_text_color_normal: app.theme_cls.primary_color
+                icon_right_color_normal : app.theme_cls.primary_color
+                hint_text: "potwierdź hasło"
+                icon_right: "eye-off"
+                size_hint_x: None
+                width: 280
+                font_size: 20
+                pos_hint: {"center_x": .5}
+                password: True
+
+
+            MDFillRoundFlatButton:
+                text: 'ZAREJESTRUJ SIĘ'
+                pos_hint: {"center_x": .5}
+                spacing: 20
+                font_size: 17
+                theme_text_color: "Primary"
+                md_bg_color: [128/255, 0/255, 128/255, 1]
+                elevation_normal: 10
+                on_release: app.register()  # Dodaj funkcję rejestracji
+
+            MDTextButton:
+                text: "Masz już konto? Zaloguj się"
+                font_size: 16
+                height: self.texture_size[1] + dp(20)
+                color: [128/255, 0/255, 128/255, 1]
+                pos_hint: {"center_x": .5}
+                on_release: app.root.current = 'screenlogin'  # Przekierowanie do ekranu logowania
+
+<Manager>:
+    id: screen_manager
+
+    screen_one: screen_login
+    screen_two: screen_login
+
+    ScreenLogin:
+        id: screen_login
+        name: "screenlogin"
+        manager: screen_manager
+
+    ScreenRegister:
+        id: screen_register
+        name: "screenregister"
+        manager: screen_manager
