@@ -1,6 +1,10 @@
 
+ScreenManager:
+    ScreenLogin:
+    ScreenRegister:
+
 <ScreenLogin>
-   # name: 'login'
+    name: 'login'
     canvas.before :
         Rectangle :
             pos: self.pos
@@ -74,13 +78,17 @@
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5}
                 #on_release: app.root.current = 'registration'  # Przekierowanie do ekranu rejestracji
-                on_press: root.manager.current = 'screenregister'
+                on_press: root.manager.current = 'register'
             Widget:
                 size_hint_y: None
                 height: 30
 
 <ScreenRegister>:
-    #name: 'registration'
+    #username = username
+    #email = email
+    #password = password
+    #confirm_password = confirm_password
+    name: 'register'
     FloatLayout:
         canvas.before:
             Color:
@@ -105,6 +113,7 @@
                 color: [128/255, 0/255, 128/255, 1]
 
             MDTextField:
+                id: username
                 mode : "rectangle"
                 text_color_normal: (1,1,1,1)
                 line_color_normal: app.theme_cls.primary_color
@@ -118,6 +127,7 @@
                 pos_hint: {"center_x": .5}
 
             MDTextField:
+                id: email
                 mode : "rectangle"
                 spacing: 20
                 text_color_normal: (1,1,1,1)
@@ -132,6 +142,7 @@
                 pos_hint: {"center_x": .5}
 
             MDTextField:
+                id: password
                 mode : "rectangle"
                 spacing: 20
                 text_color_normal: (1,1,1,1)
@@ -147,6 +158,7 @@
                 password: True
 
             MDTextField:
+                id: confirm_password
                 mode : "rectangle"
                 spacing: 20
                 text_color_normal: (1,1,1,1)
@@ -170,7 +182,7 @@
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]
                 elevation_normal: 10
-                on_release: app.register()  # Dodaj funkcję rejestracji
+                on_press: root.register()  # Dodaj funkcję rejestracji
 
             MDTextButton:
                 text: "Masz już konto? Zaloguj się"
@@ -178,20 +190,4 @@
                 height: self.texture_size[1] + dp(20)
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5}
-                on_release: app.root.current = 'screenlogin'  # Przekierowanie do ekranu logowania
-
-<Manager>:
-    id: screen_manager
-
-    screen_one: screen_login
-    screen_two: screen_login
-
-    ScreenLogin:
-        id: screen_login
-        name: "screenlogin"
-        manager: screen_manager
-
-    ScreenRegister:
-        id: screen_register
-        name: "screenregister"
-        manager: screen_manager
+                on_press: root.manager.current = 'login'  # Przekierowanie do ekranu logowania
