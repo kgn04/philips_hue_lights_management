@@ -1,0 +1,1 @@
+DELETE FROM Kasetony WHERE IdK = 2;
