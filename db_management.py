@@ -9,16 +9,22 @@ attributes: dict[str, str] = {
 }
 
 
-def run_sql_script(script_name):
+def run_sql_script(script_name) -> None:
     with open(f'database/sql_scripts/{script_name}.sql', 'r') as sql_file:
         cursor.executescript(sql_file.read())
 
 
-def init_db():
+def init_db() -> None:
     try:
         run_sql_script('init')
     except OperationalError:
         print("Baza danych już istnieje. Nie podjęto inicjalizacji.")
+
+
+def select(table_name: str, name_of_attribute_to_select: str, where_attribute: tuple) -> list:
+    parsed_where_value = parse_to_sql(where_attribute[1])
+    cursor.execute(f"SELECT {name_of_attribute_to_select} FROM {table_name} WHERE {where_attribute[0]} = {parsed_where_value};")
+    return [tup[0] for tup in cursor.fetchall()]
 
 
 def insert(table_name: str, tuple_to_insert: tuple):
@@ -73,13 +79,14 @@ if __name__ == '__main__':
 
     # USE METHODS HERE
 
-    init_db()
-    insert_example()
-    # insert('Kasetony', (4, 'D', '3', '100%', 0, 128, 255, '12:34:56:78:90:AB'))
-    # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user2@example.com'))
-    # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user1@example.com'))
-    # delete('Huby', ('AdresIP', '192.168.1.2'))
+    # init_db()
+    # insert_example()
+    # insert('Kasetony', (4, 2, 1, 64, 64, 64, 196, '00:11:22:33:44:55'))
+    # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user3@example.com'))
+    # update('Uzytkownicy', ('AdresMAC', 'AA:BB:CC:DD:EE:FF'), ('LoginU', 'User3'))
+    # delete('Huby', ('AdresIP', '192.168.1.3'))
     # delete('Kasetony', ('IdK', 3))
+    # print(select('Uzytkownicy', 'AdresMAC', ('Haslo', 'NewPassword')))
     print_db()
 
     connection.commit()

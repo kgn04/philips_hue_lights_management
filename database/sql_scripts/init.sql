@@ -12,7 +12,6 @@ CREATE TABLE Uzytkownicy (
     AdresMAC varchar(255),
     PRIMARY KEY(Email),
     FOREIGN KEY(AdresMAC) REFERENCES Huby(AdresMAC)
-    --ON DELETE SET NULL
 );
 
 CREATE TABLE Kasetony (
@@ -26,7 +25,6 @@ CREATE TABLE Kasetony (
     AdresMAC varchar(255) NOT NULL,
     PRIMARY KEY(IdK),
     FOREIGN KEY(AdresMAC) REFERENCES Huby(AdresMAC)
-    --ON DELETE CASCADE
 );
 
 CREATE TABLE Grupy (
@@ -39,5 +37,4 @@ CREATE TABLE Przypisania (
     IdGr int NOT NULL,
     IdK int NOT NULL,
     PRIMARY KEY(IdGr, IdK)
-    --ON DELETE CASCADE
 );
