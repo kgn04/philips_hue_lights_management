@@ -17,9 +17,9 @@ CREATE TABLE Uzytkownicy (
 
 CREATE TABLE Kasetony (
     IdK int NOT NULL,
-    Rzad varchar(255) NOT NULL,
-    Kolumna varchar(255) NOT NULL,
-    Jasnosc varchar(255) NOT NULL,
+    Rzad int NOT NULL,
+    Kolumna int NOT NULL,
+    Jasnosc int NOT NULL,
     Czerwony int NOT NULL,
     Zielony int NOT NULL,
     Niebieski int NOT NULL,

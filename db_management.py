@@ -73,12 +73,13 @@ if __name__ == '__main__':
 
     # USE METHODS HERE
 
-    # init_db()
-    # insert_example()
+    init_db()
+    insert_example()
     # insert('Kasetony', (4, 'D', '3', '100%', 0, 128, 255, '12:34:56:78:90:AB'))
-    # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('LoginU', 'User2'))
+    # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user2@example.com'))
+    # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user1@example.com'))
     # delete('Huby', ('AdresIP', '192.168.1.2'))
-    # delete('Kasetony', ('IdK', '2'))
+    # delete('Kasetony', ('IdK', 3))
     print_db()
 
     connection.commit()
