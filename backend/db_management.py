@@ -74,7 +74,7 @@ def print_db():
 
 
 if __name__ == '__main__':
-    connection = connect('database/alpha.db')
+    connection = connect('../database/alpha.db')
     cursor = connection.cursor()
 
     # USE METHODS HERE
@@ -92,3 +92,8 @@ if __name__ == '__main__':
     connection.commit()
     cursor.close()
     connection.close()
+
+# TODO rejestracja
+# TODO logowanie
+# TODO szukanie hubu
+
