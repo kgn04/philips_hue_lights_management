@@ -7,10 +7,16 @@ CREATE TABLE Huby (
 
 CREATE TABLE Uzytkownicy (
     Email varchar(255) NOT NULL,
-    LoginU varchar(255) NOT NULL,
+    Username varchar(255) NOT NULL,
     Haslo varchar(255) NOT NULL,
-    AdresMAC varchar(255),
-    PRIMARY KEY(Email),
+    PRIMARY KEY(Email)
+);
+
+CREATE TABLE Przydzielenia (
+    Email varchar(255) NOT NULL,
+    AdresMAC varchar(255) NOT NULL,
+    PRIMARY KEY(Email, AdresMAC)
+    FOREIGN KEY(Email) REFERENCES Uzytkownicy(Email)
     FOREIGN KEY(AdresMAC) REFERENCES Huby(AdresMAC)
 );
 
@@ -37,4 +43,6 @@ CREATE TABLE Przypisania (
     IdGr int NOT NULL,
     IdK int NOT NULL,
     PRIMARY KEY(IdGr, IdK)
+    FOREIGN KEY(IdGr) REFERENCES Grupy(IdGr)
+    FOREIGN KEY(IdK) REFERENCES Kasetony(IdK)
 );

@@ -3,10 +3,16 @@ INSERT INTO Huby (AdresMAC, AdresIP, LoginH) VALUES
     ('AA:BB:CC:DD:EE:FF', '192.168.1.2', 'HubyUser2'),
     ('12:34:56:78:90:AB', '192.168.1.3', 'HubyUser3');
 
-INSERT INTO Uzytkownicy (Email, LoginU, Haslo, AdresMAC) VALUES
-    ('user1@example.com', 'User1', 'password1', '00:11:22:33:44:55'),
-    ('user2@example.com', 'User2', 'password2', 'AA:BB:CC:DD:EE:FF'),
-    ('user3@example.com', 'User3', 'password3', '12:34:56:78:90:AB');
+INSERT INTO Uzytkownicy (Email, Username, Haslo) VALUES
+    ('user1@example.com', 'User1', 'password1'),
+    ('user2@example.com', 'User2', 'password2'),
+    ('user3@example.com', 'User3', 'password3');
+
+INSERT INTO Przydzielenia (Email, AdresMAC) VALUES
+    ('user1@example.com', '00:11:22:33:44:55'),
+    ('user1@example.com', 'AA:BB:CC:DD:EE:FF'),
+    ('user2@example.com', '00:11:22:33:44:55'),
+    ('user3@example.com', '00:11:22:33:44:55');
 
 INSERT INTO Kasetony (IdK, Rzad, Kolumna, Jasnosc, Czerwony, Zielony, Niebieski, AdresMAC) VALUES
     (1, 1, 1, 128, 255, 0, 0, '00:11:22:33:44:55'),
