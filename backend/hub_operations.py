@@ -51,7 +51,8 @@ def __get_mac_address(ip_address: str) -> str:
     else:
         flag, pattern = '-a', r"(([a-f\d]{1,2}\-){5}[a-f\d]{1,2})"
     message = str(Popen(['arp', flag, ip_address], stdout=PIPE).communicate()[0])
-    result = search(pattern, message).groups()[0]
+    result = search(pattern, message).groups()[0]print(get(url="http://172.31.0.237/api/pNR5BvjkjmzqwO-FPO-vZB00lynrQs1zA7MYxkXy/lights").text)
+
     result = result.replace('-', ':')
     return result
 
@@ -59,4 +60,3 @@ def __get_mac_address(ip_address: str) -> str:
 def lights_count():
     pass  # TODO
 
-print(get(url="http://172.31.0.237/api/pNR5BvjkjmzqwO-FPO-vZB00lynrQs1zA7MYxkXy/lights").text)
