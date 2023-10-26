@@ -1,3 +1,19 @@
+def change_color(light_id: int, rgb: tuple[int, int, int]) -> None:
+    pass
+
+
+def change_brightness(light_id: int, brightness: int) -> None:
+    pass
+
+
+def turn_off(light_id: int) -> None:
+    pass
+
+
+def turn_on(light_id: int) -> None:
+    pass
+
+
 from requests import put
 
 def get_rgb_to_xy(color):

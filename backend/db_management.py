@@ -11,7 +11,7 @@ attributes: dict[str, str] = {
 
 
 def connect_to_db() -> tuple:
-    connection = connect('../database/alpha.db')
+    connection = connect('/Users/kacper/Desktop/PRACA/lights/database/alpha.db')
     return connection, connection.cursor()
 
 
@@ -23,7 +23,7 @@ def disconnect_from_db(connection, cursor) -> None:
 
 def run_sql_script(script_name) -> None:
     connection, cursor = connect_to_db()
-    with open(f'../database/sql_scripts/{script_name}.sql', 'r') as sql_file:
+    with open(f'/Users/kacper/Desktop/PRACA/lights/database/sql_scripts/{script_name}.sql', 'r') as sql_file:
         cursor.executescript(sql_file.read())
     disconnect_from_db(connection, cursor)
 
@@ -39,8 +39,17 @@ def select(table_name: str, name_of_attribute_to_select: str, where_attribute: t
     connection, cursor = connect_to_db()
     parsed_where_value = parse_to_sql(where_attribute[1])
     cursor.execute(f"SELECT {name_of_attribute_to_select} FROM {table_name} WHERE {where_attribute[0]} = {parsed_where_value};")
+    cursor_result = cursor.fetchall()
     disconnect_from_db(connection, cursor)
-    return [tup[0] for tup in cursor.fetchall()]
+    return [tup[0] for tup in cursor_result]
+
+
+def select_all(table_name: str, name_of_attribute_to_select: str) -> list:
+    connection, cursor = connect_to_db()
+    cursor.execute(f"SELECT {name_of_attribute_to_select} FROM {table_name};")
+    cursor_result = cursor.fetchall()
+    disconnect_from_db(connection, cursor)
+    return [tup[0] for tup in cursor_result]
 
 
 def insert(table_name: str, tuple_to_insert: tuple):
