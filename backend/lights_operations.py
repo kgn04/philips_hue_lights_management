@@ -1,28 +1,39 @@
+from requests import put, get
+import db_management
+from json import loads
+
+
+current_hub_login: str = ''
+current_hub_ip: str = ''
+request_prefix: str = ''
+# TODO Verifying responses
+
+
 def change_color(light_id: int, rgb: tuple[int, int, int]) -> None:
-    pass
+    """
+    :param rgb: (red[0-255], green[0-255], blue[0-255])
+    """
+    __send_put(light_id, {"xy": rgb_to_xy(rgb)})
 
 
 def change_brightness(light_id: int, brightness: int) -> None:
-    pass
+    """
+    :param brightness: 0-255
+    """
+    __send_put(light_id, {"bri": brightness})
 
 
 def turn_off(light_id: int) -> None:
-    pass
+    __send_put(light_id, {"on": False})
 
 
 def turn_on(light_id: int) -> None:
-    pass
+    __send_put(light_id, {"on": True})
 
 
-from requests import put
-
-def get_rgb_to_xy(color):
-    # For the hue bulb, the corners of the triangle are:
-    # - Red: 0.675, 0.322
-    # - Green: 0.4091, 0.518
-    # - Blue: 0.167, 0.04
+def rgb_to_xy(rgb: tuple[int, int, int]):
     normalized_to_one = [0.0, 0.0, 0.0]
-    cred, cgreen, cblue = color[0] / 255.0, color[1] / 255.0, color[2] / 255.0
+    cred, cgreen, cblue = rgb[0] / 255.0, rgb[1] / 255.0, rgb[2] / 255.0
     normalized_to_one[0] = cred
     normalized_to_one[1] = cgreen
     normalized_to_one[2] = cblue
@@ -46,8 +57,28 @@ def get_rgb_to_xy(color):
 
     return [x, y]
 
-# Example usage:
-color = (128, 0, 128)  # Red color
-xy_values = get_rgb_to_xy(color)
 
-print(put(url=f"http://172.31.0.237/api/4eVBkbzkRPQOT-lpLqDfUjr6AjR7f3nGi857IG88/lights/4/state", json={"xy": xy_values, "bri": 255}).text)
+def update_lights_data():
+    global request_prefix
+    info_dict = loads(get(url=request_prefix).text)
+    for light_id in info_dict:
+        is_on = True  # TODO
+        color_x = 0.0
+        color_y = 0.0
+        brightness = 0
+        for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorX', color_x), ('KolorY', color_y),
+                                                ('Jasnosc', brightness)]:
+            db_management.update('Kasetony', (attribute_name, attribute_value), ('IdK', light_id))
+
+
+def __change_current_hub_1(mac_address: str) -> None:
+    global current_hub_login, current_hub_ip, request_prefix
+    current_hub_login = db_management.select('Huby', 'loginH', ('AdresMAC', mac_address))
+    current_hub_ip = db_management.select('Huby', 'AdresIP', ('AdresMAC', mac_address))
+    request_prefix = f'http://{current_hub_ip}/api/{current_hub_login}/lights/'
+
+
+def __send_put(light_id: int, body: dict) -> str:
+    global request_prefix
+    request = f'{request_prefix}{light_id}/state'
+    return put(url=request, json=body).text

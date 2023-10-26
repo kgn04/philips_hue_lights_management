@@ -28,9 +28,8 @@ CREATE TABLE Kasetony (
     Kolumna int NOT NULL,
     CzyWlaczony bit NOT NULL,
     Jasnosc int NOT NULL,
-    Czerwony int NOT NULL,
-    Zielony int NOT NULL,
-    Niebieski int NOT NULL,
+    KolorX float NOT NULL,
+    KolorY float NOT NULL,
     AdresMAC varchar(255) NOT NULL,
     PRIMARY KEY(IdK),
     FOREIGN KEY(AdresMAC) REFERENCES Huby(AdresMAC)

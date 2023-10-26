@@ -14,10 +14,10 @@ INSERT INTO Przydzielenia (Email, AdresMAC) VALUES
     ('user2@example.com', '00:11:22:33:44:55'),
     ('user3@example.com', '00:11:22:33:44:55');
 
-INSERT INTO Kasetony (IdK, Rzad, Kolumna, CzyWlaczony, Jasnosc, Czerwony, Zielony, Niebieski, AdresMAC) VALUES
-    (1, 1, 1, 1, 128, 255, 0, 0, '00:11:22:33:44:55'),
-    (2, 1, 2, 0, 196, 0, 128, 255, 'AA:BB:CC:DD:EE:FF'),
-    (3, 2, 1, 1, 255, 255, 255, 255, '12:34:56:78:90:AB');
+INSERT INTO Kasetony (IdK, Rzad, Kolumna, CzyWlaczony, Jasnosc, KolorX, KolorY, AdresMAC) VALUES
+    (1, 1, 1, 1, 128, 255, 0, '00:11:22:33:44:55'),
+    (2, 1, 2, 0, 196, 0, 128, 'AA:BB:CC:DD:EE:FF'),
+    (3, 2, 1, 1, 255, 255, 255, '12:34:56:78:90:AB');
 
 INSERT INTO Grupy (IdGr, NazwaGr) VALUES
     (1, 'Grupa1'),

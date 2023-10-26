@@ -6,6 +6,8 @@ from requests import get, post
 from requests.exceptions import ConnectTimeout
 from sys import platform
 from time import sleep
+from lights_operations import __change_current_hub_1
+from groups_operations import __change_current_hub_2
 
 OPERATION_SUCCESSFUL = 0
 NO_HUB_IN_NETWORK = 1
@@ -51,10 +53,15 @@ def __get_mac_address(ip_address: str) -> str:
     else:
         flag, pattern = '-a', r"(([a-f\d]{1,2}\-){5}[a-f\d]{1,2})"
     message = str(Popen(['arp', flag, ip_address], stdout=PIPE).communicate()[0])
-    result = search(pattern, message).groups()[0]print(get(url="http://172.31.0.237/api/pNR5BvjkjmzqwO-FPO-vZB00lynrQs1zA7MYxkXy/lights").text)
-
+    result = search(pattern, message).groups()[0]
+    print(get(url="http://172.31.0.237/api/pNR5BvjkjmzqwO-FPO-vZB00lynrQs1zA7MYxkXy/lights").text)
     result = result.replace('-', ':')
     return result
+
+
+def change_current_hub(mac_address: str) -> None:
+    __change_current_hub_1(mac_address)
+    __change_current_hub_2(mac_address)
 
 
 def lights_count():
