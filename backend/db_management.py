@@ -1,16 +1,17 @@
 from sqlite3 import connect, OperationalError
 
 attributes: dict[str, str] = {
-    'Huby': '(AdresMAC, AdresIP, LoginH)',
-    'Uzytkownicy': '(Email, LoginU, Haslo, AdresMAC)',
-    'Kasetony': '(IdK, Rzad, Kolumna, Jasnosc, Czerwony, Zielony, Niebieski, AdresMAC)',
+    'Huby': '(AdresMAC, AdresIP, LoginH, Rzedy, Kolumny)',
+    'Uzytkownicy': '(Email, Username, Haslo)',
+    'Przydzielenia': '(Email, AdresMAC)',
+    'Kasetony': '(IdK, Rzad, Kolumna, CzyWlaczony, Jasnosc, Czerwony, Zielony, Niebieski, AdresMAC)',
     'Grupy': '(IdGr, NazwaGr)',
     'Przypisania': '(IdGr, IdK)'
 }
 
 
 def connect_to_db() -> tuple:
-    connection = connect('database/alpha.db')
+    connection = connect('../database/alpha.db')
     return connection, connection.cursor()
 
 
@@ -22,7 +23,7 @@ def disconnect_from_db(connection, cursor) -> None:
 
 def run_sql_script(script_name) -> None:
     connection, cursor = connect_to_db()
-    with open(f'database/sql_scripts/{script_name}.sql', 'r') as sql_file:
+    with open(f'../database/sql_scripts/{script_name}.sql', 'r') as sql_file:
         cursor.executescript(sql_file.read())
     disconnect_from_db(connection, cursor)
 
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user3@example.com'))
     # update('Uzytkownicy', ('AdresMAC', 'AA:BB:CC:DD:EE:FF'), ('LoginU', 'User3'))
     # delete('Huby', ('AdresIP', '192.168.1.2'))
-    delete('Uzytkownicy', ('Username', 'User1'))
+    # delete('Uzytkownicy', ('Username', 'User1'))
     # delete('Kasetony', ('IdK', 2))
     # print(select('Uzytkownicy', 'AdresMAC', ('Haslo', 'NewPassword')))
     print_db()

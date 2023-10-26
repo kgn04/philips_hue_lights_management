@@ -2,6 +2,8 @@ CREATE TABLE Huby (
     AdresMAC varchar(255) NOT NULL,
     AdresIP varchar(255) NOT NULL,
     LoginH varchar(255) NOT NULL,
+    Rzedy int,
+    Kolumny int,
     PRIMARY KEY(AdresMAC)
 );
 
@@ -15,8 +17,8 @@ CREATE TABLE Uzytkownicy (
 CREATE TABLE Przydzielenia (
     Email varchar(255) NOT NULL,
     AdresMAC varchar(255) NOT NULL,
-    PRIMARY KEY(Email, AdresMAC)
-    FOREIGN KEY(Email) REFERENCES Uzytkownicy(Email)
+    PRIMARY KEY(Email, AdresMAC),
+    FOREIGN KEY(Email) REFERENCES Uzytkownicy(Email),
     FOREIGN KEY(AdresMAC) REFERENCES Huby(AdresMAC)
 );
 
@@ -24,6 +26,7 @@ CREATE TABLE Kasetony (
     IdK int NOT NULL,
     Rzad int NOT NULL,
     Kolumna int NOT NULL,
+    CzyWlaczony bit NOT NULL,
     Jasnosc int NOT NULL,
     Czerwony int NOT NULL,
     Zielony int NOT NULL,
@@ -42,7 +45,7 @@ CREATE TABLE Grupy (
 CREATE TABLE Przypisania (
     IdGr int NOT NULL,
     IdK int NOT NULL,
-    PRIMARY KEY(IdGr, IdK)
-    FOREIGN KEY(IdGr) REFERENCES Grupy(IdGr)
+    PRIMARY KEY(IdGr, IdK),
+    FOREIGN KEY(IdGr) REFERENCES Grupy(IdGr),
     FOREIGN KEY(IdK) REFERENCES Kasetony(IdK)
 );
