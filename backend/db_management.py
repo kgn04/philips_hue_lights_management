@@ -11,7 +11,7 @@ attributes: dict[str, str] = {
 
 
 def connect_to_db() -> tuple:
-    connection = connect('/Users/kacper/Desktop/PRACA/lights/database/alpha.db')
+    connection = connect('C:/Users/Kacper/PycharmProjects/lights/database/alpha.db')
     return connection, connection.cursor()
 
 
@@ -23,7 +23,7 @@ def disconnect_from_db(connection, cursor) -> None:
 
 def run_sql_script(script_name) -> None:
     connection, cursor = connect_to_db()
-    with open(f'/Users/kacper/Desktop/PRACA/lights/database/sql_scripts/{script_name}.sql', 'r') as sql_file:
+    with open(f'C:/Users/Kacper/PycharmProjects/lights/Database/sql_scripts/{script_name}.sql', 'r') as sql_file:
         cursor.executescript(sql_file.read())
     disconnect_from_db(connection, cursor)
 
