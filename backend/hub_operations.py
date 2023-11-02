@@ -6,7 +6,7 @@ from requests import get, post
 from requests.exceptions import ConnectTimeout
 from sys import platform
 from time import sleep
-from lights_operations import __change_current_hub_1
+from lights_operations import __change_current_hub_1, identify_light
 from groups_operations import __change_current_hub_2
 
 OPERATION_SUCCESSFUL = 0
@@ -36,6 +36,14 @@ def add_new_hub(ip_address: str, mac_address: str) -> int:
         return TIMEOUT
     db_management.insert('Huby', (mac_address, ip_address, login, 0, 0))
     return OPERATION_SUCCESSFUL
+
+
+def identify_lights(mac_address: str) -> None:
+    lights_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', mac_address))
+    for light_id in lights_ids:
+        row, column = identify_light(light_id)
+        db_management.update('Kasetony', ('Rzad', row), ('IdK', light_id))
+        db_management.update('Kasetony', ('Kolumna', column), ('IdK', light_id))
 
 
 def __get_login(ip_address: str, ):
@@ -68,6 +76,3 @@ def change_current_hub(mac_address: str) -> None:
 
 def lights_count():
     pass  # TODO
-
-
-print(find_hubs())

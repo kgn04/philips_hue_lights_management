@@ -1,6 +1,8 @@
 from requests import put, get
 import db_management
 from json import loads
+from time import sleep
+from sys import stdin
 
 
 current_hub_login: str = ''
@@ -87,6 +89,20 @@ def update_lights_data():
                                      ('IdK', light_id))
 
 
+LIGHT_COORD = None
+
+
+def identify_light(light_id) -> tuple[int, int]:
+    global LIGHT_COORD
+    while not LIGHT_COORD:  # TODO setting light coord from GUI
+        turn_off(light_id)
+        sleep(0.25)
+        turn_on(light_id)
+    result = LIGHT_COORD
+    LIGHT_COORD = None
+    return result
+
+
 def __change_current_hub_1(mac_address: str) -> None:
     global current_hub_login, current_hub_ip, current_hub_mac_address, request_prefix
     current_hub_login = db_management.select('Huby', 'loginH', ('AdresMAC', mac_address))[0]
@@ -99,10 +115,3 @@ def __send_put(light_id: int, body: dict) -> str:
     global request_prefix
     request = f'{request_prefix}{light_id}/state'
     return put(url=request, json=body).text
-
-
-
-# __change_current_hub_1('ec:b5:fa:98:1c:cd')
-# # update_lights_data()
-# turn_off(1)
-# db_management.print_db()
