@@ -1,7 +1,7 @@
 from sqlite3 import connect, OperationalError
 
 attributes: dict[str, str] = {
-    'Huby': '(AdresMAC, AdresIP, LoginH, Rzedy, Kolumny)',
+    'Huby': '(AdresMAC, AdresIP, LoginH, Nazwa, Rzedy, Kolumny)',
     'Uzytkownicy': '(Email, Username, Haslo)',
     'Przydzielenia': '(Email, AdresMAC)',
     'Kasetony': '(IdK, Rzad, Kolumna, CzyWlaczony, Jasnosc, KolorX, KolorY, AdresMAC)',

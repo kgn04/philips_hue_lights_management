@@ -101,6 +101,8 @@ def __send_put(light_id: int, body: dict) -> str:
     return put(url=request, json=body).text
 
 
-__change_current_hub_1('ec:b5:fa:98:1c:cd')
-update_lights_data()
-db_management.print_db()
+
+# __change_current_hub_1('ec:b5:fa:98:1c:cd')
+# # update_lights_data()
+# turn_off(1)
+# db_management.print_db()

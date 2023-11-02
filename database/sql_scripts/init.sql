@@ -2,6 +2,7 @@ CREATE TABLE Huby (
     AdresMAC varchar(255) NOT NULL,
     AdresIP varchar(255) NOT NULL,
     LoginH varchar(255) NOT NULL,
+    Nazwa varchar(255) NOT NULL,
     Rzedy int,
     Kolumny int,
     PRIMARY KEY(AdresMAC)

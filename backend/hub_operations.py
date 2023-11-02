@@ -19,7 +19,7 @@ RESPONSE_BUTTON_NOT_PRESSED = '[{"error":{"type":101,"address":"","description":
 def find_hubs() -> list[tuple[str, str]]:
     ip_network_prefix = gethostbyname(gethostname())[:gethostbyname(gethostname()).rfind('.')] + '.'
     result = []
-    for i in range(235,254):  # TODO
+    for i in range(254):  # TODO
         try:
             if get(url=f'http://172.31.0.{i+1}/api/newdeveloper.', timeout=1, allow_redirects=False).text == '[{"error":{"type":1,"address":"/","description":"unauthorized user"}}]':
                 ip_address = ip_network_prefix + str(i+1)
@@ -69,3 +69,5 @@ def change_current_hub(mac_address: str) -> None:
 def lights_count():
     pass  # TODO
 
+
+print(find_hubs())

@@ -36,4 +36,4 @@ def __change_current_hub_2(mac_address: str) -> None:
     request_prefix = f'http://{current_hub_ip}/api/{current_hub_login}'
 
 
-print(db_management.select_all('Huby', 'AdresMAC'))
+# print(db_management.select_all('Huby', 'AdresMAC'))
