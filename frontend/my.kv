@@ -4,6 +4,7 @@ ScreenManager:
     ScreenStart:
     ScreenAddHub:
     ScreenChooseHub:
+    ScreenChooseShape:
     ScreenLogin:
     ScreenRegister:
     ScreenSimulator:
@@ -153,35 +154,45 @@ ScreenManager:
             text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
             on_press: root.manager.current = 'start'
         GridLayout:
-            cols: 7  # Dwa przyciski w rzędzie
+            cols: 7
             spacing: 30
             size_hint: 1, 1/6
             height: 100
             pos_hint: {'x': 0.3, 'y': 0.5}
-            Button:
-                text: "hub1"
-                size_hint: None, None  # Wyłącz automatyczne dopasowanie rozmiaru
-                size: 100, 100  # Rozmiar 50x50
-                color: (1, 0, .65, 1)
-                background_normal: 'hub.png'
-            Button:
-                text: "hub2"
-                size_hint: None, None
-                size: 100, 100
-                color: (1, 0, .65, 1)
-                background_normal: 'hub.png'
-            Button:
-                text: "hub3"
-                size_hint: None, None
-                size: 100, 100
-                color: (1, 0, .65, 1)
-                background_normal: 'hub.png'
-            Button:
-                text: "hub4"
-                size_hint: None, None
-                size: 100, 100
-                color: (1, 0, .65, 1)
-                background_normal: 'hub.png'
+
+<ScreenChooseShape>:
+    name: 'shape'
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: [30/255, 30/255, 30/255, 1]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        MDLabel:
+            pos_hint: {'x':0, 'y':0.8}
+            text: 'DOSTĘPNE SIATKI'
+            font_style: 'Button'
+            font_size: 45
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        MDLabel:
+            text: 'Wybierz jedną z możliwości ustawienia kasetonów by przejść dalej'
+            pos_hint: {'x':0, 'y':0.75}
+            #font_style: 'Button'
+            font_size: 16
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        GridLayout:
+            cols: 7
+            spacing: 30
+            size_hint: 1, 1/6
+            height: 100
+            pos_hint: {'x': 0.3, 'y': 0.5}
 
 <ScreenLogin>:
     name: 'login'
