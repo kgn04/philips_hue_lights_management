@@ -6,8 +6,6 @@ from requests import get, post
 from requests.exceptions import ConnectTimeout
 from sys import platform
 from time import sleep
-from lights_operations import __change_current_hub_1, identify_light
-from groups_operations import __change_current_hub_2
 from backend.lights_operations import __change_current_hub_1, identify_light
 from backend.groups_operations import __change_current_hub_2
 

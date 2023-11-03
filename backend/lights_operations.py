@@ -112,7 +112,3 @@ def __send_put(light_id: int, body: dict) -> str:
     request = f'{request_prefix}{light_id}/state'
     return put(url=request, json=body).text
 
-
-__change_current_hub_1('ec:b5:fa:98:1c:cd')
-update_lights_data()
-db_management.print_db()
