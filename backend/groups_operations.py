@@ -1,4 +1,4 @@
-import db_management
+import backend.db_management as db_management
 from sqlite3 import OperationalError
 
 SUCCESSFUL_OPERATION = 0

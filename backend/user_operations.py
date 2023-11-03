@@ -1,4 +1,4 @@
-import db_management
+import backend.db_management as db_management
 from re import match
 from sqlite3 import OperationalError
 
@@ -8,6 +8,7 @@ DIFFERENT_PASSWORDS = 2
 INCORRECT_EMAIL = 3
 INCORRECT_PASSWORD = 4
 INCORRECT_USERNAME = 5
+NONEXISTENT_EMAIL = 6
 
 
 def validate_email(email: str) -> bool:
@@ -39,9 +40,15 @@ def register(email: str, username: str, password1: str, password2: str) -> int:
 
 
 def login(email: str, password: str) -> int:
+    #dodany przypadek gdy podanego maila nie ma w bazie lub gdy użytkownik nie poda wcale maila :)
     try:
-        if db_management.select('Uzytkownicy', 'Haslo', ('Email', email)) != password:
-            return INCORRECT_PASSWORD
+        #print(db_management.select('Uzytkownicy', 'Haslo', ('Email', email)))
+        #print(password)
+        if db_management.select('Uzytkownicy', 'Haslo', ('Email', email)):
+            if db_management.select('Uzytkownicy', 'Haslo', ('Email', email))[0] != password:
+                return INCORRECT_PASSWORD
+        else:
+            return NONEXISTENT_EMAIL
     except OperationalError:
         return INCORRECT_EMAIL
     return OPERATION_SUCCESSFUL

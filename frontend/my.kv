@@ -1,12 +1,15 @@
 
+
 ScreenManager:
     ScreenStart:
     ScreenAddHub:
+    ScreenChooseHub:
     ScreenLogin:
     ScreenRegister:
+    ScreenSimulator:
 
 
-<ScreenStart>
+<ScreenStart>:
     name:'start'
     canvas.before :
         Color:
@@ -65,7 +68,7 @@ ScreenManager:
                 #on_release: app.root.current = 'registration'  # Przekierowanie do ekranu rejestracji
                 on_press: root.manager.current = 'register'
 
-<ScreenAddHub>
+<ScreenAddHub>:
     name: 'addhub'
     FloatLayout:
         canvas.before:
@@ -76,61 +79,13 @@ ScreenManager:
                 size: self.size
         BoxLayout:
             orientation: 'vertical'
-            spacing: 30
+            spacing: 50
             #pos_hint: 'center'
-            pos_hint: {"center_y": .6}  # Ta linia ustawia kontener na środku ekranu
+            pos_hint: {"center_y": .75}  # Ta linia ustawia kontener na środku ekranu
             MDLabel:
                 text: 'DODAWANIE HUBA'
                 font_style: 'Button'
                 font_size: 45
-                halign: "center"
-                size_hint_y: None
-                height: self.texture_size[1]
-                color: [128/255, 0/255, 128/255, 1]
-
-            MDTextField:
-                id: ip_address
-                mode : "rectangle"
-                text_color_normal: (1,1,1,1)
-                line_color_normal: app.theme_cls.primary_color
-                hint_text: "adres ip"
-                hint_text_color_normal: app.theme_cls.primary_color
-                icon_right_color_normal : app.theme_cls.primary_color
-                icon_right: "access-point"
-                size_hint_x: None
-                width: 280
-                font_size: 20
-                pos_hint: {"center_x": .5}
-
-            MDTextField:
-                id: mac_address
-                mode : "rectangle"
-                spacing: 20
-                text_color_normal: (1,1,1,1)
-                line_color_normal: app.theme_cls.primary_color
-                hint_text_color_normal: app.theme_cls.primary_color
-                icon_right_color_normal : app.theme_cls.primary_color
-                hint_text: "adres MAC"
-                icon_right: "lan_connect"
-                size_hint_x: None
-                width: 280
-                font_size: 20
-                pos_hint: {"center_x": .5}
-
-            MDFillRoundFlatButton:
-                text: '                DODAJ                '
-                pos_hint: {"center_x": .5}
-                spacing: 20
-                font_size: 17
-               # increment_width: 90
-                theme_text_color: "Primary"
-                md_bg_color: [128/255, 0/255, 128/255, 1]
-                elevation_normal: 10
-               # on_press: root.register()  # Dodaj funkcję łączenia z hub
-            MDLabel:
-                text: 'lub'
-                #font_style: 'Button'
-                font_size: 16
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
@@ -162,7 +117,73 @@ ScreenManager:
                 text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
                 on_press: root.manager.current = 'start'
 
-<ScreenLogin>
+<ScreenChooseHub>:
+    name: 'choose'
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: [30/255, 30/255, 30/255, 1]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        MDLabel:
+            pos_hint: {'x':0, 'y':0.8}
+            text: 'DOSTĘPNE HUBY'
+            font_style: 'Button'
+            font_size: 45
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        MDLabel:
+            text: 'Upewnij się, że wybrany hub jest w tej samej sieci, co twoje urządzenie'
+            pos_hint: {'x':0, 'y':0.75}
+            #font_style: 'Button'
+            font_size: 16
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        MDIconButton:
+            icon: "keyboard-backspace"
+            pos_hint: {'x':0.45, 'y':0.3}
+            spacing: 0
+            font_size: 13
+            theme_text_color: "Custom"  # Ustawienie niestandardowego koloru tekstu
+            text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
+            on_press: root.manager.current = 'start'
+        GridLayout:
+            cols: 7  # Dwa przyciski w rzędzie
+            spacing: 30
+            size_hint: 1, 1/6
+            height: 100
+            pos_hint: {'x': 0.3, 'y': 0.5}
+            Button:
+                text: "hub1"
+                size_hint: None, None  # Wyłącz automatyczne dopasowanie rozmiaru
+                size: 100, 100  # Rozmiar 50x50
+                color: (1, 0, .65, 1)
+                background_normal: 'hub.png'
+            Button:
+                text: "hub2"
+                size_hint: None, None
+                size: 100, 100
+                color: (1, 0, .65, 1)
+                background_normal: 'hub.png'
+            Button:
+                text: "hub3"
+                size_hint: None, None
+                size: 100, 100
+                color: (1, 0, .65, 1)
+                background_normal: 'hub.png'
+            Button:
+                text: "hub4"
+                size_hint: None, None
+                size: 100, 100
+                color: (1, 0, .65, 1)
+                background_normal: 'hub.png'
+
+<ScreenLogin>:
     name: 'login'
     canvas.before :
         Color:
@@ -196,6 +217,7 @@ ScreenManager:
                 height: self.texture_size[1]
                 color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tekstu
             MDTextField:
+                id : email
                 mode : "rectangle"
                 text_color_normal: (1,1,1,1)
                 line_color_normal: app.theme_cls.primary_color
@@ -208,6 +230,7 @@ ScreenManager:
                 font_size: 20
                 pos_hint: {"center_x": .5}
             MDTextField:
+                id: password
                 mode : "rectangle"
                 spacing: 20
                 text_color_normal: (1,1,1,1)
@@ -232,6 +255,8 @@ ScreenManager:
                 theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
+                on_press: root.login(str(root.ids.email.text),str(root.ids.password.text))
+                #on_press: root.manager.current = 'simulator'
             MDTextButton:
                 text: "Nie masz konta? Zarejestruj się"
                 font_size: 16
@@ -344,7 +369,7 @@ ScreenManager:
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]
                 elevation_normal: 10
-               # on_press: root.register()  # Dodaj funkcję rejestracji
+                on_release: root.register(str(root.ids.email.text),str(root.ids.username.text),str(root.ids.password.text),str(root.ids.confirm_password.text))  # Dodaj funkcję rejestracji
 
             MDTextButton:
                 text: "Masz już konto? Zaloguj się"
@@ -353,6 +378,7 @@ ScreenManager:
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5}
                 on_press: root.manager.current = 'login'  # Przekierowanie do ekranu logowania
+
             MDIconButton:
                 icon: "keyboard-backspace"
                 pos_hint: {"center_x": .5}
@@ -361,3 +387,25 @@ ScreenManager:
                 theme_text_color: "Custom"  # Ustawienie niestandardowego koloru tekstu
                 text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
                 on_press: root.manager.current = 'start'
+
+<ScreenSimulator>:
+    name: 'simulator'
+    BoxLayout:
+        orientation: 'vertical'
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Generate'
+                on_release: root.generate_rectangle()
+
+        GridLayout:
+            id: rectangle_grid
+            size_hint: 0.8, 0.8
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            cols: 1
+            spacing: 10
+
+

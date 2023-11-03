@@ -1,13 +1,13 @@
 from socket import gethostname, gethostbyname
 from subprocess import Popen, PIPE
 from re import search
-import db_management
+import backend.db_management as db_management
 from requests import get, post
 from requests.exceptions import ConnectTimeout
 from sys import platform
 from time import sleep
-from lights_operations import __change_current_hub_1
-from groups_operations import __change_current_hub_2
+from backend.lights_operations import __change_current_hub_1
+from backend.groups_operations import __change_current_hub_2
 
 OPERATION_SUCCESSFUL = 0
 NO_HUB_IN_NETWORK = 1

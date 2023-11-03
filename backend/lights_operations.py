@@ -1,7 +1,8 @@
 from requests import put, get
-import db_management
+import backend.db_management as backend_management
 from json import loads
 
+from backend import db_management
 
 current_hub_login: str = ''
 current_hub_ip: str = ''
@@ -101,6 +102,6 @@ def __send_put(light_id: int, body: dict) -> str:
     return put(url=request, json=body).text
 
 
-__change_current_hub_1('ec:b5:fa:98:1c:cd')
-update_lights_data()
-db_management.print_db()
+#__change_current_hub_1('ec:b5:fa:98:1c:cd')
+#update_lights_data()
+#db_management.print_db()
