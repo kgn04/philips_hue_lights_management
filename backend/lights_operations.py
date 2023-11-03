@@ -89,6 +89,15 @@ def update_lights_data():
                 db_management.update('Kasetony', (attribute_name, attribute_value),
                                      ('IdK', light_id))
 
+def identify_light(light_id) -> tuple[int, int]:
+    global LIGHT_COORD
+    while not LIGHT_COORD:  # TODO setting light coord from GUI
+        turn_off(light_id)
+        sleep(0.25)
+        turn_on(light_id)
+    result = LIGHT_COORD
+    LIGHT_COORD = None
+    return result
 
 def __change_current_hub_1(mac_address: str) -> None:
     global current_hub_login, current_hub_ip, current_hub_mac_address, request_prefix
