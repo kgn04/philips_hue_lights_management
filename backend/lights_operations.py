@@ -1,6 +1,8 @@
 from requests import put, get
 import backend.db_management as backend_management
 from json import loads
+from time import sleep
+from sys import stdin
 
 from backend import db_management
 
@@ -102,6 +104,6 @@ def __send_put(light_id: int, body: dict) -> str:
     return put(url=request, json=body).text
 
 
-#__change_current_hub_1('ec:b5:fa:98:1c:cd')
-#update_lights_data()
-#db_management.print_db()
+__change_current_hub_1('ec:b5:fa:98:1c:cd')
+update_lights_data()
+db_management.print_db()
