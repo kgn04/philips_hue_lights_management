@@ -30,16 +30,12 @@ ScreenManager:
         BoxLayout:
             orientation: 'vertical'
             spacing: 30
-            #padding_top: dp(40)
             MDLabel:
                 text: 'LIGHTS'
                 font_style: 'Button'
                 font_size: 45
-                #height: self.texture_size[1] + dp(40)
+
                 halign: "center"
-                #size_hint_y: None
-                #pos_hint: {"center_x": .5,"center_y": .5}
-                #height: self.texture_size[1]
                 color: app.theme_cls.primary_color  # niebieski kolor tekstu
             MDFillRoundFlatButton:
                 text: 'DODAJ HUBA'
@@ -55,7 +51,6 @@ ScreenManager:
                 pos_hint: {"center_x": .5,"center_y": .2}
                 spacing: 20
                 font_size: 18
-                #height: self.texture_size[1] + dp(40)
                 theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
@@ -114,8 +109,8 @@ ScreenManager:
                 pos_hint: {"center_x": .5}
                 spacing: 0
                 font_size: 13
-                theme_text_color: "Custom"  # Ustawienie niestandardowego koloru tekstu
-                text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
+                theme_text_color: "Custom"
+                text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
 
 <ScreenChooseHub>:
@@ -150,8 +145,8 @@ ScreenManager:
             pos_hint: {'x':0.45, 'y':0.3}
             spacing: 0
             font_size: 13
-            theme_text_color: "Custom"  # Ustawienie niestandardowego koloru tekstu
-            text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
+            theme_text_color: "Custom"
+            text_color: "deepskyblue"
             on_press: root.manager.current = 'start'
         GridLayout:
             cols: 7
@@ -202,7 +197,6 @@ ScreenManager:
         Rectangle :
             pos: self.pos
             size: self.size
-            #source: 'gradient.jpg'
     MDCard:
         md_bg_color: [30/255, 30/255, 30/255, 1]  # Czarny kolor tła karty
         size_hint: None, None
@@ -222,7 +216,6 @@ ScreenManager:
                 text: 'LOGOWANIE'
                 font_style: 'Button'
                 font_size: 45
-                #height: self.texture_size[1] + dp(40)
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
@@ -263,7 +256,7 @@ ScreenManager:
                 pos_hint: {"center_x": .5}
                 spacing: 20
                 font_size: 17
-                theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
+                theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
                 on_press: root.login(str(root.ids.email.text),str(root.ids.password.text))
@@ -274,15 +267,14 @@ ScreenManager:
                 height: self.texture_size[1] + dp(20)
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5}
-                #on_release: app.root.current = 'registration'  # Przekierowanie do ekranu rejestracji
                 on_press: root.manager.current = 'register'
             MDIconButton:
                 icon: "keyboard-backspace"
                 pos_hint: {"center_x": .5}
                 spacing: 0
                 font_size: 13
-                theme_text_color: "Custom"  # Ustawienie niestandardowego koloru tekstu
-                text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
+                theme_text_color: "Custom"
+                text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
 
 <ScreenRegister>:
@@ -298,7 +290,7 @@ ScreenManager:
             orientation: 'vertical'
             spacing: 20
             #pos_hint: 'center'
-            pos_hint: {"center_y": .6}  # Ta linia ustawia kontener na środku ekranu
+            pos_hint: {"center_y": .6}
 
 
             MDLabel:
@@ -395,8 +387,8 @@ ScreenManager:
                 pos_hint: {"center_x": .5}
                 spacing: 0
                 font_size: 13
-                theme_text_color: "Custom"  # Ustawienie niestandardowego koloru tekstu
-                text_color: "deepskyblue" # Ustawienie niestandardowego koloru (czerwony w tym przypadku)
+                theme_text_color: "Custom"
+                text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
 
 <ScreenSimulator>:

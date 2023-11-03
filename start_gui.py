@@ -7,7 +7,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import ScreenManager, NoTransition, Screen, SlideTransition, FadeTransition
+from kivy.uix.screenmanager import ScreenManager, NoTransition, Screen
 from kivy.uix.scrollview import ScrollView
 from kivymd.app import MDApp
 import backend.user_operations as user_operations
@@ -17,8 +17,6 @@ import backend.hub_operations as hub_operations
 from kivy.lang import Builder
 
 Clock.max_iteration = 20
-
-
 
 
 def show_popup(title: str, message: str):
@@ -39,7 +37,6 @@ class ScreenChooseHub(Screen):
     def __init__(self, **kwargs):
         super(ScreenChooseHub, self).__init__(**kwargs)
 
-        # Pobierz dane o hubach z bazy danych (przykład - zastąp tym prawdziwą logiką bazy danych)
         hub_data = db_management.select_all("Huby", "Nazwa")
         print(hub_data)
 
@@ -47,11 +44,10 @@ class ScreenChooseHub(Screen):
 
         for hub in hub_data:
             button = Button(text=hub, size_hint=(None, None), size=(100, 100))
-            # button.background_normal = 'hub-small.png'  # Ustaw obrazek tła przycisku
+            # button.background_normal = 'hub-small.png'  # obrazek tła nie działa idk why
             button.ip_address = db_management.select("Huby", "AdresIP", ("Nazwa", hub))
             button.mac_address = db_management.select("Huby", "AdresMAC", ("Nazwa", hub))
-            # print(button.ip_address)# Przypisz adres IP jako atrybut do przycisku
-            button.bind(on_release=self.hub_chosen)  # Przypisz funkcję obsługi zdarzenia przycisku
+            button.bind(on_release=self.hub_chosen)
             grid_layout.add_widget(button)
 
         self.add_widget(grid_layout)
