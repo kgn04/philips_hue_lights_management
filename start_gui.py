@@ -10,6 +10,8 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import ScreenManager, NoTransition, Screen
 from kivy.uix.scrollview import ScrollView
 from kivymd.app import MDApp
+from kivymd.uix.button import MDFillRoundFlatButton
+
 import backend.user_operations as user_operations
 import backend.db_management as db_management
 import backend.hub_operations as hub_operations
@@ -17,6 +19,8 @@ import backend.hub_operations as hub_operations
 from kivy.lang import Builder
 
 Clock.max_iteration = 20
+
+HUBS_AVAILABLE = []
 
 
 def show_popup(title: str, message: str):
@@ -30,7 +34,55 @@ class ScreenStart(Screen):
 
 
 class ScreenAddHub(Screen):
-    pass
+    def add_hub(self):
+        global HUBS_AVAILABLE
+        # HUBS_AVAILABLE = hub_operations.find_hubs()
+        HUBS_AVAILABLE = [("00:11:22:33:44:50", "192.168.1.8"), ("AA:BB:CC:DD:EE:F5", "192.168.1.6")]
+        self.manager.current = 'list'
+
+
+class ScreenListHubs(Screen):
+    def __init__(self, **kwargs):
+        super(ScreenListHubs, self).__init__(**kwargs)
+
+        # Utwórz pionowy układ elementów
+        layout = BoxLayout(orientation='vertical', spacing=40, padding=40, size_hint=(None, None),
+                           pos_hint={'x': 0.2, 'y': 0.4})
+        layout.size = (300, 400)  # Dostosuj rozmiar układu do potrzeb
+        global HUBS_AVAILABLE
+        print(HUBS_AVAILABLE)
+        HUBS_AVAILABLE = [( "192.168.1.8","00:11:22:33:44:50"), ( "192.168.1.6","AA:BB:CC:DD:EE:F5")]
+        print(HUBS_AVAILABLE)
+        for hub in HUBS_AVAILABLE:
+            ip_address = hub[0]
+            mac_address = hub[1]
+
+            # Utwórz układ poziomy dla jednego huba
+            hub_layout = BoxLayout(orientation='horizontal', spacing=80, size_hint=(None, None))
+
+            # Wyświetl adres MAC
+            mac_label = Label(text=f"Adres MAC: {mac_address}", size_hint=(None, None), size=(200, 30),color="deepskyblue")
+            hub_layout.add_widget(mac_label)
+
+            # Wyświetl adres IP
+            ip_label = Label(text=f"Adres IP: {ip_address}", size_hint=(None, None), size=(200, 30),color="deepskyblue")
+            hub_layout.add_widget(ip_label)
+
+            add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(None, None), size=(100, 30), font_size=17,
+                                               theme_text_color="Primary",
+                                               md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1], elevation_normal=10)
+            add_button.hub_mac = mac_address
+            add_button.hub_ip = ip_address
+            add_button.bind(on_release=self.add_hub_to_database)
+            hub_layout.add_widget(add_button)
+
+            layout.add_widget(hub_layout)
+
+        self.add_widget(layout)
+
+    def add_hub_to_database(self, instance):
+        # add_new_hub(hub_ip, hub_mac) ?
+        print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
 
 class ScreenChooseHub(Screen):
@@ -58,7 +110,7 @@ class ScreenChooseHub(Screen):
         global chosen_hub
         chosen_hub = str(instance.mac_address)
         print(chosen_hub)
-        self.manager.current = 'shape'
+        self.manager.current = 'simulator'
 
 
 class ScreenChooseShape(Screen):
@@ -125,6 +177,7 @@ class MyApp(MDApp):
         sm.add_widget(ScreenLogin(name='login'))
         sm.add_widget(ScreenRegister(name='register'))
         sm.add_widget(ScreenAddHub(name='addhub'))
+        sm.add_widget(ScreenListHubs(name='list'))
         sm.add_widget(ScreenChooseHub(name='choose'))
         sm.add_widget(ScreenChooseShape(name='shape'))
         sm.add_widget(ScreenSimulator(name='simulator'))

@@ -4,6 +4,7 @@ ScreenManager:
     ScreenStart:
     ScreenAddHub:
     ScreenChooseHub:
+    ScreenListHubs:
     ScreenChooseShape:
     ScreenLogin:
     ScreenRegister:
@@ -95,7 +96,7 @@ ScreenManager:
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]
                 elevation_normal: 10
-               # on_press: root.register()  # Dodaj funkcję automatycznego łaczenia z hubem
+                on_press: root.add_hub()  # Dodaj funkcję automatycznego łaczenia z hubem
             MDLabel:
                 text: 'Pamiętaj, że żeby dodać huba, \n musisz być w tej samej sieci, co hub'
                 #font_style: 'Button'
@@ -112,6 +113,41 @@ ScreenManager:
                 theme_text_color: "Custom"
                 text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
+<ScreenListHubs>:
+    name: 'list'
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: [30/255, 30/255, 30/255, 1]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        MDLabel:
+            pos_hint: {'x':0, 'y':0.8}
+            text: 'HUBY W TWOJEJ SIECI'
+            font_style: 'Button'
+            font_size: 45
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        MDLabel:
+            text: 'Wybierz huba, by dodać go do bazy'
+            pos_hint: {'x':0, 'y':0.75}
+            #font_style: 'Button'
+            font_size: 16
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 10
+            padding: 10
+            size_hint: (None, None)
+            size: (300, 400)
+            #pos_hint: {'x': 0.3, 'y': 0.5}
+            pos_hint: {'x': 0.3, 'y': 0.5}
 
 <ScreenChooseHub>:
     name: 'choose'
