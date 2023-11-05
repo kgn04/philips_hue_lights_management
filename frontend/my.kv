@@ -210,7 +210,7 @@ ScreenManager:
             height: self.texture_size[1]
             color: [128/255, 0/255, 128/255, 1]
         MDLabel:
-            text: 'Wybierz jedną z możliwości ustawienia kasetonów by przejść dalej'
+            text: 'Wybierz jedną z możliwości ustawienia kasetonów i nadaj mu nazwę, by przejść dalej'
             pos_hint: {'x':0, 'y':0.75}
             #font_style: 'Button'
             font_size: 16
@@ -224,6 +224,32 @@ ScreenManager:
             size_hint: 1, 1/6
             height: 100
             pos_hint: {'x': 0.3, 'y': 0.5}
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: 100
+            padding: 20  # Zwiększenie odstępu
+            size_hint: (None, None)
+            size: (800, 100)  # Zwiększenie wysokości
+            pos_hint: {'x': 0.3, 'y': 0.2}
+            MDTextField:
+                id: hub_name_input
+                mode : "rectangle"
+                spacing: 20
+                width: 300
+                text_color_normal: (1,1,1,1)
+                line_color_normal: app.theme_cls.primary_color
+                hint_text_color_normal: app.theme_cls.primary_color
+                hint_text: 'Wprowadź nazwę huba'
+                size_hint: (None, None)
+            MDFillRoundFlatButton:
+                text: 'Dodaj Huba'
+                size_hint: (None, None)
+                spacing: 20
+                font_size: 17
+                theme_text_color: "Primary"
+                md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
+                elevation_normal: 10
+                #on_release: root.add_hub()
 
 <ScreenLogin>:
     name: 'login'

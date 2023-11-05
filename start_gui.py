@@ -69,7 +69,7 @@ class ScreenListHubs(Screen):
                                                md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1], elevation_normal=10)
             add_button.hub_mac = mac_address
             add_button.hub_ip = ip_address
-            add_button.bind(on_release=self.add_hub_to_database)
+            add_button.bind(on_release=self.choose_shape_add_name)
             hub_layout.add_widget(add_button)
 
             layout.add_widget(hub_layout)
@@ -82,9 +82,10 @@ class ScreenListHubs(Screen):
         hubs_available = [("00:11:22:33:44:50", "192.168.1.8"), ("AA:BB:CC:DD:EE:F5", "192.168.1.6")]
         return hubs_available
 
-    def add_hub_to_database(self, instance):
+    def choose_shape_add_name(self, instance):
         # add new hub ?
-        # dodawanie huba do bazy danych
+        # przekierowanie do ekraniu ScreenChooseShape
+        self.manager.current = 'shape'
         print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
 
