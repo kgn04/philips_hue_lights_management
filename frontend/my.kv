@@ -219,11 +219,12 @@ ScreenManager:
             height: self.texture_size[1]
             color: [128/255, 0/255, 128/255, 1]
         GridLayout:
-            cols: 7
-            spacing: 30
+            id: checkboxes_layout
+            cols: 2
             size_hint: 1, 1/6
-            height: 100
-            pos_hint: {'x': 0.3, 'y': 0.5}
+            height: 200
+            #size_hint: 1, 1/6
+            pos_hint: {'x': 0.2, 'y': 0.5}
         BoxLayout:
             orientation: 'horizontal'
             spacing: 100
@@ -250,6 +251,7 @@ ScreenManager:
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
                 #on_release: root.add_hub()
+
 
 <ScreenLogin>:
     name: 'login'

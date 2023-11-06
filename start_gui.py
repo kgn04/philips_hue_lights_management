@@ -3,6 +3,7 @@ import sys
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.checkbox import CheckBox
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
@@ -119,7 +120,45 @@ class ScreenChooseHub(Screen):
 
 
 class ScreenChooseShape(Screen):
-    pass
+    def __init__(self, **kwargs):
+        super(ScreenChooseShape, self).__init__(**kwargs)
+        # Pobierz dane z bazy lub przykładowe dane (ilość możliwych kombinacji siatek)
+        data_from_database = [
+            {"label": "4x4", "selected": False},
+            {"label": "2x8", "selected": False},
+            {"label": "6x6", "selected": False},
+            {"label": "4x4", "selected": False},
+            {"label": "2x8", "selected": False},
+            {"label": "6x6", "selected": False},
+            {"label": "4x4", "selected": False},
+            {"label": "2x8", "selected": False},
+            {"label": "6x6", "selected": False},
+            {"label": "4x4", "selected": False},
+            {"label": "2x8", "selected": False},
+            {"label": "6x6", "selected": False},
+        ]
+
+        # Wyczyść aktualne checkboxy (jeśli istnieją)
+        checkboxes_layout = GridLayout(cols=6, pos_hint={'x': 0, 'y': 0.45}, height=200,size_hint= (1, 1/4))
+
+        # Wygeneruj dynamicznie checkboxy i ich opisy na podstawie danych
+        for item in data_from_database:
+            checkbox = CheckBox(size=(20, 20),width=50,height=50)
+            checkbox.active = item["selected"]
+
+            label = Label(text=item["label"])
+            checkboxes_layout.add_widget(checkbox)
+            checkboxes_layout.add_widget(label)
+
+        self.add_widget(checkboxes_layout)
+
+        for item in data_from_database:
+            checkbox.bind(active=self.checkbox_changed)
+
+    def checkbox_changed(self, instance, value):
+        pass
+    # Funkcja obsługi zdarzenia po zaznaczeniu checkboxa
+    # print(f"Checkbox z tekstem '{instance.parent.children[1].text}' został zaznaczony: {value}")
 
 
 class ScreenLogin(Screen):
