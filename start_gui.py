@@ -105,7 +105,7 @@ class ScreenChooseHub(Screen):
         hub_data = db_management.select_all("Huby", "Nazwa")
         print(hub_data)
 
-        grid_layout = GridLayout(cols=7, spacing=30, size_hint=(1, 1 / 6), pos_hint={'x': 0.3, 'y': 0.5})
+        grid_layout = GridLayout(cols=7, spacing=30, size_hint=(1, 1 / 6), pos_hint={'x': 0.3, 'y': 0.4})
 
         for hub in hub_data:
             button = Button(text=hub, size_hint=(None, None), size=(100, 100))
@@ -231,7 +231,7 @@ class MyApp(MDApp):
     def build(self):
         Config.set('graphics', 'resizable', False)
         # load_file can be called multiple times
-        self.root = Builder.load_file(r"/Users/kacper/Desktop/PRACA/lights/frontend/my.kv")
+        self.root = Builder.load_file(r"/Users/weron/PyCharmProjects/lights/frontend/my.kv")
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(ScreenStart(name='start'))
         sm.add_widget(ScreenLogin(name='login'))

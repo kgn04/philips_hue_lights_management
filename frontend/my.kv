@@ -67,6 +67,7 @@ ScreenManager:
 <ScreenAddHub>:
     name: 'addhub'
     FloatLayout:
+        spacing:20
         canvas.before:
             Color:
                 rgba: [30/255, 30/255, 30/255, 1]
@@ -115,6 +116,7 @@ ScreenManager:
 <ScreenListHubs>:
     name: 'list'
     FloatLayout:
+        spacing:20
         canvas.before:
             Color:
                 rgba: [30/255, 30/255, 30/255, 1]
@@ -143,16 +145,17 @@ ScreenManager:
             color: [128/255, 0/255, 128/255, 1]
         BoxLayout:
             orientation: 'vertical'
-            spacing: 20
+            spacing: 60
             padding: 20
             size_hint: (3/4,3/4)
            # size: (300, 400)
             #pos_hint: {'x': 0.3, 'y': 0.5}
-            pos_hint: {'x': 0.3, 'y': 0.5}
+            pos_hint: {'x': 0.3, 'y': 0.4}
 
 <ScreenChooseHub>:
     name: 'choose'
     FloatLayout:
+        spacing:20
         canvas.before:
             Color:
                 rgba: [30/255, 30/255, 30/255, 1]
@@ -170,7 +173,7 @@ ScreenManager:
             color: [128/255, 0/255, 128/255, 1]
         MDLabel:
             text: 'Upewnij się, że wybrany hub jest w tej samej sieci, co twoje urządzenie'
-            pos_hint: {'x':0, 'y':0.75}
+            pos_hint: {'x':0, 'y':0.7}
             #font_style: 'Button'
             #font_size: 16
             halign: "center"
@@ -190,12 +193,13 @@ ScreenManager:
             spacing: 30
             size_hint: 1, 1/6
             #height: 100
-            pos_hint: {'x': 0.3, 'y': 0.5}
+            pos_hint: {'x': 0.3, 'y': 0.45}
 
 <ScreenChooseShape>:
     name: 'shape'
     #hub_data: self.hub_data
     FloatLayout:
+        spacing:20
         canvas.before:
             Color:
                 rgba: [30/255, 30/255, 30/255, 1]
@@ -226,21 +230,21 @@ ScreenManager:
             size_hint: 1, 1/6
             #height: 200
             #size_hint: 1, 1/6
-            pos_hint: {'x': 0.2, 'y': 0.5}
+            pos_hint: {'x': 0.2, 'y': 0.55}
         BoxLayout:
             orientation: 'horizontal'
             spacing: 100
             padding: 50  # Zwiększenie odstępu
-            size_hint: (1/2,1/2)
+            size_hint: 2/3,1/2
             #size: (800, 100)  # Zwiększenie wysokości
-            pos_hint: {'x': 0.3, 'y': 0.2}
+            pos_hint: {'x': 0.2, 'y': 0.2}
             MDTextField:
                 id: hub_name_input
                 mode : "rectangle"
                 spacing: 20
                # size_hint_x: None
                 #width: 280
-                size_hint: 0.2,0.2
+                size_hint: 0.4,0.25
                 #width: 300
                 text_color_normal: (1,1,1,1)
                 line_color_normal: app.theme_cls.primary_color
@@ -276,7 +280,7 @@ ScreenManager:
         spacing: 30
         BoxLayout:
             orientation: 'vertical'
-            spacing: 20
+            spacing: 30
             #padding_top: dp(10)
             BoxLayout:  # Dodaj pusty BoxLayout jako odstęp
                 size_hint_y: None
@@ -361,7 +365,7 @@ ScreenManager:
             orientation: 'vertical'
             spacing: 30
             #pos_hint: 'center'
-            pos_hint: {"center_y": .6}
+            pos_hint: {"center_y": .5}
 
 
             MDLabel:
