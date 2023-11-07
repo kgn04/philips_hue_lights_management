@@ -25,9 +25,9 @@ Clock.max_iteration = 20
 
 
 def show_popup(title: str, message: str):
-    popup = Popup(title=title, content=Label(text=message), size_hint=(None, None), size=(400, 200))
+    popup = Popup(title=title, content=Label(text=message), size_hint=(1/2, 1/4))
     popup.open()
-    Clock.schedule_once(popup.dismiss, 2)
+    Clock.schedule_once(popup.dismiss, 1)
 
 
 class ScreenStart(Screen):
@@ -45,9 +45,9 @@ class ScreenListHubs(Screen):
     def __init__(self, **kwargs):
         super(ScreenListHubs, self).__init__(**kwargs)
 
-        layout = BoxLayout(orientation='vertical', spacing=40, padding=40, size_hint=(None, None),
-                           pos_hint={'x': 0.2, 'y': 0.4})
-        layout.size = (300, 400)
+        layout = BoxLayout(orientation='vertical', spacing=40, padding=40,
+                           pos_hint={'x': 0.1, 'y': 0.4}, size_hint=(3/4,1/2))
+        #layout.size = (300, 400)
 
         hubs_available = self.find_hubs_to_add()
         for hub in hubs_available:
@@ -55,19 +55,19 @@ class ScreenListHubs(Screen):
             mac_address = hub[1]
 
             # układ poziomy dla jednego huba
-            hub_layout = BoxLayout(orientation='horizontal', spacing=80, size_hint=(None, None))
+            hub_layout = BoxLayout(orientation='horizontal', spacing=70, size_hint=(1,3/4))
 
             # adres MAC
-            mac_label = Label(text=f"Adres MAC: {mac_address}", size_hint=(None, None), size=(200, 30),
+            mac_label = Label(text=f"Adres MAC: {mac_address}", size_hint=(1/3,1/10),
                               color="deepskyblue")
             hub_layout.add_widget(mac_label)
 
             #  adres IP
-            ip_label = Label(text=f"Adres IP: {ip_address}", size_hint=(None, None), size=(200, 30),
+            ip_label = Label(text=f"Adres IP: {ip_address}", size_hint=(1/3,1/10),
                              color="deepskyblue")
             hub_layout.add_widget(ip_label)
 
-            add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(None, None), size=(100, 30), font_size=17,
+            add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(1/5,1/3),
                                                theme_text_color="Primary",
                                                md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1], elevation_normal=10)
             add_button.hub_mac = mac_address

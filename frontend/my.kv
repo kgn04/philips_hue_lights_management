@@ -34,14 +34,14 @@ ScreenManager:
             MDLabel:
                 text: 'LIGHTS'
                 font_style: 'Button'
-                font_size: 45
+                font_size: 50
                 halign: "center"
                 color: app.theme_cls.primary_color  # niebieski kolor tekstu
             MDFillRoundFlatButton:
                 text: 'DODAJ HUBA'
                 pos_hint: {"center_x": .5,"center_y": .1}
                 spacing: 20
-                font_size: 18
+                #font_size: 18
                 theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
@@ -50,14 +50,14 @@ ScreenManager:
                 text: 'ZALOGUJ SIĘ'
                 pos_hint: {"center_x": .5,"center_y": .2}
                 spacing: 20
-                font_size: 18
+                #font_size: 18
                 theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
                 on_press: root.manager.current = 'login'
             MDTextButton:
                 text: "Nie masz konta? Zarejestruj się"
-                font_size: 16
+                #font_size: 16
                 height: self.texture_size[1] + dp(40)
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5,"center_y": .5}
@@ -81,7 +81,7 @@ ScreenManager:
             MDLabel:
                 text: 'DODAWANIE HUBA'
                 font_style: 'Button'
-                font_size: 45
+                font_size: 50
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
@@ -91,24 +91,24 @@ ScreenManager:
                 text: 'DODAJ AUTOMATYCZNIE'
                 pos_hint: {"center_x": .5}
                 spacing: 20
-                font_size: 17
+                #font_size: 17
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]
                 elevation_normal: 10
                 on_press: root.add_hub()  # Dodaj funkcję automatycznego łaczenia z hubem
             MDLabel:
                 text: 'Pamiętaj, że żeby dodać huba, \n musisz być w tej samej sieci, co hub'
-                #font_style: 'Button'
-                font_size: 16
+                text_size: root.width, self.texture_size[1]
+                #size: self.texture_size
                 halign: "center"
                 size_hint_y: None
-                height: self.texture_size[1]
+                #height: self.texture_size[1]
                 color: [128/255, 0/255, 128/255, 1]
             MDIconButton:
                 icon: "keyboard-backspace"
                 pos_hint: {"center_x": .5}
                 spacing: 0
-                font_size: 13
+                #font_size: 13
                 theme_text_color: "Custom"
                 text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
@@ -125,26 +125,28 @@ ScreenManager:
             pos_hint: {'x':0, 'y':0.8}
             text: 'HUBY W TWOJEJ SIECI'
             font_style: 'Button'
-            font_size: 45
+            font_size: 50
             halign: "center"
             size_hint_y: None
-            height: self.texture_size[1]
+            #height: self.texture_size[1]
             color: [128/255, 0/255, 128/255, 1]
         MDLabel:
             text: 'Wybierz huba, by dodać go do bazy'
+            text_size: root.width, None
+            size: self.texture_size
             pos_hint: {'x':0, 'y':0.75}
             #font_style: 'Button'
-            font_size: 16
+            #font_size: 16
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
             color: [128/255, 0/255, 128/255, 1]
         BoxLayout:
             orientation: 'vertical'
-            spacing: 10
-            padding: 10
-            size_hint: (None, None)
-            size: (300, 400)
+            spacing: 20
+            padding: 20
+            size_hint: (3/4,3/4)
+           # size: (300, 400)
             #pos_hint: {'x': 0.3, 'y': 0.5}
             pos_hint: {'x': 0.3, 'y': 0.5}
 
@@ -170,7 +172,7 @@ ScreenManager:
             text: 'Upewnij się, że wybrany hub jest w tej samej sieci, co twoje urządzenie'
             pos_hint: {'x':0, 'y':0.75}
             #font_style: 'Button'
-            font_size: 16
+            #font_size: 16
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
@@ -179,7 +181,7 @@ ScreenManager:
             icon: "keyboard-backspace"
             pos_hint: {'x':0.45, 'y':0.3}
             spacing: 0
-            font_size: 13
+            #font_size: 13
             theme_text_color: "Custom"
             text_color: "deepskyblue"
             on_press: root.manager.current = 'start'
@@ -204,7 +206,7 @@ ScreenManager:
             pos_hint: {'x':0, 'y':0.8}
             text: 'DOSTĘPNE SIATKI'
             font_style: 'Button'
-            font_size: 45
+            font_size: 50
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
@@ -213,7 +215,7 @@ ScreenManager:
             text: 'Wybierz jedną z możliwości ustawienia kasetonów i nadaj mu nazwę, by przejść dalej'
             pos_hint: {'x':0, 'y':0.75}
             #font_style: 'Button'
-            font_size: 16
+            #font_size: 16
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
@@ -228,7 +230,7 @@ ScreenManager:
         BoxLayout:
             orientation: 'horizontal'
             spacing: 100
-            padding: 20  # Zwiększenie odstępu
+            padding: 50  # Zwiększenie odstępu
             size_hint: (1/2,1/2)
             #size: (800, 100)  # Zwiększenie wysokości
             pos_hint: {'x': 0.3, 'y': 0.2}
@@ -247,8 +249,8 @@ ScreenManager:
             MDFillRoundFlatButton:
                 text: 'Dodaj Huba'
                 size_hint: (None, None)
-                spacing: 20
-                font_size: 17
+                spacing: 30
+                #font_size: 17
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
@@ -270,19 +272,19 @@ ScreenManager:
         #size: self.size
         pos_hint: {"center_x": .5, "center_y": .5}
         elevation: 5
-        padding: 20
+        padding: 30
         spacing: 30
         BoxLayout:
             orientation: 'vertical'
-            spacing: 15
+            spacing: 20
             #padding_top: dp(10)
             BoxLayout:  # Dodaj pusty BoxLayout jako odstęp
                 size_hint_y: None
-                height: dp(35)
+                height: dp(50)
             MDLabel:
                 text: 'LOGOWANIE'
                 font_style: 'Button'
-                font_size: 45
+                font_size: 50
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
@@ -299,7 +301,7 @@ ScreenManager:
                 size_hint_x: None
                 #width: 280
                 size_hint: 3/4, None
-                font_size: 20
+                #font_size: 20
                 pos_hint: {"center_x": .5}
             MDTextField:
                 id: password
@@ -314,7 +316,7 @@ ScreenManager:
                 size_hint_x: None
                 size_hint: 3/4, None
                 #width: 280
-                font_size: 20
+                #font_size: 20
                 pos_hint: {"center_x": .5}
                 password: True
             MDFillRoundFlatButton:
@@ -324,7 +326,7 @@ ScreenManager:
                 text: 'ZALOGUJ SIĘ'
                 pos_hint: {"center_x": .5}
                 spacing: 20
-                font_size: 17
+                #font_size: 17
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
@@ -332,7 +334,7 @@ ScreenManager:
                 #on_press: root.manager.current = 'simulator'
             MDTextButton:
                 text: "Nie masz konta? Zarejestruj się"
-                font_size: 16
+                #font_size: 16
                 height: self.texture_size[1] + dp(20)
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5}
@@ -341,7 +343,7 @@ ScreenManager:
                 icon: "keyboard-backspace"
                 pos_hint: {"center_x": .5}
                 spacing: 0
-                font_size: 13
+                #font_size: 13
                 theme_text_color: "Custom"
                 text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
@@ -357,7 +359,7 @@ ScreenManager:
                 size: self.size
         BoxLayout:
             orientation: 'vertical'
-            spacing: 20
+            spacing: 30
             #pos_hint: 'center'
             pos_hint: {"center_y": .6}
 
@@ -365,7 +367,7 @@ ScreenManager:
             MDLabel:
                 text: 'REJESTRACJA'
                 font_style: 'Button'
-                font_size: 45
+                font_size: 50
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
@@ -383,7 +385,7 @@ ScreenManager:
                 size_hint_x: None
                 #width: 280
                 size_hint: 1/2, None
-                font_size: 20
+                #font_size: 20
                 pos_hint: {"center_x": .5}
 
             MDTextField:
@@ -399,7 +401,7 @@ ScreenManager:
                 size_hint_x: None
                 #width: 280
                 size_hint: 1/2, None
-                font_size: 20
+                #font_size: 20
                 pos_hint: {"center_x": .5}
 
             MDTextField:
@@ -415,7 +417,7 @@ ScreenManager:
                 size_hint_x: None
                 #width: 280
                 size_hint: 1/2, None
-                font_size: 20
+                #font_size: 20
                 pos_hint: {"center_x": .5}
                 password: True
 
@@ -432,7 +434,7 @@ ScreenManager:
                 size_hint_x: None
                 #width: 280
                 size_hint: 1/2, None
-                font_size: 20
+                #font_size: 20
                 pos_hint: {"center_x": .5}
                 password: True
 
@@ -441,7 +443,7 @@ ScreenManager:
                 text: 'ZAREJESTRUJ SIĘ'
                 pos_hint: {"center_x": .5}
                 spacing: 20
-                font_size: 17
+                #font_size: 17
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]
                 elevation_normal: 10
@@ -449,7 +451,7 @@ ScreenManager:
 
             MDTextButton:
                 text: "Masz już konto? Zaloguj się"
-                font_size: 16
+                #font_size: 16
                 height: self.texture_size[1] + dp(20)
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5}
@@ -459,7 +461,7 @@ ScreenManager:
                 icon: "keyboard-backspace"
                 pos_hint: {"center_x": .5}
                 spacing: 0
-                font_size: 13
+                #font_size: 13
                 theme_text_color: "Custom"
                 text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
