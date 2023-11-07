@@ -21,6 +21,10 @@ import backend.hub_operations as hub_operations
 
 from kivy.lang import Builder
 
+from kivy.config import Config
+Config.set('graphics', 'resizable', False)
+Config.write()
+
 Clock.max_iteration = 20
 
 
@@ -227,7 +231,7 @@ class MyApp(MDApp):
     def build(self):
         Config.set('graphics', 'resizable', False)
         # load_file can be called multiple times
-        self.root = Builder.load_file(r"C:\Users\weron\PycharmProjects\lights\frontend\my.kv")
+        self.root = Builder.load_file(r"/Users/kacper/Desktop/PRACA/lights/frontend/my.kv")
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(ScreenStart(name='start'))
         sm.add_widget(ScreenLogin(name='login'))

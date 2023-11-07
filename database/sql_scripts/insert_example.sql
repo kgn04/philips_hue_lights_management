@@ -1,7 +1,7 @@
-INSERT INTO Huby (AdresMAC, AdresIP, LoginH, Rzedy, Kolumny) VALUES
-    ('00:11:22:33:44:55', '192.168.1.1', 'HubyUser1',4, 4),
-    ('AA:BB:CC:DD:EE:FF', '192.168.1.2', 'HubyUser2', 1, 6),
-    ('12:34:56:78:90:AB', '192.168.1.3', 'HubyUser3', 0, 0);
+INSERT INTO Huby (AdresMAC, AdresIP, LoginH, Nazwa, Rzedy, Kolumny) VALUES
+    ('00:11:22:33:44:55', '192.168.1.1', 'HubyUser1', 'Salon', 4, 4),
+    ('AA:BB:CC:DD:EE:FF', '192.168.1.2', 'HubyUser2', 'Korytarz', 1, 6),
+    ('12:34:56:78:90:AB', '192.168.1.3', 'HubyUser3', 'Kuchnia', 0, 0);
 
 INSERT INTO Uzytkownicy (Email, Username, Haslo) VALUES
     ('user1@example.com', 'User1', 'password1'),
