@@ -1,5 +1,6 @@
 import sys
 
+from kivy import Config
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -16,6 +17,7 @@ from kivymd.uix.button import MDFillRoundFlatButton
 import backend.user_operations as user_operations
 import backend.db_management as db_management
 import backend.hub_operations as hub_operations
+
 
 from kivy.lang import Builder
 
@@ -86,6 +88,7 @@ class ScreenListHubs(Screen):
     def choose_shape_add_name(self, instance):
         # add new hub ?
         # przekierowanie do ekraniu ScreenChooseShape
+        self.manager.add_widget(ScreenChooseShape( name='shape'))
         self.manager.current = 'shape'
         print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
@@ -98,7 +101,7 @@ class ScreenChooseHub(Screen):
         hub_data = db_management.select_all("Huby", "Nazwa")
         print(hub_data)
 
-        grid_layout = GridLayout(cols=7, spacing=30, size_hint=(1, 1 / 6), height=100, pos_hint={'x': 0.3, 'y': 0.5})
+        grid_layout = GridLayout(cols=7, spacing=30, size_hint=(1, 1 / 6), pos_hint={'x': 0.3, 'y': 0.5})
 
         for hub in hub_data:
             button = Button(text=hub, size_hint=(None, None), size=(100, 100))
@@ -120,9 +123,10 @@ class ScreenChooseHub(Screen):
 
 
 class ScreenChooseShape(Screen):
-    def __init__(self, **kwargs):
-        super(ScreenChooseShape, self).__init__(**kwargs)
-        # Pobierz dane z bazy lub przykładowe dane (ilość możliwych kombinacji siatek)
+    def __init__(self,  **kw):
+        #  super(ScreenChooseShape, self, hub_data,).__init__(**kwargs)
+        super(ScreenChooseShape,self).__init__(**kw)
+        #self.hub_data = hub_data  # Pobierz dane z bazy lub przykładowe dane (ilość możliwych kombinacji siatek)
         data_from_database = [
             {"label": "4x4", "selected": False},
             {"label": "2x8", "selected": False},
@@ -139,11 +143,11 @@ class ScreenChooseShape(Screen):
         ]
 
         # Wyczyść aktualne checkboxy (jeśli istnieją)
-        checkboxes_layout = GridLayout(cols=6, pos_hint={'x': 0, 'y': 0.45}, height=200,size_hint= (1, 1/4))
+        checkboxes_layout = GridLayout(cols=6, pos_hint={'x': 0, 'y': 0.45}, height=200, size_hint=(1, 1 / 4))
 
         # Wygeneruj dynamicznie checkboxy i ich opisy na podstawie danych
         for item in data_from_database:
-            checkbox = CheckBox(size=(20, 20),width=50,height=50)
+            checkbox = CheckBox(size=(20, 20), width=50, height=50)
             checkbox.active = item["selected"]
 
             label = Label(text=item["label"])
@@ -157,8 +161,15 @@ class ScreenChooseShape(Screen):
 
     def checkbox_changed(self, instance, value):
         pass
+
     # Funkcja obsługi zdarzenia po zaznaczeniu checkboxa
     # print(f"Checkbox z tekstem '{instance.parent.children[1].text}' został zaznaczony: {value}")
+
+    def add_hub_to_database(self):
+        db_management.insert("Huby", ())
+
+
+# ScreenIdentifyShape
 
 
 class ScreenLogin(Screen):
@@ -214,6 +225,7 @@ class ScreenSimulator(Screen):
 class MyApp(MDApp):
 
     def build(self):
+        Config.set('graphics', 'resizable', False)
         # load_file can be called multiple times
         self.root = Builder.load_file(r"C:\Users\weron\PycharmProjects\lights\frontend\my.kv")
         sm = ScreenManager(transition=NoTransition())
@@ -223,7 +235,7 @@ class MyApp(MDApp):
         sm.add_widget(ScreenAddHub(name='addhub'))
         # sm.add_widget(ScreenListHubs(name='list'))
         sm.add_widget(ScreenChooseHub(name='choose'))
-        sm.add_widget(ScreenChooseShape(name='shape'))
+        # sm.add_widget(ScreenChooseShape(name='shape'))
         sm.add_widget(ScreenSimulator(name='simulator'))
         print(sys.path)
         return sm

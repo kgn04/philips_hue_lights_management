@@ -22,8 +22,8 @@ ScreenManager:
             #source: 'gradient.jpg'
     MDCard:
         md_bg_color: [30/255, 30/255, 30/255, 1]  # Czarny kolor tła karty
-        size_hint: None, None
-        size: 420, 500
+        size_hint: 0.45,0.6
+        #size: 420, 500
         pos_hint: {"center_x": .5, "center_y": .5}
         elevation: 5
         padding: 20
@@ -35,7 +35,6 @@ ScreenManager:
                 text: 'LIGHTS'
                 font_style: 'Button'
                 font_size: 45
-
                 halign: "center"
                 color: app.theme_cls.primary_color  # niebieski kolor tekstu
             MDFillRoundFlatButton:
@@ -188,11 +187,12 @@ ScreenManager:
             cols: 7
             spacing: 30
             size_hint: 1, 1/6
-            height: 100
+            #height: 100
             pos_hint: {'x': 0.3, 'y': 0.5}
 
 <ScreenChooseShape>:
     name: 'shape'
+    #hub_data: self.hub_data
     FloatLayout:
         canvas.before:
             Color:
@@ -222,26 +222,28 @@ ScreenManager:
             id: checkboxes_layout
             cols: 2
             size_hint: 1, 1/6
-            height: 200
+            #height: 200
             #size_hint: 1, 1/6
             pos_hint: {'x': 0.2, 'y': 0.5}
         BoxLayout:
             orientation: 'horizontal'
             spacing: 100
             padding: 20  # Zwiększenie odstępu
-            size_hint: (None, None)
-            size: (800, 100)  # Zwiększenie wysokości
+            size_hint: (1/2,1/2)
+            #size: (800, 100)  # Zwiększenie wysokości
             pos_hint: {'x': 0.3, 'y': 0.2}
             MDTextField:
                 id: hub_name_input
                 mode : "rectangle"
                 spacing: 20
-                width: 300
+               # size_hint_x: None
+                #width: 280
+                size_hint: 0.2,0.2
+                #width: 300
                 text_color_normal: (1,1,1,1)
                 line_color_normal: app.theme_cls.primary_color
                 hint_text_color_normal: app.theme_cls.primary_color
                 hint_text: 'Wprowadź nazwę huba'
-                size_hint: (None, None)
             MDFillRoundFlatButton:
                 text: 'Dodaj Huba'
                 size_hint: (None, None)
@@ -263,8 +265,9 @@ ScreenManager:
             size: self.size
     MDCard:
         md_bg_color: [30/255, 30/255, 30/255, 1]  # Czarny kolor tła karty
-        size_hint: None, None
-        size: 420, 510
+        size_hint: 0.5,0.7
+        #size: 420, 510
+        #size: self.size
         pos_hint: {"center_x": .5, "center_y": .5}
         elevation: 5
         padding: 20
@@ -294,7 +297,8 @@ ScreenManager:
                 icon_right_color_normal : app.theme_cls.primary_color
                 icon_right: "account"
                 size_hint_x: None
-                width: 280
+                #width: 280
+                size_hint: 3/4, None
                 font_size: 20
                 pos_hint: {"center_x": .5}
             MDTextField:
@@ -308,7 +312,8 @@ ScreenManager:
                 hint_text: "hasło"
                 icon_right: "eye-off"
                 size_hint_x: None
-                width: 280
+                size_hint: 3/4, None
+                #width: 280
                 font_size: 20
                 pos_hint: {"center_x": .5}
                 password: True
@@ -376,7 +381,8 @@ ScreenManager:
                 icon_right_color_normal : app.theme_cls.primary_color
                 icon_right: "account"
                 size_hint_x: None
-                width: 280
+                #width: 280
+                size_hint: 1/2, None
                 font_size: 20
                 pos_hint: {"center_x": .5}
 
@@ -391,7 +397,8 @@ ScreenManager:
                 hint_text: "adres e-mail"
                 icon_right: "email"
                 size_hint_x: None
-                width: 280
+                #width: 280
+                size_hint: 1/2, None
                 font_size: 20
                 pos_hint: {"center_x": .5}
 
@@ -406,7 +413,8 @@ ScreenManager:
                 hint_text: "hasło"
                 icon_right: "eye-off"
                 size_hint_x: None
-                width: 280
+                #width: 280
+                size_hint: 1/2, None
                 font_size: 20
                 pos_hint: {"center_x": .5}
                 password: True
@@ -422,7 +430,8 @@ ScreenManager:
                 hint_text: "potwierdź hasło"
                 icon_right: "eye-off"
                 size_hint_x: None
-                width: 280
+                #width: 280
+                size_hint: 1/2, None
                 font_size: 20
                 pos_hint: {"center_x": .5}
                 password: True
