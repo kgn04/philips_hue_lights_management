@@ -1,4 +1,5 @@
 from sqlite3 import connect, OperationalError
+from json import load
 
 attributes: dict[str, str] = {
     'Huby': '(AdresMAC, AdresIP, LoginH, Nazwa, Rzedy, Kolumny)',
@@ -9,9 +10,12 @@ attributes: dict[str, str] = {
     'Przypisania': '(IdGr, IdK)'
 }
 
+DB_ABS_PATH = 'C:/Users/Kacper/PycharmProjects/lights/database'
+
 
 def connect_to_db() -> tuple:
-    connection = connect('/Users/kacper/Desktop/PRACA/lights/database/alpha.db')
+    global DB_ABS_PATH
+    connection = connect(f'{DB_ABS_PATH}/alpha.db')
     return connection, connection.cursor()
 
 
@@ -23,7 +27,8 @@ def disconnect_from_db(connection, cursor) -> None:
 
 def run_sql_script(script_name) -> None:
     connection, cursor = connect_to_db()
-    with open(f'/Users/kacper/Desktop/PRACA/lights/database/sql_scripts/{script_name}.sql', 'r') as sql_file:
+    global DB_ABS_PATH
+    with open(f'{DB_ABS_PATH}/sql_scripts/{script_name}.sql', 'r') as sql_file:
         cursor.executescript(sql_file.read())
     disconnect_from_db(connection, cursor)
 
@@ -120,8 +125,6 @@ def print_db():
 
 
 if __name__ == '__main__':
-    init_db()
-    insert_example()
     # insert('Kasetony', (4, 2, 1, 64, 64, 64, 196, '00:11:22:33:44:55'))
     # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user3@example.com'))
     # update('Uzytkownicy', ('AdresMAC', 'AA:BB:CC:DD:EE:FF'), ('LoginU', 'User3'))

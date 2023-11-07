@@ -7,7 +7,6 @@ GROUP_DOES_NOT_EXIST = 2
 LIGHT_ALREADY_IN_GROUP = 3
 LIGHT_NOT_IN_GROUP = 4
 
-
 current_hub_login: str = ''
 current_hub_ip: str = ''
 request_prefix: str = ''
@@ -51,6 +50,3 @@ def __change_current_hub_2(mac_address: str) -> None:
     current_hub_login = db_management.select('Huby', 'loginH', ('AdresMAC', mac_address))
     current_hub_ip = db_management.select('Huby', 'AdresIP', ('AdresMAC', mac_address))
     request_prefix = f'http://{current_hub_ip}/api/{current_hub_login}'
-
-
-# print(db_management.select_all('Huby', 'AdresMAC'))

@@ -8,6 +8,7 @@ from sys import platform
 from time import sleep
 from backend.lights_operations import __change_current_hub_1, identify_light
 from backend.groups_operations import __change_current_hub_2
+from multiprocessing import Pool
 
 OPERATION_SUCCESSFUL = 0
 NO_HUB_IN_NETWORK = 1
@@ -16,17 +17,24 @@ TIMEOUT = 2
 RESPONSE_BUTTON_NOT_PRESSED = '[{"error":{"type":101,"address":"","description":"link button not pressed"}}]'
 
 
-def find_hubs() -> list[tuple[str, str]]:
+def __is_it_hub(ip_address: str):
+    try:
+        if get(url=f'http://{ip_address}/api/newdeveloper.', timeout=1, allow_redirects=False).text \
+                == '[{"error":{"type":1,"address":"/","description":"unauthorized user"}}]':
+            return ip_address
+    except ConnectTimeout:
+        return None
+
+
+def find_hubs() -> list[tuple[str, str]]: # Might take about 10 seconds
     ip_network_prefix = gethostbyname(gethostname())[:gethostbyname(gethostname()).rfind('.')] + '.'
     result = []
-    for i in range(254):  # TODO multiprocessing
-        try:
-            if get(url=f'http://172.31.0.{i+1}/api/newdeveloper.', timeout=1, allow_redirects=False).text == '[{"error":{"type":1,"address":"/","description":"unauthorized user"}}]':
-                ip_address = ip_network_prefix + str(i+1)
-                mac_address = __get_mac_address(ip_address)
-                result.append((ip_address, mac_address))
-        except ConnectTimeout:
-            pass
+    ips_to_check = [ip_network_prefix+str(i+1) for i in range(254)]
+    with Pool(processes=32) as pool:
+        hubs_ips = [ip for ip in pool.map(__is_it_hub, ips_to_check) if ip is not None]
+    for ip in hubs_ips:
+        mac_address = __get_mac_address(ip)
+        result.append((ip, mac_address))
     return result
 
 
@@ -46,10 +54,10 @@ def identify_lights(mac_address: str) -> None:
         db_management.update('Kasetony', ('Kolumna', column), ('IdK', light_id))
 
 
-def __get_login(ip_address: str, ):
+def __get_login(ip_address: str):
     timeout = 60  # After using this method user has 60 seconds to press link button on the hub
     while timeout > 0:
-        response = post(url=f'http://{ip_address}/api', json={"devicetype":"lights_app#admin"}).text
+        response = post(url=f'http://{ip_address}/api', json={"devicetype": "lights_app#admin"}).text
         if response != RESPONSE_BUTTON_NOT_PRESSED:
             return response.split('"')[-2]
         sleep(1)
@@ -76,3 +84,7 @@ def change_current_hub(mac_address: str) -> None:
 
 def lights_count(mac_address: str):
     return len(db_management.select('Kasetony', 'IdK', ('AdresMAC', mac_address)))
+
+
+if __name__ == '__main__':
+    print(find_hubs())

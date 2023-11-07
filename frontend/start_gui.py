@@ -1,6 +1,5 @@
 import sys
 
-from kivy import Config
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -14,9 +13,8 @@ from kivy.uix.scrollview import ScrollView
 from kivymd.app import MDApp
 from kivymd.uix.button import MDFillRoundFlatButton
 
-import backend.user_operations as user_operations
-import backend.db_management as db_management
-import backend.hub_operations as hub_operations
+from backend import user_operations, db_management, hub_operations
+
 
 
 from kivy.lang import Builder
@@ -231,7 +229,7 @@ class MyApp(MDApp):
     def build(self):
         Config.set('graphics', 'resizable', False)
         # load_file can be called multiple times
-        self.root = Builder.load_file(r"/Users/weron/PyCharmProjects/lights/frontend/my.kv")
+        # self.root = Builder.load_file(r"/frontend/my.kv")
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(ScreenStart(name='start'))
         sm.add_widget(ScreenLogin(name='login'))
