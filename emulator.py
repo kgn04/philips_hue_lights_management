@@ -1,58 +1,57 @@
-from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.button import Button
-from json import load
+import pygame
+import sys
+from time import sleep
+from threading import Thread
 
-with open('lights_states.json') as f:
-    lights_states = load(f)
+class PanelEmulator:
+    def __init__(self, width, height, panel_size, gap_size):
+        pygame.init()
+        self.width = width
+        self.height = height
+        self.panel_size = panel_size
+        self.gap_size = gap_size
+        self.screen = pygame.display.set_mode((width, height))
+        self.panels = [[(255, 255, 255) for _ in range(4)] for _ in range(4)]  # Initialize all panels as white
 
-class CeilingLightsApp(App):
+    def run(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            self.draw_panels()
+            pygame.display.update()
 
-    def build(self):
-        global lights_states
-        self.lights = []
-        for i in range(4):
-            temp = []
-            for j in range(4):
-                temp.append(lights_states[str(i*4+j+1)]["on"])
-            self.lights.append(temp)
-        print(self.lights)
-        grid_layout = GridLayout(cols=4, spacing=5)
+        pygame.quit()
+        sys.exit()
 
-        for row in range(4):
-            for col in range(4):
-                button = Button(text='', background_color=(0, 0, 0, 1))
-                button.bind(on_press=self.toggle_light)
-                grid_layout.add_widget(button)
+    def draw_panels(self):
+        panel_width, panel_height = self.panel_size
+        gap = self.gap_size
+        for y in range(4):
+            for x in range(4):
+                panel_x = x * (panel_width + gap)
+                panel_y = y * (panel_height + gap)
+                pygame.draw.rect(self.screen, self.panels[y][x], (panel_x, panel_y, panel_width, panel_height))
 
-        self.buttons = grid_layout.children
-        for i in range(4):
-            for j in range(4):
-                self.buttons[i * 4 + j].background_color = (1, 1, 0, 1) if self.lights[i][j] else (0.5, 0.5, 0.5, 1)
-        return grid_layout
+    def turn_on(self, x, y):
+        if 0 <= x < 4 and 0 <= y < 4:
+            self.panels[y][x] = (255, 255, 255)
 
-    def toggle_light(self, instance):
-        for i, button in enumerate(self.buttons):
-            if button == instance:
-                row, col = divmod(i, 4)
-                # self.lights[row][col] = not self.lights[row][col]
-                for row in range(4):
-                    for col in range(4):
-                        self.update_light_display(row, col)
+    def turn_off(self, x, y):
+        print("hello")
+        if 0 <= x < 4 and 0 <= y < 4:
+            self.panels[y][x] = (0, 0, 0)
 
-    def update_light_display(self, row, col):
-        with open('lights_states.json') as f:
-            lights_states = load(f)
-        self.lights = []
-        for i in range(4):
-            temp = []
-            for j in range(4):
-                temp.append(lights_states[str(i*4+j+1)]["on"])
-            self.lights.append(temp)
-        color = (1, 1, 0, 1) if self.lights[row][col] else (0.5, 0.5, 0.5, 1)
-        self.buttons[row * 4 + col].background_color = color
+    def change_color(self, x, y, rgb):
+        if 0 <= x < 4 and 0 <= y < 4:
+            self.panels[y][x] = rgb
+
+def run_emulator(emul):
+    emul.run()
 
 
-if __name__ == '__main__':
-    app = CeilingLightsApp()
-    app.run()
+if __name__ == "__main__":
+    emulator = PanelEmulator(450, 450, (100, 100), 10)  # Added a gap of 10 pixels
+    emulator_thread = Thread(target=run_emulator, args=(emulator,), daemon=True)
+    emulator_thread.run()
