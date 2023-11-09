@@ -6,7 +6,7 @@ from requests import get, post
 from requests.exceptions import ConnectTimeout
 from sys import platform
 from time import sleep
-from backend.lights_operations import __change_current_hub_1, identify_light
+from backend.lights_operations import __change_current_hub_1, identify_light, USE_EMULATOR
 from backend.groups_operations import __change_current_hub_2
 from multiprocessing import Pool
 
@@ -26,7 +26,7 @@ def __is_it_hub(ip_address: str):
         return None
 
 
-def find_hubs() -> list[tuple[str, str]]: # Might take about 10 seconds
+def find_hubs() -> list[tuple[str, str]]:  # Might take about 10 seconds
     ip_network_prefix = gethostbyname(gethostname())[:gethostbyname(gethostname()).rfind('.')] + '.'
     result = []
     ips_to_check = [ip_network_prefix+str(i+1) for i in range(254)]
@@ -35,14 +35,16 @@ def find_hubs() -> list[tuple[str, str]]: # Might take about 10 seconds
     for ip in hubs_ips:
         mac_address = __get_mac_address(ip)
         result.append((ip, mac_address))
+    if USE_EMULATOR:
+        result.append(('0.0.0.0', '00:00:00:00:00:00'))
     return result
 
 
-def add_new_hub(ip_address: str, mac_address: str) -> int:
+def add_new_hub(ip_address: str, mac_address: str, name: str) -> int:
     login = __get_login(ip_address)
     if login == TIMEOUT:
         return TIMEOUT
-    db_management.insert('Huby', (mac_address, ip_address, login, 0, 0))
+    db_management.insert('Huby', (mac_address, ip_address, login, name, 0, 0))
     return OPERATION_SUCCESSFUL
 
 
@@ -55,6 +57,8 @@ def identify_lights(mac_address: str) -> None:
 
 
 def __get_login(ip_address: str):
+    if ip_address == '0.0.0.0':
+        return 'emulator_login'
     timeout = 60  # After using this method user has 60 seconds to press link button on the hub
     while timeout > 0:
         response = post(url=f'http://{ip_address}/api', json={"devicetype": "lights_app#admin"}).text
@@ -87,4 +91,5 @@ def lights_count(mac_address: str):
 
 
 if __name__ == '__main__':
-    print(find_hubs())
+    # print(find_hubs())
+    add_new_hub('0.0.0.0', '00:00:00:00:00:00', 'emulator')
