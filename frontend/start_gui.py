@@ -129,6 +129,8 @@ class ScreenChooseHub(Screen):
 class ScreenChooseShape(Screen):
     def __init__(self, **kwargs):
         super(ScreenChooseShape, self).__init__(**kwargs)
+        self.selected_buttons_start = None
+        self.selected_buttons_end = None
         self.buttons_array = [[]]
 
     def on_enter(self, *args):
@@ -149,16 +151,10 @@ class ScreenChooseShape(Screen):
             row, col = divmod(i, grid_size[1])
             self.buttons_array[row][col] = button.button_id
 
-    #  for j in range(6):
-    #      print(self.buttons_array[1][j])
-
-    #  print(self.buttons_array[4][5])
-
     def button_pressed(self, instance):
         # Ta metoda zostanie wywołana po naciśnięciu przycisku
         button_id = instance.button_id
         print(f'Naciśnięto przycisk {button_id}')
-
 
     def on_touch_down(self, touch):
         print("TOUCH DOWN")
@@ -197,14 +193,14 @@ class ScreenChooseShape(Screen):
     def update_button_colors(self, button_id):
         buttons_layout = self.ids.buttons_layout
 
+        # siatka 6x6
         a = np.array(self.buttons_array)
         print(a)
         x, y = np.where(a == button_id)
         coord = np.array(list(zip(y, x)))[0]
         rows = coord[0] + 1
         cols = coord[1] + 1
-        print(cols)
-        print(rows)
+
         # zaznaczona siatka
         buttons_to_change = np.arange((cols) * (rows)).reshape(cols, rows)
         for i in range(cols):
@@ -215,31 +211,16 @@ class ScreenChooseShape(Screen):
         for child in buttons_layout.children:
             child_id = getattr(child, 'button_id', None)
             arr = np.array(buttons_to_change)
-            print(child_id in arr)
-            print(child_id)
+            #print(child_id in arr)
+            #print(child_id)
             if child_id:
                 if child_id in arr:
-                    child.background_color = [0, 1, 0, 1]  # Kolor zielony
+                    child.background_color = [128 / 255, 0 / 255, 128 / 255, 1]  # Kolor zielony
                     child.selected = True
-                    print('three is contained in the two-dimensional list')
                 else:
                     child.background_color = [1, 1, 1, 1]  # Kolor domyślny
                     child.selected = False
-                    print('three is NOT contained in the two-dimensional list')
 
-    def is_diagonal_selected(self, button_id):
-        if (
-                self.selected_buttons_start
-                and self.selected_buttons_end
-                and button_id in self.selected_buttons
-        ):
-            x1, y1 = divmod(self.selected_buttons_start - 1, 6)
-            x2, y2 = divmod(self.selected_buttons_end - 1, 6)
-            x, y = divmod(button_id - 1, 6)
-            return (
-                    (x - x1) * (y2 - y1) == (x2 - x1) * (y - y1)
-            )
-        return False
 
     def add_hub_to_database(self):
         db_management.insert("Huby", ())
