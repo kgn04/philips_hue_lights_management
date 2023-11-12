@@ -1,5 +1,8 @@
 import sys
+from array import *
 
+import numpy as np
+from numpy import *
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -15,11 +18,10 @@ from kivymd.uix.button import MDFillRoundFlatButton
 
 from backend import user_operations, db_management, hub_operations
 
-
-
 from kivy.lang import Builder
 
 from kivy.config import Config
+
 Config.set('graphics', 'resizable', False)
 Config.write()
 
@@ -27,7 +29,7 @@ Clock.max_iteration = 20
 
 
 def show_popup(title: str, message: str):
-    popup = Popup(title=title, content=Label(text=message), size_hint=(1/2, 1/4))
+    popup = Popup(title=title, content=Label(text=message), size_hint=(1 / 2, 1 / 4))
     popup.open()
     Clock.schedule_once(popup.dismiss, 1)
 
@@ -48,8 +50,8 @@ class ScreenListHubs(Screen):
         super(ScreenListHubs, self).__init__(**kwargs)
 
         layout = BoxLayout(orientation='vertical', spacing=40, padding=40,
-                           pos_hint={'x': 0.1, 'y': 0.4}, size_hint=(3/4,1/2))
-        #layout.size = (300, 400)
+                           pos_hint={'x': 0.1, 'y': 0.4}, size_hint=(3 / 4, 1 / 2))
+        # layout.size = (300, 400)
 
         hubs_available = self.find_hubs_to_add()
         for hub in hubs_available:
@@ -57,19 +59,19 @@ class ScreenListHubs(Screen):
             mac_address = hub[1]
 
             # układ poziomy dla jednego huba
-            hub_layout = BoxLayout(orientation='horizontal', spacing=70, size_hint=(1,3/4))
+            hub_layout = BoxLayout(orientation='horizontal', spacing=70, size_hint=(1, 3 / 4))
 
             # adres MAC
-            mac_label = Label(text=f"Adres MAC: {mac_address}", size_hint=(1/3,1/10),
+            mac_label = Label(text=f"Adres MAC: {mac_address}", size_hint=(1 / 3, 1 / 10),
                               color="deepskyblue")
             hub_layout.add_widget(mac_label)
 
             #  adres IP
-            ip_label = Label(text=f"Adres IP: {ip_address}", size_hint=(1/3,1/10),
+            ip_label = Label(text=f"Adres IP: {ip_address}", size_hint=(1 / 3, 1 / 10),
                              color="deepskyblue")
             hub_layout.add_widget(ip_label)
 
-            add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(1/5,1/3),
+            add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(1 / 5, 1 / 3),
                                                theme_text_color="Primary",
                                                md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1], elevation_normal=10)
             add_button.hub_mac = mac_address
@@ -90,7 +92,7 @@ class ScreenListHubs(Screen):
     def choose_shape_add_name(self, instance):
         # add new hub ?
         # przekierowanie do ekraniu ScreenChooseShape
-        self.manager.add_widget(ScreenChooseShape( name='shape'))
+        self.manager.add_widget(ScreenChooseShape(name='shape'))
         self.manager.current = 'shape'
         print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
@@ -125,47 +127,119 @@ class ScreenChooseHub(Screen):
 
 
 class ScreenChooseShape(Screen):
-    def __init__(self,  **kw):
-        #  super(ScreenChooseShape, self, hub_data,).__init__(**kwargs)
-        super(ScreenChooseShape,self).__init__(**kw)
-        #self.hub_data = hub_data  # Pobierz dane z bazy lub przykładowe dane (ilość możliwych kombinacji siatek)
-        data_from_database = [
-            {"label": "4x4", "selected": False},
-            {"label": "2x8", "selected": False},
-            {"label": "6x6", "selected": False},
-            {"label": "4x4", "selected": False},
-            {"label": "2x8", "selected": False},
-            {"label": "6x6", "selected": False},
-            {"label": "4x4", "selected": False},
-            {"label": "2x8", "selected": False},
-            {"label": "6x6", "selected": False},
-            {"label": "4x4", "selected": False},
-            {"label": "2x8", "selected": False},
-            {"label": "6x6", "selected": False},
-        ]
+    def __init__(self, **kwargs):
+        super(ScreenChooseShape, self).__init__(**kwargs)
+        self.buttons_array = [[]]
 
-        # Wyczyść aktualne checkboxy (jeśli istnieją)
-        checkboxes_layout = GridLayout(cols=6, pos_hint={'x': 0, 'y': 0.45}, height=200, size_hint=(1, 1 / 4))
+    def on_enter(self, *args):
+        # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
+        super().on_enter(*args)
 
-        # Wygeneruj dynamicznie checkboxy i ich opisy na podstawie danych
-        for item in data_from_database:
-            checkbox = CheckBox(size=(20, 20), width=50, height=50)
-            checkbox.active = item["selected"]
+        grid_size = (6, 6)  # Rozmiar siatki
+        self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
-            label = Label(text=item["label"])
-            checkboxes_layout.add_widget(checkbox)
-            checkboxes_layout.add_widget(label)
+        # Dodaj przyciski do siatki
+        buttons_layout = self.ids.buttons_layout
+        for i in range(36):  # 6x6 siatka, więc 36 przycisków
+            button = Button(text=str(i + 1), size_hint=(0.5, 0.5))
+            button.button_id = i + 1
+            button.bind(on_press=self.button_pressed)
+            buttons_layout.add_widget(button)
 
-        self.add_widget(checkboxes_layout)
+            row, col = divmod(i, grid_size[1])
+            self.buttons_array[row][col] = button.button_id
 
-        for item in data_from_database:
-            checkbox.bind(active=self.checkbox_changed)
+    #  for j in range(6):
+    #      print(self.buttons_array[1][j])
 
-    def checkbox_changed(self, instance, value):
-        pass
+    #  print(self.buttons_array[4][5])
 
-    # Funkcja obsługi zdarzenia po zaznaczeniu checkboxa
-    # print(f"Checkbox z tekstem '{instance.parent.children[1].text}' został zaznaczony: {value}")
+    def button_pressed(self, instance):
+        # Ta metoda zostanie wywołana po naciśnięciu przycisku
+        button_id = instance.button_id
+        print(f'Naciśnięto przycisk {button_id}')
+
+
+    def on_touch_down(self, touch):
+        print("TOUCH DOWN")
+        if super(ScreenChooseShape, self).on_touch_down(touch):
+            return True
+
+        if self.ids.buttons_layout.collide_point(*touch.pos):
+            touch.grab(self)
+            self.selected_buttons_start = self.find_button_at_pos(touch.pos)
+            return True
+
+    def on_touch_move(self, touch):
+        print("TOUCH MOVE")
+        if touch.grab_current == self:
+            self.selected_buttons_end = self.find_button_at_pos(touch.pos)
+            print(self.selected_buttons_end)
+            # self.update_button_colors()
+            return True
+
+    def on_touch_up(self, touch):
+        # if touch.grab_current == self:
+        touch.ungrab(self)
+        button_id = self.find_button_at_pos(touch.pos)
+        if button_id is not None:
+            print(f'Touch up on button {button_id}')
+
+            self.update_button_colors(button_id)
+
+    def find_button_at_pos(self, pos):
+        buttons_layout = self.ids.buttons_layout
+        for child in buttons_layout.children:
+            if child.collide_point(*pos):
+                return getattr(child, 'button_id', None)
+        return None
+
+    def update_button_colors(self, button_id):
+        buttons_layout = self.ids.buttons_layout
+
+        a = np.array(self.buttons_array)
+        print(a)
+        x, y = np.where(a == button_id)
+        coord = np.array(list(zip(y, x)))[0]
+        rows = coord[0] + 1
+        cols = coord[1] + 1
+        print(cols)
+        print(rows)
+        # zaznaczona siatka
+        buttons_to_change = np.arange((cols) * (rows)).reshape(cols, rows)
+        for i in range(cols):
+            for j in range(rows):
+                buttons_to_change[i][j] = self.buttons_array[i][j]
+        print(buttons_to_change)
+
+        for child in buttons_layout.children:
+            child_id = getattr(child, 'button_id', None)
+            arr = np.array(buttons_to_change)
+            print(child_id in arr)
+            print(child_id)
+            if child_id:
+                if child_id in arr:
+                    child.background_color = [0, 1, 0, 1]  # Kolor zielony
+                    child.selected = True
+                    print('three is contained in the two-dimensional list')
+                else:
+                    child.background_color = [1, 1, 1, 1]  # Kolor domyślny
+                    child.selected = False
+                    print('three is NOT contained in the two-dimensional list')
+
+    def is_diagonal_selected(self, button_id):
+        if (
+                self.selected_buttons_start
+                and self.selected_buttons_end
+                and button_id in self.selected_buttons
+        ):
+            x1, y1 = divmod(self.selected_buttons_start - 1, 6)
+            x2, y2 = divmod(self.selected_buttons_end - 1, 6)
+            x, y = divmod(button_id - 1, 6)
+            return (
+                    (x - x1) * (y2 - y1) == (x2 - x1) * (y - y1)
+            )
+        return False
 
     def add_hub_to_database(self):
         db_management.insert("Huby", ())

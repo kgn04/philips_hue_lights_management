@@ -207,7 +207,7 @@ ScreenManager:
                 pos: self.pos
                 size: self.size
         MDLabel:
-            pos_hint: {'x':0, 'y':0.8}
+            pos_hint: {'x':0, 'y':0.85}
             text: 'DOSTĘPNE SIATKI'
             font_style: 'Button'
             font_size: 50
@@ -217,27 +217,26 @@ ScreenManager:
             color: [128/255, 0/255, 128/255, 1]
         MDLabel:
             text: 'Wybierz jedną z możliwości ustawienia kasetonów i nadaj mu nazwę, by przejść dalej'
-            pos_hint: {'x':0, 'y':0.75}
+            pos_hint: {'x':0, 'y':0.8}
             #font_style: 'Button'
             #font_size: 16
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
             color: [128/255, 0/255, 128/255, 1]
-        GridLayout:
-            id: checkboxes_layout
-            cols: 2
-            size_hint: 1, 1/6
-            #height: 200
-            #size_hint: 1, 1/6
-            pos_hint: {'x': 0.2, 'y': 0.55}
+        MDGridLayout:
+            id: buttons_layout
+            cols: 6
+            size_hint: 3/4, 1/2
+            pos_hint: {'x': 0.15, 'y': 0.25}
+            spacing: 10
         BoxLayout:
             orientation: 'horizontal'
             spacing: 100
             padding: 50  # Zwiększenie odstępu
             size_hint: 2/3,1/2
             #size: (800, 100)  # Zwiększenie wysokości
-            pos_hint: {'x': 0.2, 'y': 0.2}
+            pos_hint: {'x': 0.2, 'y': 0.05}
             MDTextField:
                 id: hub_name_input
                 mode : "rectangle"
@@ -363,7 +362,7 @@ ScreenManager:
                 size: self.size
         BoxLayout:
             orientation: 'vertical'
-            spacing: 30
+            spacing: 20
             #pos_hint: 'center'
             pos_hint: {"center_y": .5}
 
