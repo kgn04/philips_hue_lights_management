@@ -18,6 +18,7 @@ from kivymd.uix.button import MDFillRoundFlatButton
 
 from backend import user_operations, db_management, hub_operations
 
+from backend.lights_operations import LIGHT_COORD
 from kivy.lang import Builder
 
 from kivy.config import Config
@@ -85,8 +86,8 @@ class ScreenListHubs(Screen):
 
     # szukanie hubów do wyświetlenia na liście
     def find_hubs_to_add(self) -> list:
-        # hubs_available = hub_operations.find_hubs()
-        hubs_available = [("00:11:22:33:44:50", "192.168.1.8"), ("AA:BB:CC:DD:EE:F5", "192.168.1.6")]
+        hubs_available = hub_operations.find_hubs()
+        # hubs_available = [("00:11:22:33:44:50", "192.168.1.8"), ("AA:BB:CC:DD:EE:F5", "192.168.1.6")]
         return hubs_available
 
     def choose_shape_add_name(self, instance):
@@ -94,6 +95,7 @@ class ScreenListHubs(Screen):
         # przekierowanie do ekraniu ScreenChooseShape
         self.manager.add_widget(ScreenChooseShape(name='shape'))
         self.manager.current = 'shape'
+        hub_operations.change_current_hub(instance.hub_mac)
         print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
 

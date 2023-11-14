@@ -49,12 +49,13 @@ def add_new_hub(ip_address: str, mac_address: str, name: str) -> int:
     return OPERATION_SUCCESSFUL
 
 
-def identify_lights(mac_address: str) -> None:
+def identify_lights(mac_address: str) -> int:
     lights_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', mac_address))
     for light_id in lights_ids:
         row, column = identify_light(light_id)
         db_management.update('Kasetony', ('Rzad', row), ('IdK', light_id))
         db_management.update('Kasetony', ('Kolumna', column), ('IdK', light_id))
+    return OPERATION_SUCCESSFUL
 
 
 def __get_login(ip_address: str):
