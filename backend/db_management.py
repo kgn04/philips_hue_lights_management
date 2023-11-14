@@ -10,7 +10,7 @@ attributes: dict[str, str] = {
     'Przypisania': '(IdGr, IdK)'
 }
 
-DB_ABS_PATH = 'C:/Users/Kacper/PycharmProjects/lights/database'
+DB_ABS_PATH = '/Users/kacper/Desktop/PRACA/lights/database'
 
 
 def connect_to_db() -> tuple:

@@ -223,7 +223,7 @@ class ScreenChooseShape(Screen):
 
 
     def add_hub_to_database(self):
-        db_management.insert("Huby", ())
+        pass
 
 
 # ScreenIdentifyShape

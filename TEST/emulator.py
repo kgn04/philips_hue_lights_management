@@ -8,7 +8,7 @@ from json.decoder import JSONDecodeError
 
 semaphore = Semaphore()
 
-EMULATOR_CONFIG_PATH = 'C:/Users/Kacper/PycharmProjects/lights/TEST/emulator_config.json'
+EMULATOR_CONFIG_PATH = '/Users/kacper/Desktop/PRACA/lights/TEST/emulator_config.json'
 
 
 class Light:

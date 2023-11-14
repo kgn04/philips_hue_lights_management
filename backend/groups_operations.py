@@ -1,5 +1,6 @@
 import backend.db_management as db_management
 from sqlite3 import OperationalError
+from requests import delete
 
 SUCCESSFUL_OPERATION = 0
 GROUP_NAME_ALREADY_USED = 1
@@ -23,10 +24,12 @@ def create(group_name: str) -> int:
     return SUCCESSFUL_OPERATION
 
 
-def delete(group_id: int) -> int:
+def remove(group_id: int) -> int:
     if group_id not in db_management.select_all('Grupy', 'IdGr'):
         return GROUP_DOES_NOT_EXIST
     db_management.delete('Grupy', ('IdGr', group_id))
+    global request_prefix
+    delete(url=f'{request_prefix}{group_id}')
     return SUCCESSFUL_OPERATION
 
 
@@ -49,4 +52,4 @@ def __change_current_hub_2(mac_address: str) -> None:
     global current_hub_login, current_hub_ip, request_prefix
     current_hub_login = db_management.select('Huby', 'loginH', ('AdresMAC', mac_address))
     current_hub_ip = db_management.select('Huby', 'AdresIP', ('AdresMAC', mac_address))
-    request_prefix = f'http://{current_hub_ip}/api/{current_hub_login}'
+    request_prefix = f'http://{current_hub_ip}/api/{current_hub_login}/groups/'

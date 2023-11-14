@@ -3,7 +3,6 @@ from subprocess import Popen, PIPE
 from re import search
 import backend.db_management as db_management
 from requests import get, post
-from requests.exceptions import ConnectTimeout
 from sys import platform
 from time import sleep
 from backend.lights_operations import __change_current_hub_1, identify_light, USE_EMULATOR
@@ -16,13 +15,15 @@ TIMEOUT = 2
 
 RESPONSE_BUTTON_NOT_PRESSED = '[{"error":{"type":101,"address":"","description":"link button not pressed"}}]'
 
+current_mac_address = ''
+
 
 def __is_it_hub(ip_address: str):
     try:
         if get(url=f'http://{ip_address}/api/newdeveloper.', timeout=1, allow_redirects=False).text \
                 == '[{"error":{"type":1,"address":"/","description":"unauthorized user"}}]':
             return ip_address
-    except ConnectTimeout:
+    except Exception:
         return None
 
 
@@ -84,12 +85,25 @@ def __get_mac_address(ip_address: str) -> str:
 def change_current_hub(mac_address: str) -> None:
     __change_current_hub_1(mac_address)
     __change_current_hub_2(mac_address)
+    global current_mac_address
+    current_mac_address = mac_address
 
 
 def lights_count(mac_address: str):
     return len(db_management.select('Kasetony', 'IdK', ('AdresMAC', mac_address)))
 
 
+def change_name(name: str):
+    global current_mac_address
+    db_management.update('Huby', ("Nazwa", name), ('AdresMAC', current_mac_address))
+
+
+def change_grid(x: int, y: int):
+    global current_mac_address
+    db_management.update('Huby', ("Rzedy", x), ('AdresMAC', current_mac_address))
+    db_management.update('Huby', ("Kolumny", y), ('AdresMAC', current_mac_address))
+
+
 if __name__ == '__main__':
-    # print(find_hubs())
-    add_new_hub('0.0.0.0', '00:00:00:00:00:00', 'emulator')
+    print(find_hubs())
+    # add_new_hub('0.0.0.0', '00:00:00:00:00:00', 'emulator')

@@ -1,8 +1,6 @@
 from requests import put, get
-import backend.db_management as backend_management
 from json import loads, load
 from time import sleep
-from sys import stdin
 from TEST.emulator import turn_on as turn_on_emul
 from TEST.emulator import turn_off as turn_off_emul
 from TEST.emulator import change_color as change_color_emul
@@ -91,7 +89,7 @@ def rgb_to_xy(rgb: tuple[int, int, int]):
 def update_lights_data():
     global current_hub_mac_address
     if current_hub_mac_address == '00:00:00:00:00:00':
-        with open('C:/Users/Kacper/PycharmProjects/lights/TEST/emulator_config.json') as f:
+        with open('/Users/kacper/Desktop/PRACA/lights/TEST/emulator_config.json') as f:
             info_dict: dict = load(f)
     else:
         global request_prefix
@@ -153,4 +151,5 @@ def __send_put(light_id: int, body: dict) -> str:
 
 if __name__ == '__main__':
     __change_current_hub_1('00:00:00:00:00:00')
-    update_lights_data()
+    # update_lights_data()
+    identify_light(3)
