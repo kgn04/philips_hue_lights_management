@@ -4,9 +4,8 @@ from time import sleep
 from TEST.emulator import turn_on as turn_on_emul
 from TEST.emulator import turn_off as turn_off_emul
 from TEST.emulator import change_color as change_color_emul
-
-
 from backend import db_management
+from sqlite3 import IntegrityError
 
 current_hub_login: str = ''
 current_hub_ip: str = ''
@@ -14,7 +13,7 @@ current_hub_mac_address = ''
 request_prefix: str = ''
 # TODO Verifying responses
 
-USE_EMULATOR = True
+USE_EMULATOR = False
 
 
 def change_color(light_id: int, rgb: tuple[int, int, int]) -> None:
@@ -26,8 +25,9 @@ def change_color(light_id: int, rgb: tuple[int, int, int]) -> None:
         change_color_emul(light_id, rgb)
     else:
         __send_put(light_id, {"xy": xy})
-    db_management.update('Kasetony', ('KolorX', xy[0]), ('IdK', light_id))
-    db_management.update('Kasetony', ('KolorY', xy[1]), ('IdK', light_id))
+        global current_hub_mac_address
+    db_management.update_with_two_conditions('Kasetony', ('KolorX', xy[0]), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+    db_management.update_with_two_conditions('Kasetony', ('KolorY', xy[1]), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 def change_brightness(light_id: int, brightness: int) -> None:
@@ -38,7 +38,8 @@ def change_brightness(light_id: int, brightness: int) -> None:
         pass  # TODO
     else:
         __send_put(light_id, {"bri": brightness})
-    db_management.update('Kasetony', ('Jasnosc', brightness), ('IdK', light_id))
+    global current_hub_mac_address
+    db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 def turn_off(light_id: int) -> None:
@@ -46,7 +47,8 @@ def turn_off(light_id: int) -> None:
         turn_off_emul(light_id)
     else:
         __send_put(light_id, {"on": False})
-    db_management.update('Kasetony', ('CzyWlaczony', False), ('IdK', light_id))
+    global current_hub_mac_address
+    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 def turn_on(light_id: int) -> None:
@@ -54,7 +56,8 @@ def turn_on(light_id: int) -> None:
         turn_on_emul(light_id)
     else:
         __send_put(light_id, {"on": True})
-    db_management.update('Kasetony', ('CzyWlaczony', True), ('IdK', light_id))
+    global current_hub_mac_address
+    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 def rgb_to_xy(rgb: tuple[int, int, int]):
@@ -89,13 +92,13 @@ def rgb_to_xy(rgb: tuple[int, int, int]):
 def update_lights_data():
     global current_hub_mac_address
     if current_hub_mac_address == '00:00:00:00:00:00':
-        with open('/Users/kacper/Desktop/PRACA/lights/TEST/emulator_config.json') as f:
+        with open('C:/Users/Kacper/PycharmProjects/lights/TEST/emulator_config.json') as f:
             info_dict: dict = load(f)
     else:
         global request_prefix
         info_dict: dict = loads(get(url=request_prefix).text)
-    light_ids = db_management.select_all('Kasetony', 'IdK')
-    print(light_ids)
+    light_ids = db_management.select('Kasetony', 'IdK',
+                                     ('AdresMAC', current_hub_mac_address))
     for light_id in info_dict:
         if USE_EMULATOR:
             state_dict = info_dict[(str(light_id))]
@@ -110,14 +113,18 @@ def update_lights_data():
             color_x = state_dict['xy'][0]
             color_y = state_dict['xy'][1]
             brightness = state_dict['bri']
-        if light_id not in light_ids:
+        try:
             db_management.insert('Kasetony',
                                  (light_id, 0, 0, is_on, brightness, color_x, color_y, current_hub_mac_address))
-        else:
+        except IntegrityError as e:
+            print(f'{e} - {light_id}')
+            print(('CzyWlaczony', int(is_on)), ('KolorX', color_x), ('KolorY', color_y),
+                                                    ('Jasnosc', brightness))
+            print(current_hub_mac_address)
             for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorX', color_x), ('KolorY', color_y),
                                                     ('Jasnosc', brightness)]:
-                db_management.update('Kasetony', (attribute_name, attribute_value),
-                                     ('IdK', light_id))
+                db_management.update_with_two_conditions('Kasetony', (attribute_name, attribute_value),
+                                     ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 LIGHT_COORD = None
@@ -150,6 +157,10 @@ def __send_put(light_id: int, body: dict) -> str:
 
 
 if __name__ == '__main__':
-    __change_current_hub_1('00:00:00:00:00:00')
+    # __change_current_hub_1('00:00:00:00:00:00')
+
+    __change_current_hub_1('ec:b5:fa:98:1c:cd')
     # update_lights_data()
-    identify_light(3)
+
+    # identify_light(11)
+    update_lights_data()

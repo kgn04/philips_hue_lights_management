@@ -10,7 +10,7 @@ attributes: dict[str, str] = {
     'Przypisania': '(IdGr, IdK)'
 }
 
-DB_ABS_PATH = '/Users/kacper/Desktop/PRACA/lights/database'
+DB_ABS_PATH = 'C:/Users/Kacper/PycharmProjects/lights/database'
 
 
 def connect_to_db() -> tuple:
@@ -44,6 +44,18 @@ def select(table_name: str, name_of_attribute_to_select: str, where_attribute: t
     connection, cursor = connect_to_db()
     parsed_where_value = parse_to_sql(where_attribute[1])
     cursor.execute(f"SELECT {name_of_attribute_to_select} FROM {table_name} WHERE {where_attribute[0]} = {parsed_where_value};")
+    cursor_result = cursor.fetchall()
+    disconnect_from_db(connection, cursor)
+    return [tup[0] for tup in cursor_result]
+
+
+def select_with_two_conditions(table_name: str, name_of_attribute_to_select: str, where_attribute_1: tuple,
+                               where_attribute_2: tuple) -> list:
+    connection, cursor = connect_to_db()
+    parsed_where_value_1 = parse_to_sql(where_attribute_1[1])
+    parsed_where_value_2 = parse_to_sql(where_attribute_2[1])
+    cursor.execute(f"SELECT {name_of_attribute_to_select} FROM {table_name} WHERE "
+                   f"{where_attribute_1[0]} = {parsed_where_value_1} AND {where_attribute_2[0]} = {parsed_where_value_2};")
     cursor_result = cursor.fetchall()
     disconnect_from_db(connection, cursor)
     return [tup[0] for tup in cursor_result]
@@ -105,6 +117,18 @@ def update(table_name: str, set_attribute: tuple, where_attribute: tuple):
     disconnect_from_db(connection, cursor)
 
 
+def update_with_two_conditions(table_name: str, set_attribute: tuple, where_attribute_1: tuple, where_attribute_2: tuple):
+    connection, cursor = connect_to_db()
+    parsed_set_value = parse_to_sql(set_attribute[1])
+    parsed_where_value_1 = parse_to_sql(where_attribute_1[1])
+    parsed_where_value_2 = parse_to_sql(where_attribute_2[1])
+    print(set_attribute)
+    cursor.execute(f"UPDATE {table_name} SET {set_attribute[0]} = {parsed_set_value}"
+                   f" WHERE {where_attribute_1[0]} = {parsed_where_value_1} AND "
+                   f"{where_attribute_2[0]} = {parsed_where_value_2};")
+    disconnect_from_db(connection, cursor)
+
+
 def parse_to_sql(value):
     return f"'{value}'" if (type(value) == str and value != 'null') else value
 
@@ -125,7 +149,7 @@ def print_db():
 
 
 if __name__ == '__main__':
-    # init_db()
+    init_db()
     # insert('Kasetony', (4, 2, 1, 64, 64, 64, 196, '00:11:22:33:44:55'))
     # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user3@example.com'))
     # update('Uzytkownicy', ('AdresMAC', 'AA:BB:CC:DD:EE:FF'), ('LoginU', 'User3'))

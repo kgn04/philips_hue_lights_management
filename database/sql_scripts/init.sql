@@ -32,7 +32,7 @@ CREATE TABLE Kasetony (
     KolorX float NOT NULL,
     KolorY float NOT NULL,
     AdresMAC varchar(255) NOT NULL,
-    PRIMARY KEY(IdK),
+    PRIMARY KEY(IdK, AdresMAC),
     FOREIGN KEY(AdresMAC) REFERENCES Huby(AdresMAC)
 );
 
