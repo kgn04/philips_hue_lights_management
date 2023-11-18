@@ -11,7 +11,7 @@ current_hub_ip: str = ''
 current_hub_mac_address = ''
 request_prefix: str = ''
 
-USE_EMULATOR = False
+USE_EMULATOR = True
 
 
 def change_color(light_id: int, rgb: tuple[int, int, int]) -> None:

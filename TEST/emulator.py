@@ -1,4 +1,5 @@
-import pygame
+if __name__ == "__main__":
+    import pygame
 import sys
 from threading import Thread
 from json import load, dump
@@ -126,4 +127,3 @@ if __name__ == "__main__":
     emulator = PanelEmulator(450, 450, (100, 100), 10)  # Added a gap of 10 pixels
     emulator_thread = Thread(target=run_emulator, args=(emulator,), daemon=True)
     emulator_thread.run()
-
