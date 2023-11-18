@@ -1,17 +1,15 @@
 from requests import put, get
 from json import loads, load
 from time import sleep
-from TEST.emulator import turn_on as turn_on_emul
-from TEST.emulator import turn_off as turn_off_emul
-from TEST.emulator import change_color as change_color_emul
+from TEST import emulator
 from backend import db_management
 from sqlite3 import IntegrityError
+import os
 
 current_hub_login: str = ''
 current_hub_ip: str = ''
 current_hub_mac_address = ''
 request_prefix: str = ''
-# TODO Verifying responses
 
 USE_EMULATOR = False
 
@@ -22,7 +20,7 @@ def change_color(light_id: int, rgb: tuple[int, int, int]) -> None:
     """
     xy = rgb_to_xy(rgb)
     if USE_EMULATOR:
-        change_color_emul(light_id, rgb)
+        emulator.change_color(light_id, rgb)
     else:
         __send_put(light_id, {"xy": xy})
         global current_hub_mac_address
@@ -44,7 +42,7 @@ def change_brightness(light_id: int, brightness: int) -> None:
 
 def turn_off(light_id: int) -> None:
     if USE_EMULATOR:
-        turn_off_emul(light_id)
+        emulator.turn_off(light_id)
     else:
         __send_put(light_id, {"on": False})
     global current_hub_mac_address
@@ -53,7 +51,7 @@ def turn_off(light_id: int) -> None:
 
 def turn_on(light_id: int) -> None:
     if USE_EMULATOR:
-        turn_on_emul(light_id)
+        emulator.turn_on(light_id)
     else:
         __send_put(light_id, {"on": True})
     global current_hub_mac_address
@@ -92,7 +90,7 @@ def rgb_to_xy(rgb: tuple[int, int, int]):
 def update_lights_data():
     global current_hub_mac_address
     if current_hub_mac_address == '00:00:00:00:00:00':
-        with open('C:/Users/Kacper/PycharmProjects/lights/TEST/emulator_config.json') as f:
+        with open(f'{os.path.join(os.path.dirname(__file__), "..")}/TEST/emulator_config.json') as f:
             info_dict: dict = load(f)
     else:
         global request_prefix
@@ -157,10 +155,10 @@ def __send_put(light_id: int, body: dict) -> str:
 
 
 if __name__ == '__main__':
-    # __change_current_hub_1('00:00:00:00:00:00')
+    __change_current_hub_1('00:00:00:00:00:00')
 
-    __change_current_hub_1('ec:b5:fa:98:1c:cd')
+    # __change_current_hub_1('ec:b5:fa:98:1c:cd')
     # update_lights_data()
 
     # identify_light(11)
-    update_lights_data()
+    # update_lights_data()

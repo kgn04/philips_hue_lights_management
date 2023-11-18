@@ -40,10 +40,7 @@ def register(email: str, username: str, password1: str, password2: str) -> int:
 
 
 def login(email: str, password: str) -> int:
-    #dodany przypadek gdy podanego maila nie ma w bazie lub gdy użytkownik nie poda wcale maila :)
     try:
-        #print(db_management.select('Uzytkownicy', 'Haslo', ('Email', email)))
-        #print(password)
         if db_management.select('Uzytkownicy', 'Haslo', ('Email', email)):
             if db_management.select('Uzytkownicy', 'Haslo', ('Email', email))[0] != password:
                 return INCORRECT_PASSWORD

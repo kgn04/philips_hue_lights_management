@@ -1,6 +1,5 @@
 from sqlite3 import connect, OperationalError
-from json import load
-
+import os
 attributes: dict[str, str] = {
     'Huby': '(AdresMAC, AdresIP, LoginH, Nazwa, Rzedy, Kolumny)',
     'Uzytkownicy': '(Email, Username, Haslo)',
@@ -10,7 +9,7 @@ attributes: dict[str, str] = {
     'Przypisania': '(IdGr, IdK)'
 }
 
-DB_ABS_PATH = 'C:/Users/Kacper/PycharmProjects/lights/database'
+DB_ABS_PATH = f'{os.path.join(os.path.dirname(__file__), "..")}/database'
 
 
 def connect_to_db() -> tuple:
@@ -149,7 +148,7 @@ def print_db():
 
 
 if __name__ == '__main__':
-    init_db()
+    # init_db()
     # insert('Kasetony', (4, 2, 1, 64, 64, 64, 196, '00:11:22:33:44:55'))
     # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user3@example.com'))
     # update('Uzytkownicy', ('AdresMAC', 'AA:BB:CC:DD:EE:FF'), ('LoginU', 'User3'))
