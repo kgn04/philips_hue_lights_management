@@ -2,6 +2,7 @@ import sys
 from array import *
 
 import numpy as np
+from kivy.uix.modalview import ModalView
 from numpy import *
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
@@ -34,6 +35,32 @@ def show_popup(title: str, message: str):
     popup = Popup(title=title, content=Label(text=message), size_hint=(1 / 2, 1 / 4))
     popup.open()
     Clock.schedule_once(popup.dismiss, 1)
+
+
+def show_popup2(title: str, message: str):
+    # Tworzenie etykiety z tekstem
+    label = Label(text=message)
+
+    # Tworzenie przycisku "OK"
+    button_ok = Button(text='OK', size_hint=(1, None))
+
+    # Funkcja do zamknięcia popupa po naciśnięciu przycisku "OK"
+    def dismiss_popup(instance):
+        popup.dismiss()
+
+    # Przypisanie funkcji do przycisku
+    button_ok.bind(on_press=dismiss_popup)
+
+    # Tworzenie układu z etykietą i przyciskiem
+    layout = BoxLayout(orientation='vertical', spacing=10)
+    layout.add_widget(label)
+    layout.add_widget(button_ok)
+
+    # Tworzenie popupa z układem
+    popup = Popup(title=title, content=layout, size_hint=(3 / 4, 1 / 2))
+
+    # Otwarcie popupa
+    popup.open()
 
 
 class ScreenStart(Screen):
@@ -263,6 +290,8 @@ class ScreenIdentifyLights(Screen):
     def startIdentifying(self):
         # TODO function to identify lights
         print("identyfikacja")
+        show_popup2("Powodzenie", "Identyfikacja kasetonów zakończona pomyślnie, kliknij, by przejść dalej")
+        # TODO whats next?
 
 
 class ScreenLogin(Screen):
