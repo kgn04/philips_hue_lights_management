@@ -27,6 +27,7 @@ Config.set('graphics', 'resizable', False)
 Config.write()
 
 Clock.max_iteration = 20
+GRID = [[]]
 
 
 def show_popup(title: str, message: str):
@@ -86,8 +87,8 @@ class ScreenListHubs(Screen):
 
     # szukanie hubów do wyświetlenia na liście
     def find_hubs_to_add(self) -> list:
-        hubs_available = hub_operations.find_hubs()
-        # hubs_available = [("00:11:22:33:44:50", "192.168.1.8"), ("AA:BB:CC:DD:EE:F5", "192.168.1.6")]
+        # hubs_available = hub_operations.find_hubs()
+        hubs_available = [("00:11:22:33:44:50", "192.168.1.8"), ("AA:BB:CC:DD:EE:F5", "192.168.1.6")]
         return hubs_available
 
     def choose_shape_add_name(self, instance):
@@ -95,7 +96,7 @@ class ScreenListHubs(Screen):
         # przekierowanie do ekraniu ScreenChooseShape
         self.manager.add_widget(ScreenChooseShape(name='shape'))
         self.manager.current = 'shape'
-        hub_operations.change_current_hub(instance.hub_mac)
+        # hub_operations.change_current_hub(instance.hub_mac)
         print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
 
@@ -208,13 +209,15 @@ class ScreenChooseShape(Screen):
         for i in range(cols):
             for j in range(rows):
                 buttons_to_change[i][j] = self.buttons_array[i][j]
-        print(buttons_to_change)
+        # print(buttons_to_change)
+        global GRID
+        GRID = buttons_to_change
 
         for child in buttons_layout.children:
             child_id = getattr(child, 'button_id', None)
             arr = np.array(buttons_to_change)
-            #print(child_id in arr)
-            #print(child_id)
+            # print(child_id in arr)
+            # print(child_id)
             if child_id:
                 if child_id in arr:
                     child.background_color = [128 / 255, 0 / 255, 128 / 255, 1]  # Kolor zielony
@@ -223,12 +226,43 @@ class ScreenChooseShape(Screen):
                     child.background_color = [1, 1, 1, 1]  # Kolor domyślny
                     child.selected = False
 
-
     def add_hub_to_database(self):
-        pass
+        # db_management.insert("Huby", ())  # TODO insert name into database
+        self.manager.add_widget(ScreenIdentifyLights(name='identify'))
+        self.manager.current = 'identify'
 
 
-# ScreenIdentifyShape
+class ScreenIdentifyLights(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        print(GRID)
+
+    def on_enter(self, *args):
+        # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
+        super().on_enter(*args)
+
+        numpy_grid = np.array(GRID)
+
+        # Pobierz referencję do GridLayout
+        buttons_layout = self.ids.buttons_layout
+
+        # Pobierz wymiary macierzy GRID
+        rows, cols = numpy_grid.shape
+
+        # Ustaw ilość kolumn w GridLayout
+        buttons_layout.cols = cols
+
+        # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
+        for row in numpy_grid:
+            for value in row:
+                button = Button(text=str(value), size_hint=(0.5, 0.5))
+                buttons_layout.add_widget(button)
+
+        self.startIdentifying()
+
+    def startIdentifying(self):
+        # TODO function to identify lights
+        print("identyfikacja")
 
 
 class ScreenLogin(Screen):
@@ -266,7 +300,6 @@ class ScreenRegister(Screen):
 
 
 class ScreenSimulator(Screen):
-
     def generate_rectangle(self):
         # Usuń istniejący prostokąt
         rectangle_grid = self.ids.rectangle_grid

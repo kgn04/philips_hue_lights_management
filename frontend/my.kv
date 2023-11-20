@@ -6,6 +6,7 @@ ScreenManager:
     ScreenChooseHub:
     ScreenListHubs:
     ScreenChooseShape:
+    ScreenIdentifyLights:
     ScreenLogin:
     ScreenRegister:
     ScreenSimulator:
@@ -253,11 +254,53 @@ ScreenManager:
                 text: 'Dodaj Huba'
                 size_hint: (None, None)
                 spacing: 30
-                #font_size: 17
                 theme_text_color: "Primary"
                 md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
-                #on_release: root.add_hub()
+                on_release: root.add_hub_to_database()
+
+<ScreenIdentifyLights>:
+    name: 'identify'
+    #hub_data: self.hub_data
+    FloatLayout:
+        spacing:20
+        canvas.before:
+            Color:
+                rgba: [30/255, 30/255, 30/255, 1]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        MDLabel:
+            pos_hint: {'x':0, 'y':0.85}
+            text: 'IDENTYFIKACJA KASETONÓW'
+            font_style: 'Button'
+            font_size: 50
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        MDLabel:
+            text: 'Intrukcja co robić'
+            pos_hint: {'x':0, 'y':0.8}
+            #font_style: 'Button'
+            #font_size: 16
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        MDGridLayout:
+            id: buttons_layout
+            cols: 6
+            size_hint: 3/4, 1/2
+            pos_hint: {'x': 0.15, 'y': 0.25}
+            spacing: 10
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: 100
+            padding: 50  # Zwiększenie odstępu
+            size_hint: 2/3,1/2
+            #size: (800, 100)  # Zwiększenie wysokości
+            pos_hint: {'x': 0.2, 'y': 0.05}
 
 
 <ScreenLogin>:
