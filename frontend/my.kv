@@ -9,7 +9,7 @@ ScreenManager:
     ScreenIdentifyLights:
     ScreenLogin:
     ScreenRegister:
-    ScreenSimulator:
+    ManageLightsScreen:
 
 
 <ScreenStart>:
@@ -512,24 +512,33 @@ ScreenManager:
                 text_color: "deepskyblue"
                 on_press: root.manager.current = 'start'
 
-<ScreenSimulator>:
-    name: 'simulator'
-    BoxLayout:
-        orientation: 'vertical'
-
-        BoxLayout:
-            orientation: 'horizontal'
+<ManageLightsScreen>:
+    name: 'manage'
+    FloatLayout:
+        id: floating_layout
+        spacing:20
+        canvas.before:
+            Color:
+                rgba: [30/255, 30/255, 30/255, 1]
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        MDLabel:
+            pos_hint: {'x':0, 'y':0.9}
+            text: 'ZARZĄDZAJ KASETONAMI'
+            font_style: 'Button'
+            font_size: 50
+            halign: "center"
             size_hint_y: None
-            height: 50
-            Button:
-                text: 'Generate'
-                on_release: root.generate_rectangle()
-
-        GridLayout:
-            id: rectangle_grid
-            size_hint: 0.8, 0.8
-            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-            cols: 1
-            spacing: 10
-
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
+        MDLabel:
+            text: 'Intrukcja co robić'
+            pos_hint: {'x':0, 'y':0.8}
+            #font_style: 'Button'
+            #font_size: 16
+            halign: "center"
+            size_hint_y: None
+            height: self.texture_size[1]
+            color: [128/255, 0/255, 128/255, 1]
 

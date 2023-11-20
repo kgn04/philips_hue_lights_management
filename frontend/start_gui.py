@@ -3,6 +3,7 @@ from array import *
 
 import numpy as np
 from kivy.uix.modalview import ModalView
+from kivy.uix.slider import Slider
 from numpy import *
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
@@ -153,7 +154,8 @@ class ScreenChooseHub(Screen):
         global chosen_hub
         chosen_hub = str(instance.mac_address)
         print(chosen_hub)
-        self.manager.current = 'simulator'
+        self.manager.add_widget(ManageLightsScreen(name='manage'))
+        self.manager.current = 'manage'
 
 
 class ScreenChooseShape(Screen):
@@ -288,10 +290,12 @@ class ScreenIdentifyLights(Screen):
         self.startIdentifying()
 
     def startIdentifying(self):
-        # TODO function to identify lights
+        # TODO function to identify lights and save grid for the specific hub
         print("identyfikacja")
         show_popup2("Powodzenie", "Identyfikacja kasetonów zakończona pomyślnie, kliknij, by przejść dalej")
         # TODO whats next?
+        self.manager.add_widget(ManageLightsScreen(name='manage'))
+        self.manager.current = 'manage'
 
 
 class ScreenLogin(Screen):
@@ -328,20 +332,119 @@ class ScreenRegister(Screen):
             show_popup("Rejestracja", "Niepoprawna nazwa użytkownika")
 
 
-class ScreenSimulator(Screen):
-    def generate_rectangle(self):
-        # Usuń istniejący prostokąt
-        rectangle_grid = self.ids.rectangle_grid
-        rectangle_grid.clear_widgets()
+class ManageLightsScreen(Screen):
+    def __init__(self, **kwargs):
+        super(ManageLightsScreen, self).__init__(**kwargs)
 
-        # Wygeneruj nowy prostokąt z przyciskami 5x5
-        grid_layout = GridLayout(cols=5, spacing=10)
-        for i in range(25):  # Maksymalnie 5x5 = 25 przycisków
-            button = Button(text=str(i + 1))
-            grid_layout.add_widget(button)
+        # Przykładowa macierz GRID
+        GRID = [[1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]]
 
-        rectangle_grid.add_widget(grid_layout)
+        # GridLayout na lewej stronie ekranu
+        left_layout = GridLayout(cols=len(GRID[0]),spacing=10)
+        for row in GRID:
+            for value in row:
+                button = Button(text=str(value), size_hint=(0.4,0.4))
+                button.bind(on_press=self.show_light_controls)
+                left_layout.add_widget(button)
 
+        # ScrollView na prawej stronie ekranu
+        scroll_view = ScrollView()
+        right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
+        right_layout.bind(minimum_height=right_layout.setter('height'))
+
+        # Dodaj utworzone grupy kasetonów
+        for group_name in ["Group 1", "Group 2", "Group 3"]:
+            group_button = Button(text=group_name, size_hint_y=None, height=40)
+            group_button.bind(on_press=self.show_group_controls)
+            right_layout.add_widget(group_button)
+
+        # Przycisk do dodawania nowej grupy
+        add_group_button = Button(text="Dodaj nową grupę", size_hint_y=None, height=40)
+        add_group_button.bind(on_press=self.add_group_popup)
+        right_layout.add_widget(add_group_button)
+
+        scroll_view.add_widget(right_layout)
+
+        # Utwórz główny układ (BoxLayout) dla całego ekranu
+        main_layout = BoxLayout(spacing=30,size_hint=(0.9,0.5), pos_hint={'x': 0.05, 'y': 0.2})
+        main_layout.add_widget(left_layout)
+        main_layout.add_widget(scroll_view)
+
+        # Dodaj główny układ do ekranu
+        self.add_widget(main_layout)
+
+    def show_light_controls(self, instance):
+        # Funkcja wywoływana po naciśnięciu przycisku z kasetonem
+        popup_content = BoxLayout(orientation='vertical', spacing=10)
+
+        # Dodaj etykietę z nazwą kasetonu
+        light_name_label = Label(text=f"Kaseton {instance.text}", halign='center')
+        popup_content.add_widget(light_name_label)
+
+        # Dodaj przyciski i slidery dla kontrolowania kasetonu
+        turn_on_button = Button(text="Włącz", size_hint_y=None, )
+        turn_off_button = Button(text="Wyłącz", size_hint_y=None,)
+
+        rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
+        red_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
+        green_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
+        blue_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
+
+        rgb_sliders_layout.add_widget(Label(text="Czerwony"))
+        rgb_sliders_layout.add_widget(red_slider)
+        rgb_sliders_layout.add_widget(Label(text="Zielony"))
+        rgb_sliders_layout.add_widget(green_slider)
+        rgb_sliders_layout.add_widget(Label(text="Niebieski"))
+        rgb_sliders_layout.add_widget(blue_slider)
+
+        popup_content.add_widget(turn_on_button)
+        popup_content.add_widget(turn_off_button)
+        popup_content.add_widget(rgb_sliders_layout)
+
+        light_controls_popup = Popup(title=f"Zarządzaj Kasetonem {instance.text}",
+                                     content=popup_content,
+                                     size_hint=(0.7, 0.8), )
+        light_controls_popup.open()
+
+    def show_group_controls(self, instance):
+        # Funkcja wywoływana po naciśnięciu przycisku z grupą kasetonów
+        group_name = instance.text
+        popup_content = BoxLayout(orientation='vertical', spacing=10)
+
+        # Dodaj etykietę z nazwą grupy
+        group_name_label = Label(text=f"Grupa: {group_name}", halign='center')
+        popup_content.add_widget(group_name_label)
+
+        # Tutaj można dodać dodatkowe elementy sterujące dla grupy kasetonów
+
+        group_controls_popup = Popup(title=f"Zarządzaj Grupą {group_name}",
+                                     content=popup_content,
+                                     size_hint=(None, None), size=(300, 300))
+        group_controls_popup.open()
+
+    def add_group_popup(self, instance):
+        # Funkcja wywoływana po naciśnięciu przycisku "Dodaj grupę"
+        popup_content = BoxLayout(orientation='vertical', spacing=10)
+
+        group_name_label = Label(text='Nazwa grupy:')
+        group_name_input = Label()
+
+        add_group_button = Button(text='Dodaj grupę', on_press=self.add_group_action)
+
+        popup_content.add_widget(group_name_label)
+        popup_content.add_widget(group_name_input)
+        popup_content.add_widget(add_group_button)
+
+        add_group_popup = Popup(title='Dodaj nową grupę', content=popup_content, size_hint=(None, None),
+                                size=(300, 200))
+        add_group_popup.open()
+
+    def add_group_action(self, instance):
+        # Akcja po naciśnięciu przycisku "Dodaj grupę"
+        print('Dodaj grupę:', instance.parent.children[1].text)
+      #  instance.parent.parent.dismiss()
 
 class MyApp(MDApp):
 
@@ -357,7 +460,7 @@ class MyApp(MDApp):
         # sm.add_widget(ScreenListHubs(name='list'))
         sm.add_widget(ScreenChooseHub(name='choose'))
         # sm.add_widget(ScreenChooseShape(name='shape'))
-        sm.add_widget(ScreenSimulator(name='simulator'))
+       # sm.add_widget(ScreenSimulator(name='simulator'))
         print(sys.path)
         return sm
 
