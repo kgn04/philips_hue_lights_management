@@ -140,6 +140,11 @@ def identify_light(light_id) -> tuple[int, int]:
     return result
 
 
+def set_light_coord(x: int, y: int) -> None:
+    global LIGHT_COORD
+    LIGHT_COORD = x, y
+
+
 def __change_current_hub_1(mac_address: str) -> None:
     global current_hub_login, current_hub_ip, current_hub_mac_address, request_prefix
     current_hub_login = db_management.select('Huby', 'loginH', ('AdresMAC', mac_address))[0]
@@ -160,5 +165,5 @@ if __name__ == '__main__':
     # __change_current_hub_1('ec:b5:fa:98:1c:cd')
     # update_lights_data()
 
-    # identify_light(11)
+    identify_light(11)
     # update_lights_data()
