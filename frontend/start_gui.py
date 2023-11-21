@@ -459,7 +459,7 @@ if __name__ == '__main__':
             # sm.add_widget(ScreenListHubs(name='list'))
             sm.add_widget(ScreenChooseHub(name='choose'))
             # sm.add_widget(ScreenChooseShape(name='shape'))
-           # sm.add_widget(ScreenSimulator(name='simulator'))
+            # sm.add_widget(ScreenSimulator(name='simulator'))
             print(sys.path)
             return sm
 

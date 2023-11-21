@@ -5,7 +5,7 @@ import backend.db_management as db_management
 from requests import get, post
 from sys import platform
 from time import sleep
-from backend.lights_operations import __change_current_hub_1, identify_light, USE_EMULATOR
+from backend.lights_operations import __change_current_hub_1, USE_EMULATOR
 from backend.groups_operations import __change_current_hub_2
 from multiprocessing import Pool
 
