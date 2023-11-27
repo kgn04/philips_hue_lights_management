@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     from kivy.uix.checkbox import CheckBox
     from kivy.uix.image import Image
-    from backend.lights_operations import LIGHT_COORD
+    #    from backend.lights_operations import LIGHT_COORD
     from kivy.lang import Builder
     from kivy.uix.modalview import ModalView
     from kivy.uix.slider import Slider
@@ -30,6 +30,7 @@ if __name__ == '__main__':
     Clock.max_iteration = 20
     GRID = [[]]
 
+    current_mac_address = ''
 
     def show_popup(title: str, message: str):
         popup = Popup(title=title, content=Label(text=message), size_hint=(1 / 2, 1 / 4))
@@ -123,7 +124,11 @@ if __name__ == '__main__':
             # przekierowanie do ekraniu ScreenChooseShape
             self.manager.add_widget(ScreenChooseShape(name='shape'))
             self.manager.current = 'shape'
-            # hub_operations.change_current_hub(instance.hub_mac)
+
+            global current_mac_address
+            current_mac_address = instance.hub_mac
+
+            hub_operations.change_current_hub(instance.hub_mac)
             print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
 
@@ -163,6 +168,8 @@ if __name__ == '__main__':
             self.selected_buttons_start = None
             self.selected_buttons_end = None
             self.buttons_array = [[]]
+            self.cols = None
+            self.rows = None
 
         def on_enter(self, *args):
             # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
@@ -230,7 +237,9 @@ if __name__ == '__main__':
             x, y = np.where(a == button_id)
             coord = np.array(list(zip(y, x)))[0]
             rows = coord[0] + 1
+            self.rows = rows
             cols = coord[1] + 1
+            self.cols = cols
 
             # zaznaczona siatka
             buttons_to_change = np.arange((cols) * (rows)).reshape(cols, rows)
@@ -255,7 +264,13 @@ if __name__ == '__main__':
                         child.selected = False
 
         def add_hub_to_database(self):
-            # db_management.insert("Huby", ())  # TODO insert name into database
+            hub_name_input = self.ids.hub_name_input
+            hub_name = hub_name_input.text.strip()
+
+            hub_operations.change_name(hub_name)
+
+            hub_operations.change_grid(self.rows, self.cols)
+
             self.manager.add_widget(ScreenIdentifyLights(name='identify'))
             self.manager.current = 'identify'
 
@@ -263,38 +278,58 @@ if __name__ == '__main__':
     class ScreenIdentifyLights(Screen):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
-            print(GRID)
+            #print(GRID)
 
         def on_enter(self, *args):
             # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
             super().on_enter(*args)
+            #
+            # numpy_grid = np.array(GRID)
+            #
+            # # Pobierz referencję do GridLayout
+            #
+            # # Pobierz wymiary macierzy GRID
+            # rows, cols = numpy_grid.shape
+            #
+            # # Ustaw ilość kolumn w GridLayout
+            # buttons_layout.cols = cols
 
-            numpy_grid = np.array(GRID)
+            rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address))
+            cols = db_management.select('Huby', 'Kolumny', ('AdresMAC', current_mac_address))
 
-            # Pobierz referencję do GridLayout
-            buttons_layout = self.ids.buttons_layout
+            # Convert the returned values to integers
+            rows = int(rows[0]) if rows else 0
+            cols = int(cols[0]) if cols else 0
+            print(rows)
+            print(cols)
 
-            # Pobierz wymiary macierzy GRID
-            rows, cols = numpy_grid.shape
+            hub_array = np.arange(rows * cols).reshape(rows, cols)
+            print(hub_array)
 
-            # Ustaw ilość kolumn w GridLayout
-            buttons_layout.cols = cols
+            new_buttons_layout = GridLayout(cols=rows, size_hint=(3 / 4, 1 / 2), pos_hint={'x': 0.15, 'y': 0.25},
+                                            spacing=10)
 
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
-            for row in numpy_grid:
+            for row in hub_array:
                 for value in row:
                     button = Button(text=str(value), size_hint=(0.5, 0.5))
-                    buttons_layout.add_widget(button)
+                   # buttons_layout.add_widget(button)
+                    new_buttons_layout.add_widget(button)
+
+            # Replace the old buttons_layout with the new one
+            self.add_widget(new_buttons_layout)
 
             self.startIdentifying()
 
         def startIdentifying(self):
             # TODO function to identify lights and save grid for the specific hub
             print("identyfikacja")
-            show_popup2("Powodzenie", "Identyfikacja kasetonów zakończona pomyślnie, kliknij, by przejść dalej")
+            #("Powodzenie", "Identyfikacja kasetonów zakończona pomyślnie, kliknij, by przejść dalej")
             # TODO whats next?
-            self.manager.add_widget(ManageLightsScreen(name='manage'))
-            self.manager.current = 'manage'
+            # przekierowanie do ekranu logowania
+            #self.manager.current = 'login'
+            #self.manager.add_widget(ManageLightsScreen(name='manage'))
+           # self.manager.current = 'manage'
 
 
     class ScreenLogin(Screen):
@@ -341,10 +376,10 @@ if __name__ == '__main__':
                     [7, 8, 9]]
 
             # GridLayout na lewej stronie ekranu
-            left_layout = GridLayout(cols=len(GRID[0]),spacing=10)
+            left_layout = GridLayout(cols=len(GRID[0]), spacing=10)
             for row in GRID:
                 for value in row:
-                    button = Button(text=str(value), size_hint=(0.4,0.4))
+                    button = Button(text=str(value), size_hint=(0.4, 0.4))
                     button.bind(on_press=self.show_light_controls)
                     left_layout.add_widget(button)
 
@@ -367,7 +402,7 @@ if __name__ == '__main__':
             scroll_view.add_widget(right_layout)
 
             # Utwórz główny układ (BoxLayout) dla całego ekranu
-            main_layout = BoxLayout(spacing=30,size_hint=(0.9,0.5), pos_hint={'x': 0.05, 'y': 0.2})
+            main_layout = BoxLayout(spacing=30, size_hint=(0.9, 0.5), pos_hint={'x': 0.05, 'y': 0.2})
             main_layout.add_widget(left_layout)
             main_layout.add_widget(scroll_view)
 
@@ -384,12 +419,15 @@ if __name__ == '__main__':
 
             # Dodaj przyciski i slidery dla kontrolowania kasetonu
             turn_on_button = Button(text="Włącz", size_hint_y=None, )
-            turn_off_button = Button(text="Wyłącz", size_hint_y=None,)
+            turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
 
             rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
             red_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
             green_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
             blue_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
+
+            brightness_label = Label(text="Jasność")
+            brightness_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
 
             rgb_sliders_layout.add_widget(Label(text="Czerwony"))
             rgb_sliders_layout.add_widget(red_slider)
@@ -400,6 +438,8 @@ if __name__ == '__main__':
 
             popup_content.add_widget(turn_on_button)
             popup_content.add_widget(turn_off_button)
+            popup_content.add_widget(brightness_label)
+            popup_content.add_widget(brightness_slider)
             popup_content.add_widget(rgb_sliders_layout)
 
             light_controls_popup = Popup(title=f"Zarządzaj Kasetonem {instance.text}",
@@ -443,7 +483,8 @@ if __name__ == '__main__':
         def add_group_action(self, instance):
             # Akcja po naciśnięciu przycisku "Dodaj grupę"
             print('Dodaj grupę:', instance.parent.children[1].text)
-          #  instance.parent.parent.dismiss()
+        #  instance.parent.parent.dismiss()
+
 
     class MyApp(MDApp):
 
