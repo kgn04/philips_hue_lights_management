@@ -31,6 +31,7 @@ if __name__ == '__main__':
     GRID = [[]]
 
     current_mac_address = ''
+    current_mac_address_after_login = ''
 
     def show_popup(title: str, message: str):
         popup = Popup(title=title, content=Label(text=message), size_hint=(1 / 2, 1 / 4))
@@ -128,6 +129,7 @@ if __name__ == '__main__':
             global current_mac_address
             current_mac_address = instance.hub_mac
 
+
             hub_operations.change_current_hub(instance.hub_mac)
             print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
@@ -145,8 +147,8 @@ if __name__ == '__main__':
             for hub in hub_data:
                 button = Button(text=hub, size_hint=(None, None), size=(100, 100))
                 # button.background_normal = 'hub-small.png'  # obrazek tła nie działa idk why
-                button.ip_address = db_management.select("Huby", "AdresIP", ("Nazwa", hub))
-                button.mac_address = db_management.select("Huby", "AdresMAC", ("Nazwa", hub))
+                button.ip_address = db_management.select("Huby", "AdresIP", ("Nazwa", hub))[0]
+                button.mac_address = db_management.select("Huby", "AdresMAC", ("Nazwa", hub))[0]
                 button.bind(on_release=self.hub_chosen)
                 grid_layout.add_widget(button)
 
@@ -155,9 +157,11 @@ if __name__ == '__main__':
         def hub_chosen(self, instance):
             # change current hub
             # update lights data
-            global chosen_hub
-            chosen_hub = str(instance.mac_address)
-            print(chosen_hub)
+
+            #hub_operations.change_current_hub(instance.mac_address) # TODO dziwny blad
+            global current_mac_address_after_login
+            current_mac_address_after_login = str(instance.mac_address)
+
             self.manager.add_widget(ManageLightsScreen(name='manage'))
             self.manager.current = 'manage'
 
@@ -370,19 +374,46 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             super(ManageLightsScreen, self).__init__(**kwargs)
 
-            # Przykładowa macierz GRID
-            GRID = [[1, 2, 3],
-                    [4, 5, 6],
-                    [7, 8, 9]]
+            # # Przykładowa macierz GRID
+            # GRID = [[1, 2, 3],
+            #         [4, 5, 6],
+            #         [7, 8, 9]]
+            #
+            # # GridLayout na lewej stronie ekranu
+            # left_layout = GridLayout(cols=len(GRID[0]), spacing=10)
+            # for row in GRID:
+            #     for value in row:
+            #         button = Button(text=str(value), size_hint=(0.4, 0.4))
+            #         button.bind(on_press=self.show_light_controls)
+            #         left_layout.add_widget(button)
 
-            # GridLayout na lewej stronie ekranu
-            left_layout = GridLayout(cols=len(GRID[0]), spacing=10)
-            for row in GRID:
+            print(current_mac_address_after_login)
+            print("dupa")
+            rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address_after_login))
+            cols = db_management.select('Huby', 'Kolumny', ('AdresMAC', current_mac_address_after_login))
+
+            # Convert the returned values to integers
+            rows = int(rows[0]) if rows else 0
+            cols = int(cols[0]) if cols else 0
+            print(rows)
+            print(cols)
+
+            hub_array = np.arange(rows * cols).reshape(rows, cols)
+            print(hub_array)
+
+            new_buttons_layout = GridLayout(cols=rows, size_hint=(3 / 4, 1 / 2), pos_hint={'x': 0.15, 'y': 0.25},
+                                            spacing=10)
+
+            # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
+            for row in hub_array:
                 for value in row:
-                    button = Button(text=str(value), size_hint=(0.4, 0.4))
+                    button = Button(text=str(value), size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)
-                    left_layout.add_widget(button)
+                    # buttons_layout.add_widget(button)
+                    new_buttons_layout.add_widget(button)
 
+            # Replace the old buttons_layout with the new one
+           # self.add_widget(new_buttons_layout)
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
             right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
@@ -403,7 +434,7 @@ if __name__ == '__main__':
 
             # Utwórz główny układ (BoxLayout) dla całego ekranu
             main_layout = BoxLayout(spacing=30, size_hint=(0.9, 0.5), pos_hint={'x': 0.05, 'y': 0.2})
-            main_layout.add_widget(left_layout)
+            main_layout.add_widget(new_buttons_layout)
             main_layout.add_widget(scroll_view)
 
             # Dodaj główny układ do ekranu
