@@ -1,3 +1,5 @@
+from kivy.uix.progressbar import ProgressBar
+
 if __name__ == '__main__':
     import sys
     from array import *
@@ -78,17 +80,66 @@ if __name__ == '__main__':
             self.manager.current = 'list'
 
 
+    class ScreenLoading(Screen):
+        pass
+
+
+    class LoadingScreen(BoxLayout):
+        def __init__(self, **kwargs):
+            super(LoadingScreen, self).__init__(**kwargs)
+            self.orientation = 'vertical'
+            label = Label(
+                text='Właśnie szukam hubów, może to potrwać kilkanaście sekund, proszę o cierpliwość',
+                color=[128 / 255, 0 / 255, 128 / 255, 1],  # Set text color here
+            )
+            self.add_widget(label)
+
+
+        #     # Animowany pasek postępu
+        #     progress_bar = ProgressBar(max=1, height=40, size_hint=(0.2, None), pos_hint={'x': 0.4, 'y': 0.8})
+        #     self.add_widget(progress_bar)
+        #     self.progress_bar =progress_bar
+        #
+        #     # Rozpocznij animację paska postępu
+        #     self.progress_animation = Clock.schedule_interval(self.update_progress, 1 / 30)
+        #     self.progress_value = 0
+        #
+        # def update_progress(self, dt):
+        #     # Symuluj postęp ładowania (możesz dostosować to do swoich potrzeb)
+        #     self.progress_value += 0.25
+        #     if self.progress_value >= 1:
+        #         self.progress_value = 0
+        #     self.progress_bar.value = self.progress_value
+
+
     # wyświetlanie listy hubów które są online
     class ScreenListHubs(Screen):
         def __init__(self, **kwargs):
             super(ScreenListHubs, self).__init__(**kwargs)
 
+            # Add loading screen
+            loading_screen = LoadingScreen()
+            self.add_widget(loading_screen)
+
+            # Schedule the find_hubs function to run after a delay
+            Clock.schedule_once(self.find_hubs, 0.1)
+
+        def find_hubs(self, dt):
+            self.hubs_available = self.find_hubs_to_add()
+
+            # Remove the loading screen
+            self.remove_widget(self.children[0])
+
+            # Schedule the find_hubs_and_display function to run after a delay
+            Clock.schedule_once(self.find_hubs_and_display, 0.1)
+
+        def find_hubs_and_display(self, dt):
+            # Your existing code for finding hubs
+
             layout = BoxLayout(orientation='vertical', spacing=40, padding=40,
                                pos_hint={'x': 0.1, 'y': 0.4}, size_hint=(3 / 4, 1 / 2))
-            # layout.size = (300, 400)
 
-            hubs_available = self.find_hubs_to_add()
-            for hub in hubs_available:
+            for hub in self.hubs_available:
                 ip_address = hub[0]
                 mac_address = hub[1]
 
@@ -105,9 +156,7 @@ if __name__ == '__main__':
                                  color="deepskyblue")
                 hub_layout.add_widget(ip_label)
 
-                add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(1 / 5, 1 / 6),
-                                                   theme_text_color="Primary",
-                                                   md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1], elevation_normal=10)
+                add_button = Button(text="Dodaj", size_hint=(1 / 5, 1 / 6))
                 add_button.hub_mac = mac_address
                 add_button.hub_ip = ip_address
                 add_button.bind(on_release=self.choose_shape_add_name)
@@ -120,6 +169,7 @@ if __name__ == '__main__':
         # szukanie hubów do wyświetlenia na liście
         def find_hubs_to_add(self) -> list:
             hubs_available = hub_operations.find_hubs()
+            # self.manager.current = 'list'
             # hubs_available = [("00:11:22:33:44:50", "192.168.1.8"), ("AA:BB:CC:DD:EE:F5", "192.168.1.6")]
             return hubs_available
 
@@ -131,7 +181,6 @@ if __name__ == '__main__':
 
             global current_mac_address
             current_mac_address = instance.hub_mac
-
 
             hub_operations.change_current_hub(instance.hub_mac)
             print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
@@ -425,7 +474,7 @@ if __name__ == '__main__':
             right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
             right_layout.bind(minimum_height=right_layout.setter('height'))
             groups = db_management.select_all("Grupy", "NazwaGr")
-            #groups = ["Grupa 1","Grupa 2"]
+            # groups = ["Grupa 1","Grupa 2"]
 
             # Dodaj utworzone grupy kasetonów
             for group_name in groups:
@@ -433,7 +482,7 @@ if __name__ == '__main__':
                                                      theme_text_color="Custom", text_color=[1, 1, 1, 1],
                                                      md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
                                                      elevation_normal=10, pos_hint={'x': 0.5, 'y': 0.2}
-                                                )
+                                                     )
                 # group_button = Button(text=group_name, size_hint_y=None, height=40)
                 group_button.bind(on_press=self.show_group_controls)
                 right_layout.add_widget(group_button)
