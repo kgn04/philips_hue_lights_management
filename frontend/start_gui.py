@@ -1,18 +1,8 @@
-from kivy.uix.progressbar import ProgressBar
-
 if __name__ == '__main__':
-    import sys
     from array import *
-    import numpy as np
     from multiprocessing import freeze_support
     from backend import user_operations, db_management, hub_operations, lights_operations
     from numpy import *
-
-    from kivy.uix.checkbox import CheckBox
-    from kivy.uix.image import Image
-    #    from backend.lights_operations import LIGHT_COORD
-    from kivy.lang import Builder
-    from kivy.uix.modalview import ModalView
     from kivy.uix.slider import Slider
     from kivy.clock import Clock
     from kivy.uix.boxlayout import BoxLayout
@@ -45,28 +35,21 @@ if __name__ == '__main__':
 
 
     def show_popup2(title: str, message: str):
-        # Tworzenie etykiety z tekstem
         label = Label(text=message)
 
-        # Tworzenie przycisku "OK"
         button_ok = Button(text='OK', size_hint=(1, None))
 
         # Funkcja do zamknięcia popupa po naciśnięciu przycisku "OK"
         def dismiss_popup(instance):
             popup.dismiss()
 
-        # Przypisanie funkcji do przycisku
         button_ok.bind(on_press=dismiss_popup)
 
-        # Tworzenie układu z etykietą i przyciskiem
         layout = BoxLayout(orientation='vertical', spacing=10)
         layout.add_widget(label)
         layout.add_widget(button_ok)
 
-        # Tworzenie popupa z układem
         popup = Popup(title=title, content=layout, size_hint=(3 / 4, 1 / 2))
-
-        # Otwarcie popupa
         popup.open()
 
 
@@ -88,28 +71,12 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             super(LoadingScreen, self).__init__(**kwargs)
             self.orientation = 'vertical'
-            label = Label(
-                text='Właśnie szukam hubów, może to potrwać kilkanaście sekund, proszę o cierpliwość',
-                color=[128 / 255, 0 / 255, 128 / 255, 1],  # Set text color here
-            )
+            label = Label(text='Właśnie szukam hubów, może to potrwać kilkanaście sekund, proszę o cierpliwość',
+                          color=[128 / 255, 0 / 255, 128 / 255, 1],  # Set text color here
+                          )
             self.add_widget(label)
 
-
-        #     # Animowany pasek postępu
-        #     progress_bar = ProgressBar(max=1, height=40, size_hint=(0.2, None), pos_hint={'x': 0.4, 'y': 0.8})
-        #     self.add_widget(progress_bar)
-        #     self.progress_bar =progress_bar
-        #
-        #     # Rozpocznij animację paska postępu
-        #     self.progress_animation = Clock.schedule_interval(self.update_progress, 1 / 30)
-        #     self.progress_value = 0
-        #
-        # def update_progress(self, dt):
-        #     # Symuluj postęp ładowania (możesz dostosować to do swoich potrzeb)
-        #     self.progress_value += 0.25
-        #     if self.progress_value >= 1:
-        #         self.progress_value = 0
-        #     self.progress_bar.value = self.progress_value
+        #     # Animowany pasek postępu  #     progress_bar = ProgressBar(max=1, height=40, size_hint=(0.2, None), pos_hint={'x': 0.4, 'y': 0.8})  #     self.add_widget(progress_bar)  #     self.progress_bar =progress_bar  #  #     # Rozpocznij animację paska postępu  #     self.progress_animation = Clock.schedule_interval(self.update_progress, 1 / 30)  #     self.progress_value = 0  #  # def update_progress(self, dt):  #     # Symuluj postęp ładowania (możesz dostosować to do swoich potrzeb)  #     self.progress_value += 0.25  #     if self.progress_value >= 1:  #         self.progress_value = 0  #     self.progress_bar.value = self.progress_value
 
 
     # wyświetlanie listy hubów które są online
@@ -134,10 +101,8 @@ if __name__ == '__main__':
             Clock.schedule_once(self.find_hubs_and_display, 0.1)
 
         def find_hubs_and_display(self, dt):
-            # Your existing code for finding hubs
-
-            layout = BoxLayout(orientation='vertical', spacing=40, padding=40,
-                               pos_hint={'x': 0.1, 'y': 0.4}, size_hint=(3 / 4, 1 / 2))
+            layout = BoxLayout(orientation='vertical', spacing=40, padding=40, pos_hint={'x': 0.1, 'y': 0.4},
+                               size_hint=(3 / 4, 1 / 2))
 
             for hub in self.hubs_available:
                 ip_address = hub[0]
@@ -147,13 +112,11 @@ if __name__ == '__main__':
                 hub_layout = BoxLayout(orientation='horizontal', spacing=70, size_hint=(1, 3 / 4))
 
                 # adres MAC
-                mac_label = Label(text=f"Adres MAC: {mac_address}", size_hint=(1 / 3, 1 / 10),
-                                  color="deepskyblue")
+                mac_label = Label(text=f"Adres MAC: {mac_address}", size_hint=(1 / 3, 1 / 10), color="deepskyblue")
                 hub_layout.add_widget(mac_label)
 
                 #  adres IP
-                ip_label = Label(text=f"Adres IP: {ip_address}", size_hint=(1 / 3, 1 / 10),
-                                 color="deepskyblue")
+                ip_label = Label(text=f"Adres IP: {ip_address}", size_hint=(1 / 3, 1 / 10), color="deepskyblue")
                 hub_layout.add_widget(ip_label)
 
                 add_button = Button(text="Dodaj", size_hint=(1 / 5, 1 / 6))
@@ -174,7 +137,6 @@ if __name__ == '__main__':
             return hubs_available
 
         def choose_shape_add_name(self, instance):
-            # add new hub ?
             # przekierowanie do ekraniu ScreenChooseShape
             self.manager.add_widget(ScreenChooseShape(name='shape'))
             self.manager.current = 'shape'
@@ -199,7 +161,7 @@ if __name__ == '__main__':
             for hub in hub_data:
                 button = Button(text=hub, size_hint=(None, None), size=(100, 100))
 
-                # button.background_normal = 'hub-small.png'  # obrazek tła nie działa idk why
+                # button.background_normal = 'hub-small.png'  # obrazek tła nie działa
                 button.ip_address = db_management.select("Huby", "AdresIP", ("Nazwa", hub))[0]
                 button.mac_address = db_management.select("Huby", "AdresMAC", ("Nazwa", hub))[0]
                 button.bind(on_release=self.hub_chosen)
@@ -208,10 +170,6 @@ if __name__ == '__main__':
             self.add_widget(grid_layout)
 
         def hub_chosen(self, instance):
-            # change current hub
-            # update lights data
-
-            # hub_operations.change_current_hub(instance.mac_address) # TODO dziwny blad
             global current_mac_address_after_login
             current_mac_address_after_login = str(instance.mac_address)
 
@@ -235,13 +193,8 @@ if __name__ == '__main__':
             grid_size = (6, 6)  # Rozmiar siatki
             self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
-            # description = self.ids.label_shape
-            # description.text = "Wykryto "+ db_management.select("Huby")
-
-            # Dodaj przyciski do siatki
             buttons_layout = self.ids.buttons_layout
             for i in range(36):  # 6x6 siatka, więc 36 przycisków
-                # button = Button(text=str(i + 1), size_hint=(0.5, 0.5))
                 button = Button(size_hint=(0.5, 0.5))
                 button.button_id = i + 1
                 button.bind(on_press=self.button_pressed)
@@ -307,15 +260,13 @@ if __name__ == '__main__':
             for i in range(cols):
                 for j in range(rows):
                     buttons_to_change[i][j] = self.buttons_array[i][j]
-            # print(buttons_to_change)
+
             global GRID
             GRID = buttons_to_change
 
             for child in buttons_layout.children:
                 child_id = getattr(child, 'button_id', None)
                 arr = np.array(buttons_to_change)
-                # print(child_id in arr)
-                # print(child_id)
                 if child_id:
                     if child_id in arr:
                         child.background_color = [0 / 255, 191 / 255, 255 / 255, 1]  # Kolor zielony
@@ -338,22 +289,11 @@ if __name__ == '__main__':
 
     class ScreenIdentifyLights(Screen):
         def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            # print(GRID)
+            super().__init__(**kwargs)  # print(GRID)
 
         def on_enter(self, *args):
             # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
             super().on_enter(*args)
-            #
-            # numpy_grid = np.array(GRID)
-            #
-            # # Pobierz referencję do GridLayout
-            #
-            # # Pobierz wymiary macierzy GRID
-            # rows, cols = numpy_grid.shape
-            #
-            # # Ustaw ilość kolumn w GridLayout
-            # buttons_layout.cols = cols
 
             rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address))
             cols = db_management.select('Huby', 'Kolumny', ('AdresMAC', current_mac_address))
@@ -377,10 +317,8 @@ if __name__ == '__main__':
                 for y, value in enumerate(row):
                     button = Button(text=str(value), size_hint=(0.5, 0.5))
                     button.bind(on_press=partial(identifier.set_light_coord, (x, y)))
-                    # buttons_layout.add_widget(button)
                     new_buttons_layout.add_widget(button)
 
-            # Replace the old buttons_layout with the new one
             self.add_widget(new_buttons_layout)
 
 
@@ -426,21 +364,7 @@ if __name__ == '__main__':
             self.g_color = 0
             self.b_color = 0
 
-            # # Przykładowa macierz GRID
-            # GRID = [[1, 2, 3],
-            #         [4, 5, 6],
-            #         [7, 8, 9]]
-            #
-            # # GridLayout na lewej stronie ekranu
-            # left_layout = GridLayout(cols=len(GRID[0]), spacing=10)
-            # for row in GRID:
-            #     for value in row:
-            #         button = Button(text=str(value), size_hint=(0.4, 0.4))
-            #         button.bind(on_press=self.show_light_controls)
-            #         left_layout.add_widget(button)
-
             print(current_mac_address_after_login)
-            print("dupa")
             if current_mac_address_after_login:
                 hub_operations.change_current_hub(current_mac_address_after_login)
             rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address_after_login))
@@ -461,14 +385,11 @@ if __name__ == '__main__':
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in hub_array:
                 for value in row:
-                    # button = Button(text=str(value), size_hint=(0.5, 0.5))
                     button = Button(size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)
                     # buttons_layout.add_widget(button)
                     new_buttons_layout.add_widget(button)
 
-            # Replace the old buttons_layout with the new one
-            # self.add_widget(new_buttons_layout)
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
             right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
@@ -481,19 +402,16 @@ if __name__ == '__main__':
                 group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, height=40,
                                                      theme_text_color="Custom", text_color=[1, 1, 1, 1],
                                                      md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                     elevation_normal=10, pos_hint={'x': 0.5, 'y': 0.2}
-                                                     )
+                                                     elevation_normal=10, pos_hint={'x': 0.5, 'y': 0.2})
                 # group_button = Button(text=group_name, size_hint_y=None, height=40)
                 group_button.bind(on_press=self.show_group_controls)
                 right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
-            # add_group_button = Button(text="Dodaj nową grupę", size_hint_y=None, height=40)
             add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, height=40,
                                                      theme_text_color="Custom", text_color=[1, 1, 1, 1],
                                                      md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                     elevation_normal=10, pos_hint={'x': 0.5}
-                                                     )
+                                                     elevation_normal=10, pos_hint={'x': 0.5})
             add_group_button.bind(on_press=self.add_group_popup)
             right_layout.add_widget(add_group_button)
 
@@ -513,25 +431,19 @@ if __name__ == '__main__':
             # Funkcja wywoływana po naciśnięciu przycisku z kasetonem
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
-            # Dodaj etykietę z nazwą kasetonu
             light_name_label = Label(text=f"Kaseton {instance.text}", halign='center')
             popup_content.add_widget(light_name_label)
 
-            # Dodaj przyciski i slidery dla kontrolowania kasetonu
             turn_on_button = Button(text="Włącz", size_hint_y=None, )
             turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
 
             turn_on_button.bind(on_press=partial(lights_operations.turn_on, light_id))
             turn_off_button.bind(on_press=partial(lights_operations.turn_off, light_id))
 
-            xy = (
-                db_management.select_with_two_conditions('Kasetony', 'KolorX',
-                                                         ('IdK', light_id),
-                                                         ('AdresMAC', '00:00:00:00:00:00'))[0],
-                db_management.select_with_two_conditions('Kasetony', 'KolorY',
-                                                         ('IdK', light_id),
-                                                         ('AdresMAC', '00:00:00:00:00:00'))[0]
-            )
+            xy = (db_management.select_with_two_conditions('Kasetony', 'KolorX', ('IdK', light_id),
+                                                           ('AdresMAC', '00:00:00:00:00:00'))[0],
+                  db_management.select_with_two_conditions('Kasetony', 'KolorY', ('IdK', light_id),
+                                                           ('AdresMAC', '00:00:00:00:00:00'))[0])
 
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
 
@@ -572,8 +484,7 @@ if __name__ == '__main__':
             popup_content.add_widget(brightness_slider)
             popup_content.add_widget(rgb_sliders_layout)
 
-            light_controls_popup = Popup(title=f"Zarządzaj Kasetonem {instance.text}",
-                                         content=popup_content,
+            light_controls_popup = Popup(title=f"Zarządzaj Kasetonem {instance.text}", content=popup_content,
                                          size_hint=(0.7, 0.8), )
             light_controls_popup.open()
 
@@ -582,14 +493,11 @@ if __name__ == '__main__':
             group_name = instance.text
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
-            # Dodaj etykietę z nazwą grupy
+            #  etykieta z nazwą grupy
             group_name_label = Label(text=f"Grupa: {group_name}", halign='center')
             popup_content.add_widget(group_name_label)
 
-            # Tutaj można dodać dodatkowe elementy sterujące dla grupy kasetonów
-
-            group_controls_popup = Popup(title=f"Zarządzaj Grupą {group_name}",
-                                         content=popup_content,
+            group_controls_popup = Popup(title=f"Zarządzaj Grupą {group_name}", content=popup_content,
                                          size_hint=(None, None), size=(300, 300))
             group_controls_popup.open()
 
@@ -613,7 +521,6 @@ if __name__ == '__main__':
         def add_group_action(self, instance):
             # Akcja po naciśnięciu przycisku "Dodaj grupę"
             print('Dodaj grupę:', instance.parent.children[1].text)
-        #  instance.parent.parent.dismiss()
 
 
     class MyApp(MDApp):
