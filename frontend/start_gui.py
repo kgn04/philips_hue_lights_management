@@ -3,12 +3,11 @@ if __name__ == '__main__':
     from array import *
     import numpy as np
     from multiprocessing import freeze_support
-    from backend import user_operations, db_management, hub_operations
+    from backend import user_operations, db_management, hub_operations, lights_operations
     from numpy import *
 
     from kivy.uix.checkbox import CheckBox
     from kivy.uix.image import Image
-    #    from backend.lights_operations import LIGHT_COORD
     from kivy.lang import Builder
     from kivy.uix.modalview import ModalView
     from kivy.uix.slider import Slider
@@ -23,6 +22,8 @@ if __name__ == '__main__':
     from kivymd.app import MDApp
     from kivymd.uix.button import MDFillRoundFlatButton
     from kivy.config import Config
+    from backend.lights_identifier import LightsIdentifier
+    from functools import partial
 
     Config.set('graphics', 'resizable', False)
     Config.write()
@@ -32,6 +33,7 @@ if __name__ == '__main__':
 
     current_mac_address = ''
     current_mac_address_after_login = ''
+
 
     def show_popup(title: str, message: str):
         popup = Popup(title=title, content=Label(text=message), size_hint=(1 / 2, 1 / 4))
@@ -129,7 +131,6 @@ if __name__ == '__main__':
             global current_mac_address
             current_mac_address = instance.hub_mac
 
-
             hub_operations.change_current_hub(instance.hub_mac)
             print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
@@ -158,7 +159,7 @@ if __name__ == '__main__':
             # change current hub
             # update lights data
 
-            #hub_operations.change_current_hub(instance.mac_address) # TODO dziwny blad
+            # hub_operations.change_current_hub(instance.mac_address) # TODO dziwny blad
             global current_mac_address_after_login
             current_mac_address_after_login = str(instance.mac_address)
 
@@ -282,7 +283,7 @@ if __name__ == '__main__':
     class ScreenIdentifyLights(Screen):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
-            #print(GRID)
+            # print(GRID)
 
         def on_enter(self, *args):
             # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
@@ -313,27 +314,18 @@ if __name__ == '__main__':
             new_buttons_layout = GridLayout(cols=rows, size_hint=(3 / 4, 1 / 2), pos_hint={'x': 0.15, 'y': 0.25},
                                             spacing=10)
 
+            identifier = LightsIdentifier(current_mac_address, self.manager)
+
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
-            for row in hub_array:
-                for value in row:
+            for x, row in enumerate(hub_array):
+                for y, value in enumerate(row):
                     button = Button(text=str(value), size_hint=(0.5, 0.5))
-                   # buttons_layout.add_widget(button)
+                    button.bind(on_press=partial(identifier.set_light_coord, (x, y)))
+                    # buttons_layout.add_widget(button)
                     new_buttons_layout.add_widget(button)
 
             # Replace the old buttons_layout with the new one
             self.add_widget(new_buttons_layout)
-
-            self.startIdentifying()
-
-        def startIdentifying(self):
-            # TODO function to identify lights and save grid for the specific hub
-            print("identyfikacja")
-            #("Powodzenie", "Identyfikacja kasetonów zakończona pomyślnie, kliknij, by przejść dalej")
-            # TODO whats next?
-            # przekierowanie do ekranu logowania
-            #self.manager.current = 'login'
-            #self.manager.add_widget(ManageLightsScreen(name='manage'))
-           # self.manager.current = 'manage'
 
 
     class ScreenLogin(Screen):
@@ -374,6 +366,10 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             super(ManageLightsScreen, self).__init__(**kwargs)
 
+            self.r_color = 0
+            self.g_color = 0
+            self.b_color = 0
+
             # # Przykładowa macierz GRID
             # GRID = [[1, 2, 3],
             #         [4, 5, 6],
@@ -389,6 +385,8 @@ if __name__ == '__main__':
 
             print(current_mac_address_after_login)
             print("dupa")
+            if current_mac_address_after_login:
+                hub_operations.change_current_hub(current_mac_address_after_login)
             rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address_after_login))
             cols = db_management.select('Huby', 'Kolumny', ('AdresMAC', current_mac_address_after_login))
 
@@ -413,7 +411,7 @@ if __name__ == '__main__':
                     new_buttons_layout.add_widget(button)
 
             # Replace the old buttons_layout with the new one
-           # self.add_widget(new_buttons_layout)
+            # self.add_widget(new_buttons_layout)
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
             right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
@@ -441,6 +439,8 @@ if __name__ == '__main__':
             self.add_widget(main_layout)
 
         def show_light_controls(self, instance):
+            light_id = int(instance.text)
+
             # Funkcja wywoływana po naciśnięciu przycisku z kasetonem
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
@@ -452,10 +452,40 @@ if __name__ == '__main__':
             turn_on_button = Button(text="Włącz", size_hint_y=None, )
             turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
 
+            turn_on_button.bind(on_press=partial(lights_operations.turn_on, light_id))
+            turn_off_button.bind(on_press=partial(lights_operations.turn_off, light_id))
+
+            xy = (
+                db_management.select_with_two_conditions('Kasetony', 'KolorX',
+                                                         ('IdK', light_id),
+                                                         ('AdresMAC', '00:00:00:00:00:00'))[0],
+                db_management.select_with_two_conditions('Kasetony', 'KolorY',
+                                                         ('IdK', light_id),
+                                                         ('AdresMAC', '00:00:00:00:00:00'))[0]
+            )
+
+            self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
+
             rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
-            red_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
-            green_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
-            blue_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
+            red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
+            green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
+            blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
+
+            def on_slider_r(instance, value):
+                self.r_color = int(value)
+                lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+
+            def on_slider_g(instance, value):
+                self.g_color = int(value)
+                lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+
+            def on_slider_b(instance, value):
+                self.b_color = int(value)
+                lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+
+            red_slider.bind(value=on_slider_r)
+            green_slider.bind(value=on_slider_g)
+            blue_slider.bind(value=on_slider_b)
 
             brightness_label = Label(text="Jasność")
             brightness_slider = Slider(min=0, max=1, value=1, orientation='horizontal')

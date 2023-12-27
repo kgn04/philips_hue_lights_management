@@ -1,6 +1,5 @@
 from requests import put, get
 from json import loads, load
-from time import sleep
 from TEST import emulator
 from backend import db_management
 from sqlite3 import IntegrityError
@@ -14,21 +13,30 @@ request_prefix: str = ''
 USE_EMULATOR = True
 
 
-def change_color(light_id: int, rgb: tuple[int, int, int]) -> None:
+def get_rgb(light_id: int) -> list[int, int, int]:
+    return [db_management.select_with_two_conditions('Kasetony', f'Kolor{color}',
+                                                     ('IdK', light_id),
+                                                     ('AdresMAC', current_hub_mac_address))[0]
+            for color in ['R', 'G', 'B']
+            ]
+
+
+def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> None:
     """
     :param rgb: (red[0-255], green[0-255], blue[0-255])
     """
-    xy = rgb_to_xy(rgb)
+    global current_hub_mac_address
     if USE_EMULATOR:
         emulator.change_color(light_id, rgb)
     else:
+        xy = rgb_to_xy(rgb)
         __send_put(light_id, {"xy": xy})
-        global current_hub_mac_address
-    db_management.update_with_two_conditions('Kasetony', ('KolorX', xy[0]), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
-    db_management.update_with_two_conditions('Kasetony', ('KolorY', xy[1]), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+    for i, color in enumerate(['R', 'G', 'B']):
+        db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
+                                                 ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
-def change_brightness(light_id: int, brightness: int) -> None:
+def change_brightness(light_id: int, brightness: int, xd=None) -> None:
     """
     :param brightness: 0-255
     """
@@ -37,25 +45,28 @@ def change_brightness(light_id: int, brightness: int) -> None:
     else:
         __send_put(light_id, {"bri": brightness})
     global current_hub_mac_address
-    db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+    db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
+                                             ('AdresMAC', current_hub_mac_address))
 
 
-def turn_off(light_id: int) -> None:
+def turn_off(light_id: int, xd=None) -> None:
     if USE_EMULATOR:
         emulator.turn_off(light_id)
     else:
         __send_put(light_id, {"on": False})
     global current_hub_mac_address
-    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
+                                             ('AdresMAC', current_hub_mac_address))
 
 
-def turn_on(light_id: int) -> None:
+def turn_on(light_id: int, xd=None) -> None:
     if USE_EMULATOR:
         emulator.turn_on(light_id)
     else:
         __send_put(light_id, {"on": True})
     global current_hub_mac_address
-    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
+                                             ('AdresMAC', current_hub_mac_address))
 
 
 def rgb_to_xy(rgb: tuple[int, int, int]):
@@ -85,6 +96,36 @@ def rgb_to_xy(rgb: tuple[int, int, int]):
     except ZeroDivisionError:
         return [0, 0]
     return [x, y]
+
+
+def xy_to_rgb(xy: tuple[float, float]):
+    x, y = xy
+
+    Y = 1.0
+    X = x * Y / y
+    Z = (1 - x - y) * Y / y
+
+    def reverse_adjust_color_channel(channel):
+        if channel > 0.04045:
+            return ((channel + 0.055) / 1.055) ** 2.4
+        else:
+            return channel / 12.92
+
+    red = reverse_adjust_color_channel(X * 1.656492 - Y * 0.354851 - Z * 0.255038)
+    green = reverse_adjust_color_channel(-X * 0.707196 + Y * 1.655397 + Z * 0.036152)
+    blue = reverse_adjust_color_channel(X * 0.051713 - Y * 0.121364 + Z * 1.011530)
+
+    # Clamp values to the valid RGB range [0, 1]
+    red = max(0, min(1, red))
+    green = max(0, min(1, green))
+    blue = max(0, min(1, blue))
+
+    # Convert to integer values in the range [0, 255]
+    red = int(round(red * 255))
+    green = int(round(green * 255))
+    blue = int(round(blue * 255))
+
+    return red, green, blue
 
 
 def update_lights_data():
@@ -117,12 +158,13 @@ def update_lights_data():
         except IntegrityError as e:
             print(f'{e} - {light_id}')
             print(('CzyWlaczony', int(is_on)), ('KolorX', color_x), ('KolorY', color_y),
-                                                    ('Jasnosc', brightness))
+                  ('Jasnosc', brightness))
             print(current_hub_mac_address)
-            for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorX', color_x), ('KolorY', color_y),
+            for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorX', color_x),
+                                                    ('KolorY', color_y),
                                                     ('Jasnosc', brightness)]:
                 db_management.update_with_two_conditions('Kasetony', (attribute_name, attribute_value),
-                                     ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+                                                         ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 def __change_current_hub_1(mac_address: str) -> None:
@@ -141,9 +183,5 @@ def __send_put(light_id: int, body: dict) -> str:
 
 if __name__ == '__main__':
     __change_current_hub_1('00:00:00:00:00:00')
-
     # __change_current_hub_1('ec:b5:fa:98:1c:cd')
-    # update_lights_data()
-
-    identify_light(11)
     # update_lights_data()
