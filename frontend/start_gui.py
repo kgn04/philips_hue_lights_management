@@ -8,6 +8,7 @@ if __name__ == '__main__':
 
     from kivy.uix.checkbox import CheckBox
     from kivy.uix.image import Image
+    #    from backend.lights_operations import LIGHT_COORD
     from kivy.lang import Builder
     from kivy.uix.modalview import ModalView
     from kivy.uix.slider import Slider
@@ -104,7 +105,7 @@ if __name__ == '__main__':
                                  color="deepskyblue")
                 hub_layout.add_widget(ip_label)
 
-                add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(1 / 5, 1 / 3),
+                add_button = MDFillRoundFlatButton(text="Dodaj", size_hint=(1 / 5, 1 / 6),
                                                    theme_text_color="Primary",
                                                    md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1], elevation_normal=10)
                 add_button.hub_mac = mac_address
@@ -131,6 +132,7 @@ if __name__ == '__main__':
             global current_mac_address
             current_mac_address = instance.hub_mac
 
+
             hub_operations.change_current_hub(instance.hub_mac)
             print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
@@ -147,6 +149,7 @@ if __name__ == '__main__':
 
             for hub in hub_data:
                 button = Button(text=hub, size_hint=(None, None), size=(100, 100))
+
                 # button.background_normal = 'hub-small.png'  # obrazek tła nie działa idk why
                 button.ip_address = db_management.select("Huby", "AdresIP", ("Nazwa", hub))[0]
                 button.mac_address = db_management.select("Huby", "AdresMAC", ("Nazwa", hub))[0]
@@ -183,10 +186,14 @@ if __name__ == '__main__':
             grid_size = (6, 6)  # Rozmiar siatki
             self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
+            # description = self.ids.label_shape
+            # description.text = "Wykryto "+ db_management.select("Huby")
+
             # Dodaj przyciski do siatki
             buttons_layout = self.ids.buttons_layout
             for i in range(36):  # 6x6 siatka, więc 36 przycisków
-                button = Button(text=str(i + 1), size_hint=(0.5, 0.5))
+                # button = Button(text=str(i + 1), size_hint=(0.5, 0.5))
+                button = Button(size_hint=(0.5, 0.5))
                 button.button_id = i + 1
                 button.bind(on_press=self.button_pressed)
                 buttons_layout.add_widget(button)
@@ -262,7 +269,7 @@ if __name__ == '__main__':
                 # print(child_id)
                 if child_id:
                     if child_id in arr:
-                        child.background_color = [128 / 255, 0 / 255, 128 / 255, 1]  # Kolor zielony
+                        child.background_color = [0 / 255, 191 / 255, 255 / 255, 1]  # Kolor zielony
                         child.selected = True
                     else:
                         child.background_color = [1, 1, 1, 1]  # Kolor domyślny
@@ -399,13 +406,14 @@ if __name__ == '__main__':
             hub_array = np.arange(rows * cols).reshape(rows, cols)
             print(hub_array)
 
-            new_buttons_layout = GridLayout(cols=rows, size_hint=(3 / 4, 1 / 2), pos_hint={'x': 0.15, 'y': 0.25},
+            new_buttons_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
                                             spacing=10)
 
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in hub_array:
                 for value in row:
-                    button = Button(text=str(value), size_hint=(0.5, 0.5))
+                    # button = Button(text=str(value), size_hint=(0.5, 0.5))
+                    button = Button(size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)
                     # buttons_layout.add_widget(button)
                     new_buttons_layout.add_widget(button)
@@ -416,15 +424,27 @@ if __name__ == '__main__':
             scroll_view = ScrollView()
             right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
             right_layout.bind(minimum_height=right_layout.setter('height'))
+            groups = db_management.select_all("Grupy", "NazwaGr")
+            #groups = ["Grupa 1","Grupa 2"]
 
             # Dodaj utworzone grupy kasetonów
-            for group_name in ["Group 1", "Group 2", "Group 3"]:
-                group_button = Button(text=group_name, size_hint_y=None, height=40)
+            for group_name in groups:
+                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, height=40,
+                                                     theme_text_color="Custom", text_color=[1, 1, 1, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     elevation_normal=10, pos_hint={'x': 0.5, 'y': 0.2}
+                                                )
+                # group_button = Button(text=group_name, size_hint_y=None, height=40)
                 group_button.bind(on_press=self.show_group_controls)
                 right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
-            add_group_button = Button(text="Dodaj nową grupę", size_hint_y=None, height=40)
+            # add_group_button = Button(text="Dodaj nową grupę", size_hint_y=None, height=40)
+            add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, height=40,
+                                                     theme_text_color="Custom", text_color=[1, 1, 1, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     elevation_normal=10, pos_hint={'x': 0.5}
+                                                     )
             add_group_button.bind(on_press=self.add_group_popup)
             right_layout.add_widget(add_group_button)
 
