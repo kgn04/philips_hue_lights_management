@@ -1,3 +1,5 @@
+from kivy.properties import BooleanProperty
+
 if __name__ == '__main__':
     from array import *
     from multiprocessing import freeze_support
@@ -17,6 +19,7 @@ if __name__ == '__main__':
     from kivy.config import Config
     from backend.lights_identifier import LightsIdentifier
     from functools import partial
+    import numpy as np
 
     Config.set('graphics', 'resizable', False)
     Config.write()
@@ -336,6 +339,12 @@ if __name__ == '__main__':
             elif result == 6:
                 show_popup("Logowanie", "Brak konta o takim adresie e-mail")
 
+        def _on_keyboard_down(self, keycode):
+            if keycode == 'enter' or keycode == 40:  # 40 - Enter key pressed
+                self.login((str(self.ids.email.text)), str(self.ids.password.text))
+                self.manager.switch_to('addhub')
+                # self.manager.current = 'addhub'
+
 
     class ScreenRegister(Screen):
 
@@ -385,7 +394,7 @@ if __name__ == '__main__':
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in hub_array:
                 for value in row:
-                    button = Button(size_hint=(0.5, 0.5))
+                    button = Button(text=str(value), size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)
                     # buttons_layout.add_widget(button)
                     new_buttons_layout.add_widget(button)
@@ -399,19 +408,19 @@ if __name__ == '__main__':
 
             # Dodaj utworzone grupy kasetonów
             for group_name in groups:
-                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, height=40,
-                                                     theme_text_color="Custom", text_color=[1, 1, 1, 1],
+                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
+                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                      md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                     elevation_normal=10, pos_hint={'x': 0.5, 'y': 0.2})
+                                                     elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
                 # group_button = Button(text=group_name, size_hint_y=None, height=40)
                 group_button.bind(on_press=self.show_group_controls)
                 right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
-            add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, height=40,
-                                                     theme_text_color="Custom", text_color=[1, 1, 1, 1],
+            add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, size_hint_x=1 / 2,
+                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                      md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                     elevation_normal=10, pos_hint={'x': 0.5})
+                                                     elevation_normal=20, pos_hint={'x': 0.34})
             add_group_button.bind(on_press=self.add_group_popup)
             right_layout.add_widget(add_group_button)
 
@@ -538,7 +547,7 @@ if __name__ == '__main__':
             sm.add_widget(ScreenChooseHub(name='choose'))
             # sm.add_widget(ScreenChooseShape(name='shape'))
             # sm.add_widget(ScreenSimulator(name='simulator'))
-            print(sys.path)
+            # print(sys.path)
             return sm
 
 
