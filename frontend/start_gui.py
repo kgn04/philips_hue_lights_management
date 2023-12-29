@@ -1,4 +1,5 @@
 from kivy.properties import BooleanProperty
+from kivymd.uix.textfield import MDTextField
 
 if __name__ == '__main__':
     from array import *
@@ -344,6 +345,7 @@ if __name__ == '__main__':
             else:
                 Clock.schedule_once(self.change_screen, 0.1)
 
+
     class ScreenLogin(Screen):
         def login(self, email: str, password: str):
             result = user_operations.login(email, password)
@@ -392,6 +394,11 @@ if __name__ == '__main__':
             self.r_color: int
             self.g_color: int
             self.b_color: int
+            self.rows: int
+            self.cols:int
+            self.selected_buttons_start = None
+            self.selected_buttons_end = None
+            self.buttons_array = [[]]
 
             print(current_mac_address_after_login)
             if current_mac_address_after_login:
@@ -404,6 +411,8 @@ if __name__ == '__main__':
             cols = int(cols[0]) if cols else 0
             print(rows)
             print(cols)
+            self.rows = rows
+            self.cols = cols
 
             hub_array = np.arange(rows * cols).reshape(rows, cols)
             print(hub_array)
@@ -414,7 +423,7 @@ if __name__ == '__main__':
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in hub_array:
                 for value in row:
-                    button = Button(text=str(lights_operations.get_light_id(value % cols, int(value/cols))),
+                    button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
                                     size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)
                     # buttons_layout.add_widget(button)
@@ -536,17 +545,49 @@ if __name__ == '__main__':
             # Funkcja wywoływana po naciśnięciu przycisku "Dodaj grupę"
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
-            group_name_label = Label(text='Nazwa grupy:')
-            group_name_input = Label()
+            group_name_label = Label(text='Nazwa grupy:',pos_hint={'x': 0, 'y': 0.1},padding=(0,0))
+            group_name_input = MDTextField(
+                mode="rectangle",
+                spacing=20,
+                size_hint=(0.4, 0.1),
+                text_color_normal=(1, 1, 1, 1),
+                pos_hint={'x': 0.3, 'y': 0.8},
+                line_color_normal='deepskyblue',
+                hint_text_color_normal='deepskyblue',
+                hint_text='Wprowadź nazwę grupy',padding=10)
 
-            add_group_button = Button(text='Dodaj grupę', on_press=self.add_group_action)
+            grid_size = (self.rows, self.cols)  # Rozmiar siatki
+            self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
+
+            #hub_array = np.arange(self.rows * cols).reshape(rows, cols)
+            # print(hub_array)
+
+            buttons_layout = GridLayout(cols=self.rows, size_hint=(3 / 4, 3 / 4), pos_hint={'x': 0.15, 'y': 0.7},
+                                            spacing=10)
+
+           # buttons_layout = self.ids.buttons_layout
+            for i in range(self.rows*self.cols):  # 6x6 siatka, więc 36 przycisków
+                button = Button(size_hint=(0.2, 0.2))
+                button.button_id = i + 1
+                #button.bind(on_press=self.button_pressed)
+                buttons_layout.add_widget(button)
+
+                row, col = divmod(i, grid_size[1])
+                self.buttons_array[row][col] = button.button_id
+
+            # add_group_button = Button(text='Dodaj grupę', on_press=self.add_group_action)
+            add_group_button = MDFillRoundFlatButton(text="Dodaj grupę",pos_hint={'x': 0.4},
+                                  theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                  md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                  padding=10)
 
             popup_content.add_widget(group_name_label)
             popup_content.add_widget(group_name_input)
+            popup_content.add_widget(buttons_layout)
             popup_content.add_widget(add_group_button)
 
-            add_group_popup = Popup(title='Dodaj nową grupę', content=popup_content, size_hint=(None, None),
-                                    size=(300, 200))
+            add_group_popup = Popup(title='Dodaj nową grupę', content=popup_content, size_hint=(0.8, 0.8),
+                                    )
             add_group_popup.open()
 
         def add_group_action(self, instance):
