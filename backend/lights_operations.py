@@ -14,11 +14,15 @@ USE_EMULATOR = True
 
 
 def get_rgb(light_id: int) -> list[int, int, int]:
-    return [db_management.select_with_two_conditions('Kasetony', f'Kolor{color}',
-                                                     ('IdK', light_id),
+    return [db_management.select_with_two_conditions('Kasetony', f'Kolor{color}', ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))[0]
             for color in ['R', 'G', 'B']
             ]
+
+
+def get_brightness(light_id: int) -> int:
+    return db_management.select_with_two_conditions('Kasetony', f'Jasnosc', ('IdK', light_id),
+                                                    ('AdresMAC', current_hub_mac_address))[0]
 
 
 def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> None:
@@ -154,7 +158,8 @@ def update_lights_data():
                                  (light_id, 0, 0, is_on, brightness, rgb[0], rgb[1], rgb[2], current_hub_mac_address))
         except IntegrityError as e:
             print(f'{e} - {light_id}')
-            print(('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]), ('KolorB', rgb[2]), ('Jasnosc', brightness))
+            print(('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]), ('KolorB', rgb[2]),
+                  ('Jasnosc', brightness))
             print(current_hub_mac_address)
             for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]),
                                                     ('KolorB', rgb[2]), ('Jasnosc', brightness)]:

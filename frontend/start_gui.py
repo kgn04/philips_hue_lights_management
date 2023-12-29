@@ -31,6 +31,8 @@ if __name__ == '__main__':
     current_mac_address = ''
     current_mac_address_after_login = ''
 
+    SCREENS_INITIALIZED = False
+
 
     def show_popup(title: str, message: str):
         popup = Popup(title=title, content=Label(text=message), size_hint=(1 / 2, 1 / 4))
@@ -93,7 +95,9 @@ if __name__ == '__main__':
             self.add_widget(loading_screen)
 
             # Schedule the find_hubs function to run after a delay
-            Clock.schedule_once(self.find_hubs, 0.1)
+            global SCREENS_INITIALIZED
+            if SCREENS_INITIALIZED:
+                Clock.schedule_once(self.find_hubs, 0.1)
 
         def find_hubs(self, dt):
             self.hubs_available = self.find_hubs_to_add()
@@ -384,9 +388,10 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             super(ManageLightsScreen, self).__init__(**kwargs)
 
-            self.r_color = 0
-            self.g_color = 0
-            self.b_color = 0
+            self.brightness: int
+            self.r_color: int
+            self.g_color: int
+            self.b_color: int
 
             print(current_mac_address_after_login)
             if current_mac_address_after_login:
@@ -465,6 +470,7 @@ if __name__ == '__main__':
             turn_off_button.bind(on_press=partial(lights_operations.turn_off, light_id))
 
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
+            self.brightness = lights_operations.get_brightness(light_id)
 
             rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
             red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
@@ -483,12 +489,17 @@ if __name__ == '__main__':
                 self.b_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
 
+            def on_slider_brightness(instance, value):
+                self.brightness = int(value)
+                lights_operations.change_brightness(light_id, self.brightness)
+
             red_slider.bind(value=on_slider_r)
             green_slider.bind(value=on_slider_g)
             blue_slider.bind(value=on_slider_b)
 
             brightness_label = Label(text="Jasność")
-            brightness_slider = Slider(min=0, max=1, value=1, orientation='horizontal')
+            brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
+            brightness_slider.bind(value=on_slider_brightness)
 
             rgb_sliders_layout.add_widget(Label(text="Czerwony"))
             rgb_sliders_layout.add_widget(red_slider)
@@ -558,6 +569,8 @@ if __name__ == '__main__':
             sm.add_widget(ScreenChooseShape(name='shape'))
             # sm.add_widget(ScreenSimulator(name='simulator'))
             # print(sys.path)
+            global SCREENS_INITIALIZED
+            SCREENS_INITIALIZED = True
             return sm
 
 
