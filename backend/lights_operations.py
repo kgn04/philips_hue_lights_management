@@ -13,6 +13,16 @@ request_prefix: str = ''
 USE_EMULATOR = True
 
 
+def get_light_id(column: int, row: int) -> int:
+    ids = db_management.select_all('Kasetony', 'IdK')
+    mac_addresses = db_management.select_all('Kasetony', 'AdresMAC')
+    columns = db_management.select_all('Kasetony', 'Kolumna')
+    rows = db_management.select_all('Kasetony', 'Rzad')
+    for i in range(len(ids)):
+        if mac_addresses[i] == current_hub_mac_address and columns[i] == column and rows[i] == row:
+            return ids[i]
+
+
 def get_rgb(light_id: int) -> list[int, int, int]:
     return [db_management.select_with_two_conditions('Kasetony', f'Kolor{color}', ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))[0]
@@ -163,11 +173,8 @@ def update_lights_data():
             print(current_hub_mac_address)
             for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]),
                                                     ('KolorB', rgb[2]), ('Jasnosc', brightness)]:
-                try:
-                    db_management.update_with_two_conditions('Kasetony', (attribute_name, attribute_value),
-                                                             ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
-                except OperationalError:
-                    return
+                db_management.update_with_two_conditions('Kasetony', (attribute_name, attribute_value),
+                                                         ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 def __change_current_hub_1(mac_address: str) -> None:

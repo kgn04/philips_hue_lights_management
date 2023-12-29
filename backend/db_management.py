@@ -1,4 +1,4 @@
-from sqlite3 import connect, OperationalError
+from sqlite3 import connect, OperationalError, IntegrityError
 import os
 attributes: dict[str, str] = {
     'Huby': '(AdresMAC, AdresIP, LoginH, Nazwa, Rzedy, Kolumny)',
@@ -70,8 +70,12 @@ def select_all(table_name: str, name_of_attribute_to_select: str) -> list:
 
 def insert(table_name: str, tuple_to_insert: tuple):
     connection, cursor = connect_to_db()
-    cursor.execute(f"INSERT INTO {table_name} {attributes[table_name]} VALUES {tuple_to_insert};")
-    disconnect_from_db(connection, cursor)
+    try:
+        cursor.execute(f"INSERT INTO {table_name} {attributes[table_name]} VALUES {tuple_to_insert};")
+    except IntegrityError:
+        raise IntegrityError
+    finally:
+        disconnect_from_db(connection, cursor)
 
 
 def delete(table_name: str, where_attribute: tuple):

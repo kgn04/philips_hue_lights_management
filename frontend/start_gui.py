@@ -414,7 +414,8 @@ if __name__ == '__main__':
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in hub_array:
                 for value in row:
-                    button = Button(text=str(value), size_hint=(0.5, 0.5))
+                    button = Button(text=str(lights_operations.get_light_id(value % cols, int(value/cols))),
+                                    size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)
                     # buttons_layout.add_widget(button)
                     new_buttons_layout.add_widget(button)
