@@ -56,5 +56,6 @@ def __change_current_hub_2(mac_address: str) -> None:
 
 
 if __name__ == '__main__':
-    __change_current_hub_2('ec:b5:fa:98:1c:cd')
-    print(get(url=request_prefix).text)
+    pass
+    # __change_current_hub_2('ec:b5:fa:98:1c:cd')
+    # print(get(url=request_prefix).text)

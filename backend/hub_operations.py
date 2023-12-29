@@ -49,15 +49,6 @@ def add_new_hub(ip_address: str, mac_address: str, name: str) -> int:
     return OPERATION_SUCCESSFUL
 
 
-def identify_lights(mac_address: str) -> int:
-    lights_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', mac_address))
-    for light_id in lights_ids:
-        row, column = identify_light(light_id)
-        db_management.update('Kasetony', ('Rzad', row), ('IdK', light_id))
-        db_management.update('Kasetony', ('Kolumna', column), ('IdK', light_id))
-    return OPERATION_SUCCESSFUL
-
-
 def __get_login(ip_address: str):
     if ip_address == '0.0.0.0':
         return 'emulator_login'
@@ -106,5 +97,6 @@ def change_grid(x: int, y: int):
 
 
 if __name__ == '__main__':
-    print(find_hubs())
+    pass
+    # print(find_hubs())
     # add_new_hub('0.0.0.0', '00:00:00:00:00:00', 'emulator')

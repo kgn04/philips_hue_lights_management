@@ -20,6 +20,7 @@ if __name__ == '__main__':
     from backend.lights_identifier import LightsIdentifier
     from functools import partial
     import numpy as np
+    from sqlite3 import IntegrityError
 
     Config.set('graphics', 'resizable', False)
     Config.write()
@@ -147,6 +148,11 @@ if __name__ == '__main__':
             global current_mac_address
             current_mac_address = instance.hub_mac
 
+            try:
+                hub_operations.add_new_hub(instance.hub_ip, instance.hub_mac, '')
+            except IntegrityError:
+                pass
+            #
             hub_operations.change_current_hub(instance.hub_mac)
             print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
 
@@ -304,26 +310,35 @@ if __name__ == '__main__':
             # Convert the returned values to integers
             rows = int(rows[0]) if rows else 0
             cols = int(cols[0]) if cols else 0
-            print(rows)
-            print(cols)
+            # print(rows)
+            # print(cols)
 
             hub_array = np.arange(rows * cols).reshape(rows, cols)
-            print(hub_array)
+            # print(hub_array)
 
             new_buttons_layout = GridLayout(cols=rows, size_hint=(3 / 4, 1 / 2), pos_hint={'x': 0.15, 'y': 0.25},
                                             spacing=10)
 
-            identifier = LightsIdentifier(current_mac_address, self.manager)
+            lights_operations.update_lights_data()
+
+            self.identifier = LightsIdentifier(current_mac_address, self.manager)
 
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for x, row in enumerate(hub_array):
                 for y, value in enumerate(row):
                     button = Button(text=str(value), size_hint=(0.5, 0.5))
-                    button.bind(on_press=partial(identifier.set_light_coord, (x, y)))
+                    button.bind(on_press=partial(self.identifier.set_light_coord, (x, y)))
                     new_buttons_layout.add_widget(button)
 
             self.add_widget(new_buttons_layout)
 
+            Clock.schedule_once(self.change_screen, 0.1)
+
+        def change_screen(self, dt):
+            if self.identifier.done:
+                self.manager.current = 'login'
+            else:
+                Clock.schedule_once(self.change_screen, 0.1)
 
     class ScreenLogin(Screen):
         def login(self, email: str, password: str):
@@ -449,11 +464,6 @@ if __name__ == '__main__':
             turn_on_button.bind(on_press=partial(lights_operations.turn_on, light_id))
             turn_off_button.bind(on_press=partial(lights_operations.turn_off, light_id))
 
-            xy = (db_management.select_with_two_conditions('Kasetony', 'KolorX', ('IdK', light_id),
-                                                           ('AdresMAC', '00:00:00:00:00:00'))[0],
-                  db_management.select_with_two_conditions('Kasetony', 'KolorY', ('IdK', light_id),
-                                                           ('AdresMAC', '00:00:00:00:00:00'))[0])
-
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
 
             rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
@@ -545,7 +555,7 @@ if __name__ == '__main__':
             sm.add_widget(ScreenAddHub(name='addhub'))
             # sm.add_widget(ScreenListHubs(name='list'))
             sm.add_widget(ScreenChooseHub(name='choose'))
-            # sm.add_widget(ScreenChooseShape(name='shape'))
+            sm.add_widget(ScreenChooseShape(name='shape'))
             # sm.add_widget(ScreenSimulator(name='simulator'))
             # print(sys.path)
             return sm

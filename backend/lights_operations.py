@@ -2,7 +2,7 @@ from requests import put, get
 from json import loads, load
 from TEST import emulator
 from backend import db_management
-from sqlite3 import IntegrityError
+from sqlite3 import IntegrityError, OperationalError
 import os
 
 current_hub_login: str = ''
@@ -85,11 +85,9 @@ def rgb_to_xy(rgb: tuple[int, int, int]):
     red = adjust_color_channel(normalized_to_one[0])
     green = adjust_color_channel(normalized_to_one[1])
     blue = adjust_color_channel(normalized_to_one[2])
-
     X = red * 0.649926 + green * 0.103455 + blue * 0.197109
     Y = red * 0.234327 + green * 0.743075 + blue * 0.022598
     Z = red * 0.0000000 + green * 0.053077 + blue * 1.035763
-
     try:
         x = X / (X + Y + Z)
         y = Y / (X + Y + Z)
@@ -136,8 +134,7 @@ def update_lights_data():
     else:
         global request_prefix
         info_dict: dict = loads(get(url=request_prefix).text)
-    light_ids = db_management.select('Kasetony', 'IdK',
-                                     ('AdresMAC', current_hub_mac_address))
+    light_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', current_hub_mac_address))
     for light_id in info_dict:
         if USE_EMULATOR:
             state_dict = info_dict[(str(light_id))]
@@ -146,25 +143,26 @@ def update_lights_data():
         is_on = state_dict['on']
         if USE_EMULATOR:
             rgb = state_dict['red'], state_dict['green'], state_dict['blue']
-            color_x, color_y = rgb_to_xy(rgb)
             brightness = state_dict['brightness']
         else:
             color_x = state_dict['xy'][0]
             color_y = state_dict['xy'][1]
+            rgb = xy_to_rgb((color_x, color_y))
             brightness = state_dict['bri']
         try:
             db_management.insert('Kasetony',
-                                 (light_id, 0, 0, is_on, brightness, color_x, color_y, current_hub_mac_address))
+                                 (light_id, 0, 0, is_on, brightness, rgb[0], rgb[1], rgb[2], current_hub_mac_address))
         except IntegrityError as e:
             print(f'{e} - {light_id}')
-            print(('CzyWlaczony', int(is_on)), ('KolorX', color_x), ('KolorY', color_y),
-                  ('Jasnosc', brightness))
+            print(('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]), ('KolorB', rgb[2]), ('Jasnosc', brightness))
             print(current_hub_mac_address)
-            for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorX', color_x),
-                                                    ('KolorY', color_y),
-                                                    ('Jasnosc', brightness)]:
-                db_management.update_with_two_conditions('Kasetony', (attribute_name, attribute_value),
-                                                         ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+            for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]),
+                                                    ('KolorB', rgb[2]), ('Jasnosc', brightness)]:
+                try:
+                    db_management.update_with_two_conditions('Kasetony', (attribute_name, attribute_value),
+                                                             ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+                except OperationalError:
+                    return
 
 
 def __change_current_hub_1(mac_address: str) -> None:
@@ -182,6 +180,7 @@ def __send_put(light_id: int, body: dict) -> str:
 
 
 if __name__ == '__main__':
-    __change_current_hub_1('00:00:00:00:00:00')
+    pass
+    # __change_current_hub_1('00:00:00:00:00:00')
     # __change_current_hub_1('ec:b5:fa:98:1c:cd')
     # update_lights_data()
