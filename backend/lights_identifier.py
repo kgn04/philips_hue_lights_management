@@ -5,22 +5,21 @@ from threading import Thread
 
 
 class LightsIdentifier:
-    def __init__(self, mac_address, kivy_manager):
+    def __init__(self, mac_address):
         self.mac_address = mac_address
         self.coords = None
-        self.kivy_manager = kivy_manager
+        self.coords_history = []
         Thread(target=self.identify_lights).start()
         self.done = False
+        self.lock = False
 
     def identify_lights(self):
         lights_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', self.mac_address))
-        print(lights_ids)
         for light_id in lights_ids:
-            print(light_id)
             row, column = self.identify_light(light_id)
             db_management.update_with_two_conditions('Kasetony', ('Rzad', row), ('IdK', light_id), ('AdresMAC', self.mac_address))
             db_management.update_with_two_conditions('Kasetony', ('Kolumna', column), ('IdK', light_id), ('AdresMAC', self.mac_address))
-        # self.kivy_manager.current = 'login'
+            self.lock = False
         self.done = True
 
     def identify_light(self, light_id) -> tuple[int, int]:
@@ -31,11 +30,14 @@ class LightsIdentifier:
             sleep(0.5)
         result = self.coords
         self.coords = None
-        print(result)
         return result
 
-    def set_light_coord(self, coords: tuple[int, int], xd=None) -> None:
-        self.coords = coords
+    def set_light_coord(self, coords: tuple[int, int], instance=None) -> None:
+        if not self.lock and coords not in self.coords_history:
+            self.coords = coords
+            self.coords_history.append(coords)
+            instance.background_color = [0 / 255, 191 / 255, 255 / 255, 1]
+            self.lock = True
 
 
 if __name__ == '__main__':

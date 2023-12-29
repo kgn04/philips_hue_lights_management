@@ -325,12 +325,12 @@ if __name__ == '__main__':
 
             lights_operations.update_lights_data()
 
-            self.identifier = LightsIdentifier(current_mac_address, self.manager)
+            self.identifier = LightsIdentifier(current_mac_address)
 
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for x, row in enumerate(hub_array):
                 for y, value in enumerate(row):
-                    button = Button(text=str(value), size_hint=(0.5, 0.5))
+                    button = Button(size_hint=(0.5, 0.5))
                     button.bind(on_press=partial(self.identifier.set_light_coord, (x, y)))
                     new_buttons_layout.add_widget(button)
 
