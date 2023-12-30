@@ -1,10 +1,11 @@
 from kivy.properties import BooleanProperty
+from kivy.uix.togglebutton import ToggleButton
 from kivymd.uix.textfield import MDTextField
 
 if __name__ == '__main__':
     from array import *
     from multiprocessing import freeze_support
-    from backend import user_operations, db_management, hub_operations, lights_operations
+    from backend import user_operations, db_management, hub_operations, lights_operations, groups_operations
     from numpy import *
     from kivy.uix.slider import Slider
     from kivy.clock import Clock
@@ -389,16 +390,19 @@ if __name__ == '__main__':
     class ManageLightsScreen(Screen):
         def __init__(self, **kwargs):
             super(ManageLightsScreen, self).__init__(**kwargs)
+            self.selected_buttons = set()
 
             self.brightness: int
             self.r_color: int
             self.g_color: int
             self.b_color: int
             self.rows: int
-            self.cols:int
+            self.cols: int
             self.selected_buttons_start = None
             self.selected_buttons_end = None
             self.buttons_array = [[]]
+            self.group_name_input = None
+            self.right_layout = None
 
             print(current_mac_address_after_login)
             if current_mac_address_after_login:
@@ -414,14 +418,14 @@ if __name__ == '__main__':
             self.rows = rows
             self.cols = cols
 
-            hub_array = np.arange(rows * cols).reshape(rows, cols)
-            print(hub_array)
+            self.hub_array = np.arange(rows * cols).reshape(rows, cols)
+            print(self.hub_array)
 
             new_buttons_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
                                             spacing=10)
 
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
-            for row in hub_array:
+            for row in self.hub_array:
                 for value in row:
                     button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
                                     size_hint=(0.5, 0.5))
@@ -431,8 +435,8 @@ if __name__ == '__main__':
 
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
-            right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
-            right_layout.bind(minimum_height=right_layout.setter('height'))
+            self.right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
+            self.right_layout.bind(minimum_height=self.right_layout.setter('height'))
             groups = db_management.select_all("Grupy", "NazwaGr")
             # groups = ["Grupa 1","Grupa 2"]
 
@@ -444,7 +448,7 @@ if __name__ == '__main__':
                                                      elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
                 # group_button = Button(text=group_name, size_hint_y=None, height=40)
                 group_button.bind(on_press=self.show_group_controls)
-                right_layout.add_widget(group_button)
+                self.right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
             add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, size_hint_x=1 / 2,
@@ -452,9 +456,9 @@ if __name__ == '__main__':
                                                      md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
                                                      elevation_normal=20, pos_hint={'x': 0.34})
             add_group_button.bind(on_press=self.add_group_popup)
-            right_layout.add_widget(add_group_button)
+            self.right_layout.add_widget(add_group_button)
 
-            scroll_view.add_widget(right_layout)
+            scroll_view.add_widget(self.right_layout)
 
             # Utwórz główny układ (BoxLayout) dla całego ekranu
             main_layout = BoxLayout(spacing=30, size_hint=(0.9, 0.5), pos_hint={'x': 0.05, 'y': 0.2})
@@ -543,56 +547,95 @@ if __name__ == '__main__':
 
         def add_group_popup(self, instance):
             # Funkcja wywoływana po naciśnięciu przycisku "Dodaj grupę"
+
+            popup_content = self.create_add_group_layout()
+            add_group_popup = Popup(title='Dodaj nową grupę', content=popup_content, size_hint=(0.8, 0.7),
+                                    )
+            add_group_popup.open()
+
+        def create_add_group_layout(self):
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
-            group_name_label = Label(text='Nazwa grupy:',pos_hint={'x': 0, 'y': 0.1},padding=(0,0))
-            group_name_input = MDTextField(
+            group_name_label = Label(text='Nazwa grupy:', pos_hint={'x': 0, 'y': 0.1}, padding=(0, 0))
+            self.group_name_input = MDTextField(
                 mode="rectangle",
-                spacing=20,
+                spacing=5,
                 size_hint=(0.4, 0.1),
                 text_color_normal=(1, 1, 1, 1),
                 pos_hint={'x': 0.3, 'y': 0.8},
                 line_color_normal='deepskyblue',
                 hint_text_color_normal='deepskyblue',
-                hint_text='Wprowadź nazwę grupy',padding=10)
+                hint_text='Wprowadź nazwę grupy', padding=10)
 
             grid_size = (self.rows, self.cols)  # Rozmiar siatki
             self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
-            #hub_array = np.arange(self.rows * cols).reshape(rows, cols)
-            # print(hub_array)
-
             buttons_layout = GridLayout(cols=self.rows, size_hint=(3 / 4, 3 / 4), pos_hint={'x': 0.15, 'y': 0.7},
-                                            spacing=10)
+                                        spacing=10)
 
-           # buttons_layout = self.ids.buttons_layout
-            for i in range(self.rows*self.cols):  # 6x6 siatka, więc 36 przycisków
-                button = Button(size_hint=(0.2, 0.2))
-                button.button_id = i + 1
-                #button.bind(on_press=self.button_pressed)
-                buttons_layout.add_widget(button)
 
-                row, col = divmod(i, grid_size[1])
-                self.buttons_array[row][col] = button.button_id
+            for row_index, row in enumerate(self.hub_array):
+                for col_index, value in enumerate(row):
+                    button = ToggleButton(size_hint=(0.2, 0.2))
+                    button.button_id = value
+                    button.row = row_index
+                    button.col = col_index
+                    print(value)
+                    print(row_index)
+                    print(col_index)
+                    button.bind(on_press=self.button_pressed)
+                    buttons_layout.add_widget(button)
 
-            # add_group_button = Button(text='Dodaj grupę', on_press=self.add_group_action)
-            add_group_button = MDFillRoundFlatButton(text="Dodaj grupę",pos_hint={'x': 0.4},
-                                  theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                  md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                  padding=10)
+                    row, col = divmod(value, grid_size[1])
+                    self.buttons_array[row][col] = button.button_id
+
+            add_group_button = MDFillRoundFlatButton(text="Dodaj grupę", pos_hint={'x': 0.4},
+                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     padding=10)
+            add_group_button.bind(on_press=self.add_group_action)
 
             popup_content.add_widget(group_name_label)
-            popup_content.add_widget(group_name_input)
+            popup_content.add_widget(self.group_name_input)
             popup_content.add_widget(buttons_layout)
             popup_content.add_widget(add_group_button)
+            return popup_content
 
-            add_group_popup = Popup(title='Dodaj nową grupę', content=popup_content, size_hint=(0.8, 0.8),
-                                    )
-            add_group_popup.open()
+        def button_pressed(self, instance):
+            # Funkcja wywoływana po naciśnięciu przycisku (ToggleButton)
+            if instance.state == 'down':
+                print(f"Przycisk {instance.button_id} włączony")
+                self.selected_buttons.add(instance.button_id)  # Dodaj współrzędne do zbioru
+            else:
+                print(f"Przycisk {instance.button_id} wyłączony")
+                self.selected_buttons.discard(instance.button_id)  # Usuń współrzędne ze zbioru
 
         def add_group_action(self, instance):
-            # Akcja po naciśnięciu przycisku "Dodaj grupę"
-            print('Dodaj grupę:', instance.parent.children[1].text)
+            # Funkcja wywoływana po naciśnięciu przycisku "Dodaj grupę"
+            group_name = self.group_name_input.text
+            print(f"Dodaj grupę o nazwie: {group_name}")
+            print("Współrzędne wybranych przycisków:", self.selected_buttons)
+
+            groups_operations.create(group_name)
+            group_id = db_management.select('Grupy','IdGr',('NazwaGr',group_name))
+            for button_id in self.selected_buttons:
+                groups_operations.add_to_group(group_id,button_id)
+
+
+        def update_group_view(self):
+            # Funkcja do aktualizacji widoku grup
+            groups = db_management.select_all("Grupy", "NazwaGr")
+            right_layout = self.ids.right_layout  # Uzyskaj dostęp do kontenera przechowującego przyciski grup
+            right_layout.clear_widgets()  # Wyczyść obecne przyciski grup
+
+            # Dodaj utworzone grupy kasetonów
+            for group_name in groups:
+                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
+                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
+                group_button.bind(on_press=self.show_group_controls)
+                right_layout.add_widget(group_button)
 
 
     class MyApp(MDApp):
