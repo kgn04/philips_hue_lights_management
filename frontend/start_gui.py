@@ -21,7 +21,7 @@ if __name__ == '__main__':
     from backend.lights_identifier import LightsIdentifier
     from functools import partial
     import numpy as np
-    from sqlite3 import IntegrityError
+    from sqlite3 import IntegrityError, OperationalError
 
     Config.set('graphics', 'resizable', False)
     Config.write()
@@ -167,8 +167,8 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             super(ScreenChooseHub, self).__init__(**kwargs)
 
+        def on_enter(self, *args):
             hub_data = db_management.select_all("Huby", "Nazwa")
-            print(hub_data)
 
             grid_layout = GridLayout(cols=7, spacing=30, size_hint=(1, 1 / 6), pos_hint={'x': 0.3, 'y': 0.4})
 

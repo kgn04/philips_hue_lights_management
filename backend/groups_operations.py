@@ -1,7 +1,7 @@
 import backend.db_management as db_management
 from sqlite3 import OperationalError
 from requests import delete, get
-from lights_operations import USE_EMULATOR
+from backend.lights_operations import USE_EMULATOR
 import TEST.emulator as emulator
 
 SUCCESSFUL_OPERATION = 0
@@ -64,6 +64,14 @@ def delete_from_group(group_id: int, light_id: int) -> int:
     else:
         pass  # TODO
     return SUCCESSFUL_OPERATION
+
+
+def update_groups_data_in_database():
+    if USE_EMULATOR:
+        emulator.get_groups_dict()
+    else:
+        groups_dict = {}  # TODO
+
 
 
 def __change_current_hub_2(mac_address: str) -> None:

@@ -89,7 +89,7 @@ class PanelEmulator:
                 pygame.draw.rect(self.screen, colors, (panel_x, panel_y, panel_width, panel_height))
 
 
-def turn_on(light_id, x=None):
+def turn_on(light_id):
     global semaphore
     semaphore.acquire()
     with open(EMULATOR_CONFIG_PATH, 'r+') as f:
@@ -100,7 +100,7 @@ def turn_on(light_id, x=None):
     semaphore.release()
 
 
-def turn_off(light_id, x=None):
+def turn_off(light_id):
     global semaphore
     semaphore.acquire()
     with open(EMULATOR_CONFIG_PATH, 'r+') as f:
@@ -127,9 +127,8 @@ def change_color(light_id, rgb):
 def create_group(group_id, group_name):
     with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
         groups_dict = load(f)
-    groups_dict[str(group_id)] = {'name': '', 'lights': []}
-    groups_dict[str(group_id)]['name'] = group_name
-    groups_dict[str(group_id)]['lights'] = []
+    groups_dict[str(group_id)] = {'name': group_name, 'lights': [], 'on': True, 'brightness': 255, 'red': 255,
+                                  'green': 255, 'blue': 255}
     with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
         dump(groups_dict, f)
 
@@ -166,15 +165,41 @@ def operation_on_group(group_id, operation, operation_arg=None):
 
 
 def turn_on_group(group_id):
-    operation_on_group(group_id, turn_on)
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    for light_id in groups_dict[str(group_id)]['lights']:
+        turn_on(light_id)
+    groups_dict[str(group_id)]['on'] = True
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
+        dump(groups_dict, f)
 
 
 def turn_off_group(group_id):
-    operation_on_group(group_id, turn_off)
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    for light_id in groups_dict[str(group_id)]['lights']:
+        turn_off(light_id)
+    groups_dict[str(group_id)]['on'] = False
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
+        dump(groups_dict, f)
 
 
 def change_color_group(group_id, rgb):
-    operation_on_group(group_id, change_color, rgb)
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    for light_id in groups_dict[str(group_id)]['lights']:
+        change_color(light_id, rgb)
+    groups_dict[str(group_id)]['red'] = rgb[0]
+    groups_dict[str(group_id)]['green'] = rgb[1]
+    groups_dict[str(group_id)]['blue'] = rgb[2]
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
+        dump(groups_dict, f)
+
+
+def get_groups_dict():
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    return groups_dict
 
 
 def run_emulator(emul):
