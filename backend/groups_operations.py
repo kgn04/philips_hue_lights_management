@@ -56,7 +56,6 @@ def add_to_group(group_id: int, light_id: int) -> int:
 
 
 def delete_from_group(group_id: int, light_id: int) -> int:
-    # TODO Lepiej nie uzywac jeszcze lmao
     if light_id not in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
         return LIGHT_NOT_IN_GROUP
     db_management.delete('Przypisania', ('IdK', light_id))

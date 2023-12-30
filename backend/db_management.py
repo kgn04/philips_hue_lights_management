@@ -82,31 +82,19 @@ def delete(table_name: str, where_attribute: tuple):
     parsed_where_value = parse_to_sql(where_attribute[1])
     connection, cursor = connect_to_db()
     if table_name == 'Huby':
-        cursor.execute(f"SELECT AdresMAC FROM Huby WHERE {where_attribute[0]} = {parsed_where_value};")
-        mac_address = cursor.fetchone()[0]
-        delete('Kasetony', ('AdresMAC', mac_address))
-        delete('Przydzielenia', ('AdresMAC', mac_address))
+        for mac_address in select('Huby', 'AdresMAC', where_attribute):
+            delete('Kasetony', ('AdresMAC', mac_address))
+            delete('Przydzielenia', ('AdresMAC', mac_address))
+            delete('Grupy', ('AdresMAC', mac_address))
     elif table_name == 'Kasetony':
-        cursor.execute(f"SELECT IdK FROM Kasetony WHERE {where_attribute[0]} = {parsed_where_value};")
-        try:
-            IdK = cursor.fetchone()[0]
-            delete('Przypisania', ('IdK', IdK))
-        except TypeError:
-            pass
+        for light_id in select('Kasetony', 'IdK', where_attribute):
+            delete('Przypisania', ('IdK', light_id))
     elif table_name == 'Grupy':
-        cursor.execute(f"SELECT IdGr FROM Grupy WHERE {where_attribute[0]} = {parsed_where_value};")
-        try:
-            IdGr = cursor.fetchone()[0]
-            delete('Przypisania', ('IdGr', IdGr))
-        except TypeError:
-            pass
+        for group_id in select('Grupy', 'IdGr', where_attribute):
+            delete('Przypisania', ('IdGr', group_id))
     elif table_name == 'Uzytkownicy':
-        try:
-            cursor.execute(f"SELECT Email FROM Uzytkownicy WHERE {where_attribute[0]} = {parsed_where_value};")
-            email = cursor.fetchone()[0]
+        for email in select('Uzytkownicy', 'Email', where_attribute):
             delete('Przydzielenia', ('Email', email))
-        except TypeError:
-            pass
     cursor.execute(f"DELETE FROM {table_name} WHERE {where_attribute[0]} = {parsed_where_value};")
     disconnect_from_db(connection, cursor)
 
