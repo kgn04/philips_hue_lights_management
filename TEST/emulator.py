@@ -5,11 +5,16 @@ from threading import Thread
 from json import load, dump
 from threading import Semaphore
 from json.decoder import JSONDecodeError
+import os
 
 
 semaphore = Semaphore()
 
-EMULATOR_CONFIG_PATH = '/Users/kacper/Desktop/PRACA/lights/TEST/emulator_config.json'
+EMULATOR_ABS_PATH = f'{os.path.join(os.path.dirname(__file__), "..")}/TEST'
+
+EMULATOR_CONFIG_PATH = f'{EMULATOR_ABS_PATH}/emulator_config.json'
+EMULATOR_GROUPS_CONFIG_PATH = f'{EMULATOR_ABS_PATH}/emulator_groups.json'
+
 
 
 class Light:
@@ -84,7 +89,7 @@ class PanelEmulator:
                 pygame.draw.rect(self.screen, colors, (panel_x, panel_y, panel_width, panel_height))
 
 
-def turn_on(light_id):
+def turn_on(light_id, x=None):
     global semaphore
     semaphore.acquire()
     with open(EMULATOR_CONFIG_PATH, 'r+') as f:
@@ -95,7 +100,7 @@ def turn_on(light_id):
     semaphore.release()
 
 
-def turn_off(light_id):
+def turn_off(light_id, x=None):
     global semaphore
     semaphore.acquire()
     with open(EMULATOR_CONFIG_PATH, 'r+') as f:
@@ -117,6 +122,59 @@ def change_color(light_id, rgb):
     with open(EMULATOR_CONFIG_PATH, 'w+') as f:
         dump(lights_dict, f)
     semaphore.release()
+
+
+def create_group(group_id, group_name):
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    groups_dict[str(group_id)] = {'name': '', 'lights': []}
+    groups_dict[str(group_id)]['name'] = group_name
+    groups_dict[str(group_id)]['lights'] = []
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
+        dump(groups_dict, f)
+
+
+def remove_group(group_id):
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    del groups_dict[str(group_id)]
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
+        dump(groups_dict, f)
+
+
+def add_light_to_group(group_id, light_id):
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    groups_dict[str(group_id)]['lights'].append(light_id)
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
+        dump(groups_dict, f)
+
+
+def remove_light_from_group(group_id, light_id):
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    groups_dict[str(group_id)]['lights'].remove(light_id)
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
+        dump(groups_dict, f)
+
+
+def operation_on_group(group_id, operation, operation_arg=None):
+    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
+        groups_dict = load(f)
+    for light_id in groups_dict[str(group_id)]['lights']:
+        operation(light_id, operation_arg)
+
+
+def turn_on_group(group_id):
+    operation_on_group(group_id, turn_on)
+
+
+def turn_off_group(group_id):
+    operation_on_group(group_id, turn_off)
+
+
+def change_color_group(group_id, rgb):
+    operation_on_group(group_id, change_color, rgb)
 
 
 def run_emulator(emul):
