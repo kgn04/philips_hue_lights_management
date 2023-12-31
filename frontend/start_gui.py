@@ -1,10 +1,10 @@
-from kivy.properties import BooleanProperty
-from kivy.uix.togglebutton import ToggleButton
-from kivymd.uix.textfield import MDTextField
-
 if __name__ == '__main__':
     from array import *
     from multiprocessing import freeze_support
+    from kivy.core.window import Window
+    from kivymd.toast import toast
+    from kivy.uix.togglebutton import ToggleButton
+    from kivymd.uix.textfield import MDTextField
     from backend import user_operations, db_management, hub_operations, lights_operations, groups_operations
     from numpy import *
     from kivy.uix.slider import Slider
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
 
     def show_popup(title: str, message: str):
-        popup = Popup(title=title, content=Label(text=message), size_hint=(1 / 2, 1 / 4))
+        popup = Popup(title=title, content=Label(text=message), size_hint=(2 / 3, 1 / 4))
         popup.open()
         Clock.schedule_once(popup.dismiss, 1)
 
@@ -316,11 +316,8 @@ if __name__ == '__main__':
             # Convert the returned values to integers
             rows = int(rows[0]) if rows else 0
             cols = int(cols[0]) if cols else 0
-            # print(rows)
-            # print(cols)
 
             hub_array = np.arange(rows * cols).reshape(rows, cols)
-            # print(hub_array)
 
             new_buttons_layout = GridLayout(cols=rows, size_hint=(3 / 4, 1 / 2), pos_hint={'x': 0.15, 'y': 0.25},
                                             spacing=10)
@@ -337,11 +334,25 @@ if __name__ == '__main__':
                     new_buttons_layout.add_widget(button)
 
             self.add_widget(new_buttons_layout)
+            # Dodaj przycisk do przerwania identyfikacji i zaczęcia od nowa
+            reset_button = MDFillRoundFlatButton(text="Przerwij", size_hint=(None, None)
+                                                 , theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                 md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                 pos_hint={'center_x': 0.5, 'y': 0.1})
+
+            reset_button.bind(on_press=self.reset_identification)
+            self.add_widget(reset_button)
 
             Clock.schedule_once(self.change_screen, 0.1)
 
+        def reset_identification(self, instance):
+            if self.identifier:
+                self.identifier.reset_identification()
+                toast("Identyfikacja przerwana. Zacznij od nowa.")
+
         def change_screen(self, dt):
             if self.identifier.done:
+                toast("Identyfikacja zakończona, możesz teraz się zalogować")
                 self.manager.current = 'login'
             else:
                 Clock.schedule_once(self.change_screen, 0.1)
@@ -382,7 +393,7 @@ if __name__ == '__main__':
             elif result == 3:
                 show_popup("Rejestracja", "Niepoprawny adres e-mail")
             elif result == 4:
-                show_popup("Rejestracja", "Hasło nie spełnia wymagań")
+                show_popup("Rejestracja", "Hasło musi mieć minimum 8 znaków, w tym znak specjalny i dużą literę")
             elif result == 5:
                 show_popup("Rejestracja", "Niepoprawna nazwa użytkownika")
 
@@ -441,6 +452,19 @@ if __name__ == '__main__':
             # groups = ["Grupa 1","Grupa 2"]
 
             # Dodaj utworzone grupy kasetonów
+            self.create_right_layout(groups)
+
+            scroll_view.add_widget(self.right_layout)
+
+            # Utwórz główny układ (BoxLayout) dla całego ekranu
+            main_layout = BoxLayout(spacing=30, size_hint=(0.9, 0.5), pos_hint={'x': 0.05, 'y': 0.2})
+            main_layout.add_widget(new_buttons_layout)
+            main_layout.add_widget(scroll_view)
+
+            # Dodaj główny układ do ekranu
+            self.add_widget(main_layout)
+
+        def create_right_layout(self, groups):
             for group_name in groups:
                 group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
                                                      theme_text_color="Custom", text_color=[0, 0, 0, 1],
@@ -457,16 +481,7 @@ if __name__ == '__main__':
                                                      elevation_normal=20, pos_hint={'x': 0.34})
             add_group_button.bind(on_press=self.add_group_popup)
             self.right_layout.add_widget(add_group_button)
-
-            scroll_view.add_widget(self.right_layout)
-
-            # Utwórz główny układ (BoxLayout) dla całego ekranu
-            main_layout = BoxLayout(spacing=30, size_hint=(0.9, 0.5), pos_hint={'x': 0.05, 'y': 0.2})
-            main_layout.add_widget(new_buttons_layout)
-            main_layout.add_widget(scroll_view)
-
-            # Dodaj główny układ do ekranu
-            self.add_widget(main_layout)
+            return self.right_layout
 
         def show_light_controls(self, instance):
             light_id = int(instance.text)
@@ -573,7 +588,6 @@ if __name__ == '__main__':
             buttons_layout = GridLayout(cols=self.rows, size_hint=(3 / 4, 3 / 4), pos_hint={'x': 0.15, 'y': 0.7},
                                         spacing=10)
 
-
             for row_index, row in enumerate(self.hub_array):
                 for col_index, value in enumerate(row):
                     button = ToggleButton(size_hint=(0.2, 0.2))
@@ -616,26 +630,35 @@ if __name__ == '__main__':
             print(f"Dodaj grupę o nazwie: {group_name}")
             print("Współrzędne wybranych przycisków:", self.selected_buttons)
 
-            groups_operations.create(group_name)
-            group_id = db_management.select('Grupy','IdGr',('NazwaGr',group_name))
-            for button_id in self.selected_buttons:
-                groups_operations.add_to_group(group_id,button_id)
+            result = groups_operations.create(group_name)
+            if result == 0:
+                # Tworzenie grupy powiodło się
+                toast("Tworzenie grupy powiodło się")
+                group_id = db_management.select('Grupy', 'IdGr', ('NazwaGr', group_name))
+                for button_id in list(self.selected_buttons):
+                    groups_operations.add_to_group(group_id[0], button_id)
+                self.update_group_view()
 
+                self.dismiss_popup()
+            elif result == 1:
+                # Grupa o takiej nazwie już istnieje
+                toast("Grupa o takiej nazwie już istnieje, wybierz inną nazwę")
+            else:
+                toast("Wystąpił błąd podczas tworzenia grupy")
 
         def update_group_view(self):
             # Funkcja do aktualizacji widoku grup
             groups = db_management.select_all("Grupy", "NazwaGr")
-            right_layout = self.ids.right_layout  # Uzyskaj dostęp do kontenera przechowującego przyciski grup
+            right_layout = self.right_layout  # Uzyskaj dostęp do kontenera przechowującego przyciski grup
             right_layout.clear_widgets()  # Wyczyść obecne przyciski grup
 
-            # Dodaj utworzone grupy kasetonów
-            for group_name in groups:
-                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
-                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                     elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
-                group_button.bind(on_press=self.show_group_controls)
-                right_layout.add_widget(group_button)
+            self.create_right_layout(groups)
+
+        def dismiss_popup(self):
+            # Dismiss the currently open popup
+            for widget in Window.children[:]:
+                if isinstance(widget, Popup):
+                    widget.dismiss()
 
 
     class MyApp(MDApp):

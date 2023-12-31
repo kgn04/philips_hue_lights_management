@@ -2,7 +2,8 @@ import backend.db_management as db_management
 from sqlite3 import OperationalError
 from requests import delete, get
 from backend.lights_operations import USE_EMULATOR
-import TEST.emulator as emulator
+from TEST import emulator
+#import TEST.emulator as emulator
 
 SUCCESSFUL_OPERATION = 0
 GROUP_NAME_ALREADY_USED = 1
@@ -20,7 +21,9 @@ def create(group_name: str) -> int:
     if group_name in db_management.select_all('Grupy', 'NazwaGr'):
         return GROUP_NAME_ALREADY_USED
     try:
-        group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
+        existing_ids = db_management.select_all('Grupy', 'IdGr')
+        group_id = max(existing_ids) + 1 if existing_ids else 1
+        # group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
     except OperationalError:
         group_id = 1
     global current_hub_mac_address

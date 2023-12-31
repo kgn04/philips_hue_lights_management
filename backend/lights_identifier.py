@@ -17,8 +17,10 @@ class LightsIdentifier:
         lights_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', self.mac_address))
         for light_id in lights_ids:
             row, column = self.identify_light(light_id)
-            db_management.update_with_two_conditions('Kasetony', ('Rzad', row), ('IdK', light_id), ('AdresMAC', self.mac_address))
-            db_management.update_with_two_conditions('Kasetony', ('Kolumna', column), ('IdK', light_id), ('AdresMAC', self.mac_address))
+            db_management.update_with_two_conditions('Kasetony', ('Rzad', row), ('IdK', light_id),
+                                                     ('AdresMAC', self.mac_address))
+            db_management.update_with_two_conditions('Kasetony', ('Kolumna', column), ('IdK', light_id),
+                                                     ('AdresMAC', self.mac_address))
             self.lock = False
         self.done = True
 
@@ -38,6 +40,9 @@ class LightsIdentifier:
             self.coords_history.append(coords)
             instance.background_color = [0 / 255, 191 / 255, 255 / 255, 1]
             self.lock = True
+
+    def reset_identification(self):
+        pass
 
 
 if __name__ == '__main__':
