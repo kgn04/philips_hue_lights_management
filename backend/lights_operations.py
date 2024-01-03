@@ -2,7 +2,7 @@ from requests import put, get
 from json import loads, load
 from TEST import emulator
 from backend import db_management
-from sqlite3 import IntegrityError, OperationalError
+from sqlite3 import IntegrityError
 import os
 
 current_hub_login: str = ''
@@ -14,13 +14,12 @@ USE_EMULATOR = True
 
 
 def get_light_id(column: int, row: int) -> int:
-    ids = db_management.select_all('Kasetony', 'IdK')
-    mac_addresses = db_management.select_all('Kasetony', 'AdresMAC')
-    columns = db_management.select_all('Kasetony', 'Kolumna')
-    rows = db_management.select_all('Kasetony', 'Rzad')
-    for i in range(len(ids)):
-        if mac_addresses[i] == current_hub_mac_address and columns[i] == column and rows[i] == row:
-            return ids[i]
+    connection, cursor = db_management.connect_to_db()
+    cursor.execute(f"SELECT IdK FROM Kasetony WHERE Kolumna = {column} AND Rzad = {row} AND "
+                   f"AdresMAC = '{current_hub_mac_address}';")
+    cursor_result = cursor.fetchone()
+    db_management.disconnect_from_db(connection, cursor)
+    return cursor_result[0]
 
 
 def get_rgb(light_id: int) -> list[int, int, int]:

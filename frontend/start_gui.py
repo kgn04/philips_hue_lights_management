@@ -418,7 +418,12 @@ if __name__ == '__main__':
             print(current_mac_address_after_login)
             if current_mac_address_after_login:
                 hub_operations.change_current_hub(current_mac_address_after_login)
-            rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address_after_login))
+
+            try:
+                rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address_after_login))
+            except OperationalError:
+                db_management.init_db()
+                rows = db_management.select('Huby', 'Rzedy', ('AdresMAC', current_mac_address_after_login))
             cols = db_management.select('Huby', 'Kolumny', ('AdresMAC', current_mac_address_after_login))
 
             # Convert the returned values to integers
@@ -438,6 +443,7 @@ if __name__ == '__main__':
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in self.hub_array:
                 for value in row:
+                    print(f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
                     button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
                                     size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)

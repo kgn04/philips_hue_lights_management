@@ -140,7 +140,7 @@ def print_db():
 
 
 if __name__ == '__main__':
-    init_db()
+    # init_db()
     # insert('Kasetony', (4, 2, 1, 64, 64, 64, 196, '00:11:22:33:44:55'))
     # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user3@example.com'))
     # update('Uzytkownicy', ('AdresMAC', 'AA:BB:CC:DD:EE:FF'), ('LoginU', 'User3'))
