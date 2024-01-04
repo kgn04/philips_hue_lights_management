@@ -21,10 +21,8 @@ def create(group_name: str) -> int:
     if group_name in db_management.select_all('Grupy', 'NazwaGr'):
         return GROUP_NAME_ALREADY_USED
     try:
-        existing_ids = db_management.select_all('Grupy', 'IdGr')
-        group_id = max(existing_ids) + 1 if existing_ids else 1
-        # group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
-    except OperationalError:
+        group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
+    except (OperationalError, ValueError):
         group_id = 1
     global current_hub_mac_address
     db_management.insert('Grupy', (group_id, group_name, current_hub_mac_address))

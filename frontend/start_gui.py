@@ -640,9 +640,10 @@ if __name__ == '__main__':
             if result == 0:
                 # Tworzenie grupy powiodło się
                 toast("Tworzenie grupy powiodło się")
-                group_id = db_management.select('Grupy', 'IdGr', ('NazwaGr', group_name))
+                group_id = db_management.select('Grupy', 'IdGr', ('NazwaGr', group_name))[0]
                 for button_id in list(self.selected_buttons):
-                    groups_operations.add_to_group(group_id[0], button_id)
+                    light_id = lights_operations.get_light_id(button_id % self.cols, int(button_id/self.cols))
+                    groups_operations.add_to_group(int(group_id), light_id)
                 self.update_group_view()
 
                 self.dismiss_popup()

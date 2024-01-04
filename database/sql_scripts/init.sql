@@ -41,7 +41,7 @@ CREATE TABLE Grupy (
     IdGr int NOT NULL,
     NazwaGr varchar(255) NOT NULL,
     AdresMAC varchar (255) NOT NULL,
-    PRIMARY KEY(IdGr)
+    PRIMARY KEY(IdGr, AdresMAC)
 );
 
 CREATE TABLE Przypisania (

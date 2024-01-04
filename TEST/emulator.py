@@ -144,7 +144,8 @@ def remove_group(group_id):
 def add_light_to_group(group_id, light_id):
     with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
         groups_dict = load(f)
-    groups_dict[str(group_id)]['lights'].append(light_id)
+    groups_dict[str(int(group_id))]['lights'].append(int(light_id))
+    print(groups_dict)
     with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
         dump(groups_dict, f)
 
