@@ -566,12 +566,63 @@ if __name__ == '__main__':
             group_name = instance.text
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
-            #  etykieta z nazwą grupy
-            group_name_label = Label(text=f"Grupa: {group_name}", halign='center')
+            group_name_label = Label(text=f"Grupa {instance.text}", halign='center')
             popup_content.add_widget(group_name_label)
 
-            group_controls_popup = Popup(title=f"Zarządzaj Grupą {group_name}", content=popup_content,
-                                         size_hint=(None, None), size=(300, 300))
+            turn_on_button = Button(text="Włącz", size_hint_y=None, )
+            turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
+
+            turn_on_button.bind(on_press=partial(groups_operations.turn_on, group_name))
+            turn_off_button.bind(on_press=partial(groups_operations.turn_off, group_name))
+
+            self.r_color, self.g_color, self.b_color = tuple(groups_operations.get_rgb(group_name))
+            self.brightness = groups_operations.get_brightness(group_name)
+
+            rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
+            red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
+            green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
+            blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
+
+            def on_slider_r(instance, value):
+                self.r_color = int(value)
+                groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+
+            def on_slider_g(instance, value):
+                self.g_color = int(value)
+                groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+
+            def on_slider_b(instance, value):
+                self.b_color = int(value)
+                groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+
+            def on_slider_brightness(instance, value):
+                self.brightness = int(value)
+                groups_operations.change_brightness(group_name, self.brightness)
+
+            red_slider.bind(value=on_slider_r)
+            green_slider.bind(value=on_slider_g)
+            blue_slider.bind(value=on_slider_b)
+
+            brightness_label = Label(text="Jasność")
+            brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
+            brightness_slider.bind(value=on_slider_brightness)
+
+            rgb_sliders_layout.add_widget(Label(text="Czerwony"))
+            rgb_sliders_layout.add_widget(red_slider)
+            rgb_sliders_layout.add_widget(Label(text="Zielony"))
+            rgb_sliders_layout.add_widget(green_slider)
+            rgb_sliders_layout.add_widget(Label(text="Niebieski"))
+            rgb_sliders_layout.add_widget(blue_slider)
+
+            popup_content.add_widget(turn_on_button)
+            popup_content.add_widget(turn_off_button)
+            popup_content.add_widget(brightness_label)
+            popup_content.add_widget(brightness_slider)
+            popup_content.add_widget(rgb_sliders_layout)
+
+            group_controls_popup = Popup(title=f"Zarządzaj grupą {group_name}", content=popup_content,
+                                         size_hint=(0.7, 0.8), )
+
             group_controls_popup.open()
 
         def add_group_popup(self, instance):

@@ -147,7 +147,6 @@ def update_lights_data():
     else:
         global request_prefix
         info_dict: dict = loads(get(url=request_prefix).text)
-    light_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', current_hub_mac_address))
     for light_id in info_dict:
         if USE_EMULATOR:
             state_dict = info_dict[(str(light_id))]
