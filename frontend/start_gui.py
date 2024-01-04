@@ -720,7 +720,7 @@ if __name__ == '__main__':
                     light_id = lights_operations.get_light_id(button_id % self.cols, int(button_id / self.cols))
                     groups_operations.add_to_group(int(group_id), light_id)
                 self.update_group_view()
-
+                self.selected_buttons.clear()
                 self.dismiss_popup()
             elif result == 1:
                 # Grupa o takiej nazwie już istnieje
