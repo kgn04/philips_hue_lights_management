@@ -200,23 +200,26 @@ if __name__ == '__main__':
             self.buttons_array = [[]]
             self.cols = None
             self.rows = None
+            self.buttons_added = False
 
         def on_enter(self, *args):
             # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
             super().on_enter(*args)
 
-            grid_size = (6, 6)  # Rozmiar siatki
-            self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
+            if not self.buttons_added:
+                grid_size = (6, 6)  # Rozmiar siatki
+                self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
-            buttons_layout = self.ids.buttons_layout
-            for i in range(36):  # 6x6 siatka, więc 36 przycisków
-                button = Button(size_hint=(0.5, 0.5))
-                button.button_id = i + 1
-                button.bind(on_press=self.button_pressed)
-                buttons_layout.add_widget(button)
+                buttons_layout = self.ids.buttons_layout
+                for i in range(36):  # 6x6 siatka, więc 36 przycisków
+                    button = Button(size_hint=(0.5, 0.5))
+                    button.button_id = i + 1
+                    button.bind(on_press=self.button_pressed)
+                    buttons_layout.add_widget(button)
 
-                row, col = divmod(i, grid_size[1])
-                self.buttons_array[row][col] = button.button_id
+                    row, col = divmod(i, grid_size[1])
+                    self.buttons_array[row][col] = button.button_id
+                self.buttons_added = True
 
         def button_pressed(self, instance):
             # Ta metoda zostanie wywołana po naciśnięciu przycisku
@@ -305,6 +308,7 @@ if __name__ == '__main__':
     class ScreenIdentifyLights(Screen):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)  # print(GRID)
+            self.buttons = []
 
         def on_enter(self, *args):
             # Ta metoda jest wywoływana, gdy ekran jest już wyświetlony
@@ -331,6 +335,7 @@ if __name__ == '__main__':
                 for y, value in enumerate(row):
                     button = Button(size_hint=(0.5, 0.5))
                     button.bind(on_press=partial(self.identifier.set_light_coord, (x, y)))
+                    self.buttons.append(button)
                     new_buttons_layout.add_widget(button)
 
             self.add_widget(new_buttons_layout)
@@ -347,6 +352,8 @@ if __name__ == '__main__':
 
         def reset_identification(self, instance):
             if self.identifier:
+                for button in self.buttons:
+                    button.background_color = [1, 1, 1, 1]
                 self.identifier.reset_identification()
                 toast("Identyfikacja przerwana. Zacznij od nowa.")
 

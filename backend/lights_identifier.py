@@ -12,11 +12,14 @@ class LightsIdentifier:
         Thread(target=self.identify_lights).start()
         self.done = False
         self.lock = False
+        self.stop = False
 
     def identify_lights(self):
         lights_ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', self.mac_address))
         for light_id in lights_ids:
             row, column = self.identify_light(light_id)
+            if self.done:
+                return
             db_management.update_with_two_conditions('Kasetony', ('Rzad', row), ('IdK', light_id),
                                                      ('AdresMAC', self.mac_address))
             db_management.update_with_two_conditions('Kasetony', ('Kolumna', column), ('IdK', light_id),
@@ -30,6 +33,9 @@ class LightsIdentifier:
             sleep(0.5)
             turn_on(light_id)
             sleep(0.5)
+            self.__reset_if_requested()
+            if self.done:
+                return 0, 0
         result = self.coords
         self.coords = None
         return result
@@ -41,8 +47,14 @@ class LightsIdentifier:
             instance.background_color = [0 / 255, 191 / 255, 255 / 255, 1]
             self.lock = True
 
+    def __reset_if_requested(self):
+        if self.stop:
+            self.stop = False
+            self.coords_history = []
+            self.identify_lights()
+
     def reset_identification(self):
-        pass
+        self.stop = True
 
 
 if __name__ == '__main__':
