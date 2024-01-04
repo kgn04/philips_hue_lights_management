@@ -92,14 +92,15 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             super(ScreenListHubs, self).__init__(**kwargs)
 
+        def on_enter(self, *args):
+            if len(self.children) == 2:
+                self.remove_widget(self.children[0])
             # Add loading screen
             loading_screen = LoadingScreen()
             self.add_widget(loading_screen)
 
             # Schedule the find_hubs function to run after a delay
-            global SCREENS_INITIALIZED
-            if SCREENS_INITIALIZED:
-                Clock.schedule_once(self.find_hubs, 0.1)
+            Clock.schedule_once(self.find_hubs, 0.1)
 
         def find_hubs(self, dt):
             self.hubs_available = self.find_hubs_to_add()
