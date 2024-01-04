@@ -328,6 +328,7 @@ if __name__ == '__main__':
                                             spacing=10)
 
             lights_operations.update_lights_data()
+            groups_operations.update_groups_data()
 
             self.identifier = LightsIdentifier(current_mac_address)
 
@@ -451,7 +452,8 @@ if __name__ == '__main__':
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in self.hub_array:
                 for value in row:
-                    print(f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
+                    print(
+                        f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
                     button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
                                     size_hint=(0.5, 0.5))
                     button.bind(on_press=self.show_light_controls)
@@ -578,7 +580,7 @@ if __name__ == '__main__':
             self.r_color, self.g_color, self.b_color = tuple(groups_operations.get_rgb(group_name))
             self.brightness = groups_operations.get_brightness(group_name)
 
-            rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
+            rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=11)
             red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
             green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
             blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
@@ -620,8 +622,22 @@ if __name__ == '__main__':
             popup_content.add_widget(brightness_slider)
             popup_content.add_widget(rgb_sliders_layout)
 
+            remove_group_button = MDFillRoundFlatButton(text="Usuń grupę", size_hint_y=None, size_hint_x=1 / 2,
+                                                        theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                        md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                        elevation_normal=20, pos_hint={'x': 0.34})
+
+            def delete_group(instance):
+                groups_operations.remove(group_name)
+                self.update_group_view()
+                toast("Grupa usunięta pomyślnie")
+                group_controls_popup.dismiss()
+
+            remove_group_button.bind(on_press=delete_group)
+            popup_content.add_widget(remove_group_button)
+
             group_controls_popup = Popup(title=f"Zarządzaj grupą {group_name}", content=popup_content,
-                                         size_hint=(0.7, 0.8), )
+                                         size_hint=(0.7, 0.9), )
 
             group_controls_popup.open()
 
@@ -701,7 +717,7 @@ if __name__ == '__main__':
                 toast("Tworzenie grupy powiodło się")
                 group_id = db_management.select('Grupy', 'IdGr', ('NazwaGr', group_name))[0]
                 for button_id in list(self.selected_buttons):
-                    light_id = lights_operations.get_light_id(button_id % self.cols, int(button_id/self.cols))
+                    light_id = lights_operations.get_light_id(button_id % self.cols, int(button_id / self.cols))
                     groups_operations.add_to_group(int(group_id), light_id)
                 self.update_group_view()
 

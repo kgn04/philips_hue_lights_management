@@ -35,7 +35,8 @@ def create(group_name: str) -> int:
     return SUCCESSFUL_OPERATION
 
 
-def remove(group_id: int) -> int:
+def remove(group_name: str, xd=None) -> int:
+    group_id = get_id_from_name(group_name)
     if group_id not in db_management.select_all('Grupy', 'IdGr'):
         return GROUP_DOES_NOT_EXIST
     db_management.delete('Grupy', ('IdGr', group_id))
@@ -193,7 +194,6 @@ def update_groups_data():
                                                     ('KolorG', rgb[1]), ('KolorB', rgb[2]), ('Jasnosc', brightness)]:
                 db_management.update_with_two_conditions('Grupy', (attribute_name, attribute_value),
                                                          ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
-
 
 
 def __change_current_hub_2(mac_address: str) -> None:
