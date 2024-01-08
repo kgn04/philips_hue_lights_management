@@ -8,6 +8,7 @@ from time import sleep
 from backend.lights_operations import __change_current_hub_1, USE_EMULATOR
 from backend.groups_operations import __change_current_hub_2
 from multiprocessing import Pool
+from sqlite3 import OperationalError, IntegrityError
 
 OPERATION_SUCCESSFUL = 0
 NO_HUB_IN_NETWORK = 1
@@ -45,7 +46,11 @@ def add_new_hub(ip_address: str, mac_address: str, name: str) -> int:
     login = __get_login(ip_address)
     if login == TIMEOUT:
         return TIMEOUT
-    db_management.insert('Huby', (mac_address, ip_address, login, name, 0, 0))
+    try:
+        db_management.insert('Huby', (mac_address, ip_address, login, name, 0, 0))
+    except (OperationalError, IntegrityError):
+        for attr_name, attr_val in [('AdresIP', ip_address), ('LoginH', login), ('Nazwa', name)]:
+            db_management.update('Huby', (attr_name, attr_val), ('AdresMAC', mac_address))
     return OPERATION_SUCCESSFUL
 
 

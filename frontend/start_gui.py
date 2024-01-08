@@ -91,6 +91,8 @@ if __name__ == '__main__':
     class ScreenListHubs(Screen):
         def __init__(self, **kwargs):
             super(ScreenListHubs, self).__init__(**kwargs)
+            self.hub_ip = None
+            self.hub_mac = None
 
         def on_enter(self, *args):
             if len(self.children) == 2:
@@ -149,19 +151,30 @@ if __name__ == '__main__':
 
         def choose_shape_add_name(self, instance):
             # przekierowanie do ekraniu ScreenChooseShape
-            self.manager.add_widget(ScreenChooseShape(name='shape'))
-            self.manager.current = 'shape'
+
 
             global current_mac_address
             current_mac_address = instance.hub_mac
 
-            try:
-                hub_operations.add_new_hub(instance.hub_ip, instance.hub_mac, '')
-            except IntegrityError:
-                pass
-            #
-            hub_operations.change_current_hub(instance.hub_mac)
-            print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
+            self.hub_mac = instance.hub_mac
+            self.hub_ip = instance.hub_ip
+
+            show_popup('Parowanie', 'Naciśnij przycisk parowania na hubie. Po minucie proces '
+                                    'jest anulowany.')
+            Clock.schedule_once(self.pair_with_hub, 0.1)
+
+        def pair_with_hub(self, instance=None):
+            result = hub_operations.add_new_hub(self.hub_ip, self.hub_mac, '')
+            if result == 2:  # TIMEOUT
+                toast('Upłynął czas na dodanie huba, spróbuj ponownie')
+            else:
+                self.manager.add_widget(ScreenChooseShape(name='shape'))
+                self.manager.current = 'shape'
+                hub_operations.change_current_hub(self.hub_mac)
+                print(f"Dodaj huba o adresie MAC: {self.hub_mac}")
+
+
+
 
 
     # wybieranie z hubów które są już w bazie i łączenie się z nim
@@ -469,13 +482,16 @@ if __name__ == '__main__':
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in self.hub_array:
                 for value in row:
-                    print(
-                        f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
-                    button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
-                                    size_hint=(0.5, 0.5))
-                    button.bind(on_press=self.show_light_controls)
-                    # buttons_layout.add_widget(button)
-                    new_buttons_layout.add_widget(button)
+                    try:
+                        print(
+                            f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
+                        button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
+                                        size_hint=(0.5, 0.5))
+                        button.bind(on_press=self.show_light_controls)
+                        # buttons_layout.add_widget(button)
+                        new_buttons_layout.add_widget(button)
+                    except TypeError:
+                        pass
 
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()

@@ -10,7 +10,7 @@ current_hub_ip: str = ''
 current_hub_mac_address = ''
 request_prefix: str = ''
 
-USE_EMULATOR = True
+USE_EMULATOR = False
 
 
 def get_light_id(column: int, row: int) -> int:
