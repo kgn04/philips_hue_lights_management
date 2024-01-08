@@ -3,8 +3,10 @@ from sqlite3 import OperationalError, IntegrityError
 from requests import delete
 from backend.lights_operations import USE_EMULATOR
 from TEST import emulator
+from requests import get, put
 import os
 from json import load, loads
+from time import time
 
 
 SUCCESSFUL_OPERATION = 0
@@ -12,6 +14,8 @@ GROUP_NAME_ALREADY_USED = 1
 GROUP_DOES_NOT_EXIST = 2
 LIGHT_ALREADY_IN_GROUP = 3
 LIGHT_NOT_IN_GROUP = 4
+
+LAST_SEND_TIME = time()
 
 current_hub_mac_address: str = ''
 current_hub_login: str = ''
@@ -202,6 +206,15 @@ def __change_current_hub_2(mac_address: str) -> None:
     current_hub_login = db_management.select('Huby', 'loginH', ('AdresMAC', mac_address))[0]
     current_hub_ip = db_management.select('Huby', 'AdresIP', ('AdresMAC', mac_address))[0]
     request_prefix = f'http://{current_hub_ip}/api/{current_hub_login}/groups/'
+
+
+def __send_put(group_id: int, body: dict) -> str:
+    global request_prefix, LAST_SEND_TIME
+    if time() - LAST_SEND_TIME > 1.0:
+        LAST_SEND_TIME = time()
+        request = f'{request_prefix}{group_id}/state'
+        return put(url=request, json=body).text
+    return ''
 
 
 if __name__ == '__main__':
