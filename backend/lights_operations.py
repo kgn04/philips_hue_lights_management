@@ -4,11 +4,13 @@ from TEST import emulator
 from backend import db_management
 from sqlite3 import IntegrityError
 import os
+from time import time
 
 current_hub_login: str = ''
 current_hub_ip: str = ''
 current_hub_mac_address = ''
 request_prefix: str = ''
+LAST_SEND_TIME = time()
 
 USE_EMULATOR = False
 
@@ -41,12 +43,14 @@ def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> None:
     global current_hub_mac_address
     if USE_EMULATOR:
         emulator.change_color(light_id, rgb)
+        response = 'OK'
     else:
         xy = rgb_to_xy(rgb)
-        __send_put(light_id, {"xy": xy})
-    for i, color in enumerate(['R', 'G', 'B']):
-        db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
-                                                 ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+        response = __send_put(light_id, {"xy": xy})
+    if response:
+        for i, color in enumerate(['R', 'G', 'B']):
+            db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
+                                                     ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
 
 
 def change_brightness(light_id: int, brightness: int, xd=None) -> None:
@@ -55,31 +59,37 @@ def change_brightness(light_id: int, brightness: int, xd=None) -> None:
     """
     if USE_EMULATOR:
         pass  # TODO
+        response = 'OK'
     else:
-        __send_put(light_id, {"bri": brightness})
-    global current_hub_mac_address
-    db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
-                                             ('AdresMAC', current_hub_mac_address))
+        response = __send_put(light_id, {"bri": brightness})
+    if response:
+        global current_hub_mac_address
+        db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
+                                                 ('AdresMAC', current_hub_mac_address))
 
 
 def turn_off(light_id: int, xd=None) -> None:
     if USE_EMULATOR:
         emulator.turn_off(light_id)
+        response = 'OK'
     else:
-        __send_put(light_id, {"on": False})
-    global current_hub_mac_address
-    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
-                                             ('AdresMAC', current_hub_mac_address))
+        response = __send_put(light_id, {"on": False})
+    if response:
+        global current_hub_mac_address
+        db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
+                                                 ('AdresMAC', current_hub_mac_address))
 
 
 def turn_on(light_id: int, xd=None) -> None:
     if USE_EMULATOR:
         emulator.turn_on(light_id)
+        response = 'OK'
     else:
-        __send_put(light_id, {"on": True})
-    global current_hub_mac_address
-    db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
-                                             ('AdresMAC', current_hub_mac_address))
+        response = __send_put(light_id, {"on": True})
+    if response:
+        global current_hub_mac_address
+        db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
+                                                 ('AdresMAC', current_hub_mac_address))
 
 
 def rgb_to_xy(rgb: tuple[int, int, int]):
@@ -184,9 +194,12 @@ def __change_current_hub_1(mac_address: str) -> None:
 
 
 def __send_put(light_id: int, body: dict) -> str:
-    global request_prefix
-    request = f'{request_prefix}{light_id}/state'
-    return put(url=request, json=body).text
+    global request_prefix, LAST_SEND_TIME
+    if time() - LAST_SEND_TIME > 0.2:
+        LAST_SEND_TIME = time()
+        request = f'{request_prefix}{light_id}/state'
+        return put(url=request, json=body).text
+    return ''
 
 
 if __name__ == '__main__':

@@ -483,15 +483,14 @@ if __name__ == '__main__':
             for row in self.hub_array:
                 for value in row:
                     try:
-                        print(
-                            f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
                         button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
-                                        size_hint=(0.5, 0.5))
+                                        size_hint=(0.5, 0.5), color=[0, 0, 0, 0])
                         button.bind(on_press=self.show_light_controls)
                         # buttons_layout.add_widget(button)
-                        new_buttons_layout.add_widget(button)
                     except TypeError:
-                        pass
+                        button = Button(size_hint=(0.5, 0.5), background_color='black')
+                        # buttons_layout.add_widget(button)
+                    new_buttons_layout.add_widget(button)
 
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
@@ -546,9 +545,6 @@ if __name__ == '__main__':
             # Funkcja wywoływana po naciśnięciu przycisku z kasetonem
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
-            light_name_label = Label(text=f"Kaseton {instance.text}", halign='center')
-            popup_content.add_widget(light_name_label)
-
             turn_on_button = Button(text="Włącz", size_hint_y=None, )
             turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
 
@@ -557,11 +553,6 @@ if __name__ == '__main__':
 
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
             self.brightness = lights_operations.get_brightness(light_id)
-
-            rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=10)
-            red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
-            green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
-            blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
 
             def on_slider_r(instance, value):
                 self.r_color = int(value)
@@ -579,28 +570,39 @@ if __name__ == '__main__':
                 self.brightness = int(value)
                 lights_operations.change_brightness(light_id, self.brightness)
 
-            red_slider.bind(value=on_slider_r)
-            green_slider.bind(value=on_slider_g)
-            blue_slider.bind(value=on_slider_b)
-
             brightness_label = Label(text="Jasność")
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
             brightness_slider.bind(value=on_slider_brightness)
 
-            rgb_sliders_layout.add_widget(Label(text="Czerwony"))
-            rgb_sliders_layout.add_widget(red_slider)
-            rgb_sliders_layout.add_widget(Label(text="Zielony"))
-            rgb_sliders_layout.add_widget(green_slider)
-            rgb_sliders_layout.add_widget(Label(text="Niebieski"))
-            rgb_sliders_layout.add_widget(blue_slider)
+            red_label = Label(text='Czerwony')
+            green_label = Label(text='Zielony')
+            blue_label = Label(text='Niebieski')
+            red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
+            green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
+            blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
+            red_slider.bind(value=on_slider_r)
+            green_slider.bind(value=on_slider_g)
+            blue_slider.bind(value=on_slider_b)
+
+            # rgb_sliders_layout.add_widget(Label(text="Czerwony"))
+            # rgb_sliders_layout.add_widget(red_slider)
+            # rgb_sliders_layout.add_widget(Label(text="Zielony"))
+            # rgb_sliders_layout.add_widget(green_slider)
+            # rgb_sliders_layout.add_widget(Label(text="Niebieski"))
+            # rgb_sliders_layout.add_widget(blue_slider)
 
             popup_content.add_widget(turn_on_button)
             popup_content.add_widget(turn_off_button)
             popup_content.add_widget(brightness_label)
             popup_content.add_widget(brightness_slider)
-            popup_content.add_widget(rgb_sliders_layout)
+            popup_content.add_widget(red_label)
+            popup_content.add_widget(red_slider)
+            popup_content.add_widget(green_label)
+            popup_content.add_widget(green_slider)
+            popup_content.add_widget(blue_label)
+            popup_content.add_widget(blue_slider)
 
-            light_controls_popup = Popup(title=f"Zarządzaj Kasetonem {instance.text}", content=popup_content,
+            light_controls_popup = Popup(title=f"Zarządzanie kasetonem", content=popup_content,
                                          size_hint=(0.7, 0.8), )
             light_controls_popup.open()
 
