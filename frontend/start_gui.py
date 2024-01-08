@@ -1,6 +1,8 @@
+
 if __name__ == '__main__':
     from array import *
     from multiprocessing import freeze_support
+    from kivymd.uix.menu import MDDropdownMenu
     from kivy.core.window import Window
     from kivymd.toast import toast
     from kivy.uix.togglebutton import ToggleButton
@@ -493,6 +495,7 @@ if __name__ == '__main__':
                     except TypeError:
                         pass
 
+
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
             self.right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
@@ -513,8 +516,21 @@ if __name__ == '__main__':
             # Dodaj główny układ do ekranu
             self.add_widget(main_layout)
 
+            hub_button = MDFillRoundFlatButton(
+                text="Zmień huba",
+                size_hint=(1 / 4, 1 / 11),
+                pos_hint={'x': 0.10, 'y': 0.1},
+                theme_text_color="Custom",
+                text_color=[0, 0, 0, 1],
+                md_bg_color='deepskyblue',
+                elevation_normal=20,
+            )
+            hub_button.bind(on_press=self.show_hub_menu)
+
+            self.add_widget(hub_button)
+
             logout_button = MDFillRoundFlatButton(text="Wyloguj", size_hint=(1 / 10, 1 / 11),
-                                                  pos_hint={'x': 0.45, 'y': 0.1},
+                                                  pos_hint={'x': 0.65, 'y': 0.1},
                                                   theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                   md_bg_color='deepskyblue',
                                                   elevation_normal=20, )
@@ -782,6 +798,24 @@ if __name__ == '__main__':
             for widget in Window.children[:]:
                 if isinstance(widget, Popup):
                     widget.dismiss()
+
+        def show_hub_menu(self, instance):
+            hubs_available_names = db_management.select_all("Huby", "Nazwa")
+            hubs_available_macs = db_management.select_all("Huby", "AdresMAC")
+            hubs_combined = ["{}:   {}".format(name, mac) for name, mac in zip(hubs_available_names, hubs_available_macs)]
+
+            menu_items = [{"viewclass": "OneLineListItem", "text": str(hub_info)} for hub_info in
+                          hubs_combined]
+
+            menu = MDDropdownMenu(
+                caller=instance,
+                items=menu_items,
+                position="auto",
+                width_mult=4,
+            )
+            # TODO change current hub here?
+            #menu.bind(on_release=self.set_current_hub)
+            menu.open()
 
         def show_logout_confirmation(self, instance):
             # Funkcja wywoływana po naciśnięciu przycisku wylogowania
