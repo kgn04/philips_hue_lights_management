@@ -1,6 +1,7 @@
 if __name__ == '__main__':
     from array import *
     from multiprocessing import freeze_support
+    from kivymd.uix.menu import MDDropdownMenu
     from kivy.core.window import Window
     from kivymd.toast import toast
     from kivy.uix.togglebutton import ToggleButton
@@ -91,6 +92,8 @@ if __name__ == '__main__':
     class ScreenListHubs(Screen):
         def __init__(self, **kwargs):
             super(ScreenListHubs, self).__init__(**kwargs)
+            self.hub_ip = None
+            self.hub_mac = None
 
         def on_enter(self, *args):
             if len(self.children) == 2:
@@ -149,19 +152,26 @@ if __name__ == '__main__':
 
         def choose_shape_add_name(self, instance):
             # przekierowanie do ekraniu ScreenChooseShape
-            self.manager.add_widget(ScreenChooseShape(name='shape'))
-            self.manager.current = 'shape'
 
             global current_mac_address
             current_mac_address = instance.hub_mac
 
-            try:
-                hub_operations.add_new_hub(instance.hub_ip, instance.hub_mac, '')
-            except IntegrityError:
-                pass
-            #
-            hub_operations.change_current_hub(instance.hub_mac)
-            print(f"Dodaj huba o adresie MAC: {instance.hub_mac}")
+            self.hub_mac = instance.hub_mac
+            self.hub_ip = instance.hub_ip
+
+            show_popup('Parowanie', 'Naciśnij przycisk parowania na hubie. Po minucie proces '
+                                    'jest anulowany.')
+            Clock.schedule_once(self.pair_with_hub, 0.1)
+
+        def pair_with_hub(self, instance=None):
+            result = hub_operations.add_new_hub(self.hub_ip, self.hub_mac, '')
+            if result == 2:  # TIMEOUT
+                toast('Upłynął czas na dodanie huba, spróbuj ponownie')
+            else:
+                self.manager.add_widget(ScreenChooseShape(name='shape'))
+                self.manager.current = 'shape'
+                hub_operations.change_current_hub(self.hub_mac)
+                print(f"Dodaj huba o adresie MAC: {self.hub_mac}")
 
 
     # wybieranie z hubów które są już w bazie i łączenie się z nim
@@ -328,7 +338,7 @@ if __name__ == '__main__':
                                             spacing=10)
 
             lights_operations.update_lights_data()
-            groups_operations.update_groups_data()
+            # groups_operations.update_groups_data()
 
             self.identifier = LightsIdentifier(current_mac_address)
 
@@ -406,6 +416,23 @@ if __name__ == '__main__':
             elif result == 5:
                 show_popup("Rejestracja", "Niepoprawna nazwa użytkownika")
 
+        def show_info_dialog(self):
+            content = BoxLayout(orientation='vertical', spacing=10, padding=20)
+            email_requirements = "Wymagania dotyczące adresu e-mail:"
+            email_label = Label(text=f"[b]{email_requirements}[/b]", markup=True)
+            content.add_widget(email_label)
+            content.add_widget(Label(text="- Konto o podanym adresie e-mail nie może już istnieć"))
+
+            password_requirements = "Wymagania dotyczące hasła:"
+            password_label = Label(text=f"[b]{password_requirements}[/b]", markup=True)
+            content.add_widget(password_label)
+            content.add_widget(Label(text="- Hasło powinno zawierać co najmniej 8 znaków"))
+            content.add_widget(Label(text="- Hasło powinno zawierać przynajmniej jedną wielką literę"))
+            content.add_widget(Label(text="- Hasło powinno zawierać przynajmniej jedną cyfrę"))
+
+            info_popup = Popup(title="Pomoc", content=content, size_hint=(0.55, 0.55))
+            info_popup.open()
+
 
     class ManageLightsScreen(Screen):
         def __init__(self, **kwargs):
@@ -423,8 +450,13 @@ if __name__ == '__main__':
             self.buttons_array = [[]]
             self.group_name_input = None
             self.right_layout = None
+            self.left_layout = None
+            self.current_hub_label = None
 
             print(current_mac_address_after_login)
+            self.create_layout()
+
+        def create_layout(self):
             if current_mac_address_after_login:
                 hub_operations.change_current_hub(current_mac_address_after_login)
 
@@ -446,25 +478,30 @@ if __name__ == '__main__':
             self.hub_array = np.arange(rows * cols).reshape(rows, cols)
             print(self.hub_array)
 
-            new_buttons_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
-                                            spacing=10)
+            self.left_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
+                                          spacing=10)
 
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in self.hub_array:
                 for value in row:
-                    print(
-                        f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
-                    button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
-                                    size_hint=(0.5, 0.5))
-                    button.bind(on_press=self.show_light_controls)
-                    # buttons_layout.add_widget(button)
-                    new_buttons_layout.add_widget(button)
+                    try:
+                        print(
+                            f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
+                        button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
+                                        size_hint=(0.5, 0.5))
+                        button.bind(on_press=self.show_light_controls)
+                        # buttons_layout.add_widget(button)
+                        self.left_layout.add_widget(button)
+                    except TypeError:
+                        pass
 
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
             self.right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
             self.right_layout.bind(minimum_height=self.right_layout.setter('height'))
-            groups = db_management.select_all("Grupy", "NazwaGr")
+            groups_names = db_management.select_all("Grupy", "NazwaGr")
+            groups_macs = db_management.select_all("Grupy", "AdresMAC")
+            groups = list(zip(groups_names, groups_macs))
             # groups = ["Grupa 1","Grupa 2"]
 
             # Dodaj utworzone grupy kasetonów
@@ -474,21 +511,45 @@ if __name__ == '__main__':
 
             # Utwórz główny układ (BoxLayout) dla całego ekranu
             main_layout = BoxLayout(spacing=30, size_hint=(0.9, 0.5), pos_hint={'x': 0.05, 'y': 0.2})
-            main_layout.add_widget(new_buttons_layout)
+            main_layout.add_widget(self.left_layout)
             main_layout.add_widget(scroll_view)
 
             # Dodaj główny układ do ekranu
             self.add_widget(main_layout)
 
+            self.update_hub_name_label()
+
+            hub_button = MDFillRoundFlatButton(
+                text="Zmień huba",
+                size_hint=(1 / 4, 1 / 12),
+                pos_hint={'x': 0.10, 'y': 0.05},
+                theme_text_color="Custom",
+                text_color=[0, 0, 0, 1],
+                md_bg_color='deepskyblue',
+                elevation_normal=20,
+            )
+            hub_button.bind(on_press=self.show_hub_menu)
+
+            self.add_widget(hub_button)
+
+            logout_button = MDFillRoundFlatButton(text="Wyloguj", size_hint=(1 / 10, 1 / 12),
+                                                  pos_hint={'x': 0.65, 'y': 0.05},
+                                                  theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                  md_bg_color='deepskyblue',
+                                                  elevation_normal=20, )
+            logout_button.bind(on_press=self.show_logout_confirmation)
+            self.add_widget(logout_button)
+
         def create_right_layout(self, groups):
-            for group_name in groups:
-                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
-                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                     elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
-                # group_button = Button(text=group_name, size_hint_y=None, height=40)
-                group_button.bind(on_press=self.show_group_controls)
-                self.right_layout.add_widget(group_button)
+            for group_name, group_mac in groups:
+                if group_mac == current_mac_address_after_login:
+                    group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
+                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                         md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                         elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
+                    # group_button = Button(text=group_name, size_hint_y=None, height=40)
+                    group_button.bind(on_press=self.show_group_controls)
+                    self.right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
             add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, size_hint_x=1 / 2,
@@ -498,6 +559,23 @@ if __name__ == '__main__':
             add_group_button.bind(on_press=self.add_group_popup)
             self.right_layout.add_widget(add_group_button)
             return self.right_layout
+
+        def update_hub_name_label(self):
+            current_hub_name = (db_management.select("Huby", "Nazwa", ("AdresMAC", current_mac_address_after_login)))
+            print(current_hub_name)
+            current_hub_name2 = ''
+            if len(current_hub_name) > 0:
+                current_hub_name2 = current_hub_name[0]
+
+            if not self.current_hub_label:
+                self.current_hub_label = Label(
+                    text=f"Twój Hub: {current_hub_name2} ({current_mac_address_after_login})",
+                    size_hint=(1 / 2, 1 / 12),
+                    pos_hint={'x': 0, 'y': 0.15},
+                    color='deepskyblue', )
+                self.add_widget(self.current_hub_label)
+            else:
+                self.current_hub_label.text = f"Twój Hub: {current_hub_name2} ({current_mac_address_after_login})"
 
         def show_light_controls(self, instance):
             light_id = int(instance.text)
@@ -538,28 +616,39 @@ if __name__ == '__main__':
                 self.brightness = int(value)
                 lights_operations.change_brightness(light_id, self.brightness)
 
-            red_slider.bind(value=on_slider_r)
-            green_slider.bind(value=on_slider_g)
-            blue_slider.bind(value=on_slider_b)
-
             brightness_label = Label(text="Jasność")
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
             brightness_slider.bind(value=on_slider_brightness)
 
-            rgb_sliders_layout.add_widget(Label(text="Czerwony"))
-            rgb_sliders_layout.add_widget(red_slider)
-            rgb_sliders_layout.add_widget(Label(text="Zielony"))
-            rgb_sliders_layout.add_widget(green_slider)
-            rgb_sliders_layout.add_widget(Label(text="Niebieski"))
-            rgb_sliders_layout.add_widget(blue_slider)
+            red_label = Label(text='Czerwony')
+            green_label = Label(text='Zielony')
+            blue_label = Label(text='Niebieski')
+            red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
+            green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
+            blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
+            red_slider.bind(value=on_slider_r)
+            green_slider.bind(value=on_slider_g)
+            blue_slider.bind(value=on_slider_b)
+
+            # rgb_sliders_layout.add_widget(Label(text="Czerwony"))
+            # rgb_sliders_layout.add_widget(red_slider)
+            # rgb_sliders_layout.add_widget(Label(text="Zielony"))
+            # rgb_sliders_layout.add_widget(green_slider)
+            # rgb_sliders_layout.add_widget(Label(text="Niebieski"))
+            # rgb_sliders_layout.add_widget(blue_slider)
 
             popup_content.add_widget(turn_on_button)
             popup_content.add_widget(turn_off_button)
             popup_content.add_widget(brightness_label)
             popup_content.add_widget(brightness_slider)
-            popup_content.add_widget(rgb_sliders_layout)
+            popup_content.add_widget(red_label)
+            popup_content.add_widget(red_slider)
+            popup_content.add_widget(green_label)
+            popup_content.add_widget(green_slider)
+            popup_content.add_widget(blue_label)
+            popup_content.add_widget(blue_slider)
 
-            light_controls_popup = Popup(title=f"Zarządzaj Kasetonem {instance.text}", content=popup_content,
+            light_controls_popup = Popup(title=f"Zarządzanie kasetonem", content=popup_content,
                                          size_hint=(0.7, 0.8), )
             light_controls_popup.open()
 
@@ -730,7 +819,9 @@ if __name__ == '__main__':
 
         def update_group_view(self):
             # Funkcja do aktualizacji widoku grup
-            groups = db_management.select_all("Grupy", "NazwaGr")
+            groups_names = db_management.select_all("Grupy", "NazwaGr")
+            groups_macs = db_management.select_all("Grupy", "AdresMAC")
+            groups = list(zip(groups_names, groups_macs))
             right_layout = self.right_layout  # Uzyskaj dostęp do kontenera przechowującego przyciski grup
             right_layout.clear_widgets()  # Wyczyść obecne przyciski grup
 
@@ -741,6 +832,61 @@ if __name__ == '__main__':
             for widget in Window.children[:]:
                 if isinstance(widget, Popup):
                     widget.dismiss()
+
+        def show_hub_menu(self, instance):
+            hubs_available_names = db_management.select_all("Huby", "Nazwa")
+            hubs_available_macs = db_management.select_all("Huby", "AdresMAC")
+
+            menu_items = [{"viewclass": "OneLineListItem", "text": str(name + ":  " + mac),
+                           "on_release": lambda x=mac: self.set_current_hub(x, menu)} for name, mac in
+                          zip(hubs_available_names, hubs_available_macs)]
+
+            menu = MDDropdownMenu(
+                caller=instance,
+                items=menu_items,
+                position="auto",
+                width_mult=4,
+            )
+
+            instance.menu = menu
+            menu.open()
+
+        def set_current_hub(self, new_mac_address, instance):
+            print('nowy hub: ' + new_mac_address)
+            global current_mac_address_after_login
+            current_mac_address_after_login = new_mac_address
+            print('nowy hub2: ' + current_mac_address_after_login)
+            hub_operations.change_current_hub(new_mac_address)
+            self.update_whole_layout()
+            instance.dismiss()
+
+
+        def update_whole_layout(self):
+            self.left_layout.clear_widgets()
+            self.right_layout.clear_widgets()
+            self.create_layout()
+            # self.update_group_view()
+
+        def show_logout_confirmation(self, instance):
+            # Funkcja wywoływana po naciśnięciu przycisku wylogowania
+            confirmation_popup = Popup(title='Wylogowywanie',
+                                       content=BoxLayout(orientation='vertical', spacing=20),
+                                       size_hint=(1 / 3, 1 / 3))
+            confirmation_popup.content.add_widget(Label(text='Czy na pewno chcesz się wylogować?'))
+            buttons_layout = BoxLayout(orientation='horizontal')
+            yes_button = Button(text='Tak', size_hint=(1 / 2, 2 / 3))
+            yes_button.bind(on_press=self.logout_user)
+            no_button = Button(text='Nie', size_hint=(1 / 2, 2 / 3))
+            no_button.bind(on_press=confirmation_popup.dismiss)
+            buttons_layout.add_widget(yes_button)
+            buttons_layout.add_widget(no_button)
+            confirmation_popup.content.add_widget(buttons_layout)
+            confirmation_popup.open()
+
+        def logout_user(self, instance):
+            self.dismiss_popup()
+            toast("Zostałeś wylogowany")
+            self.manager.current = 'login'
 
 
     class MyApp(MDApp):

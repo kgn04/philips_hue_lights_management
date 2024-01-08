@@ -30,9 +30,9 @@ class LightsIdentifier:
     def identify_light(self, light_id) -> tuple[int, int]:
         while not self.coords:
             turn_off(light_id)
-            sleep(0.5)
+            sleep(1.0)
             turn_on(light_id)
-            sleep(0.5)
+            sleep(1.0)
             self.__reset_if_requested()
             if self.done:
                 return 0, 0
