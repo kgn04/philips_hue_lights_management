@@ -328,7 +328,7 @@ if __name__ == '__main__':
                                             spacing=10)
 
             lights_operations.update_lights_data()
-            groups_operations.update_groups_data()
+            # groups_operations.update_groups_data()
 
             self.identifier = LightsIdentifier(current_mac_address)
 
@@ -479,6 +479,14 @@ if __name__ == '__main__':
 
             # Dodaj główny układ do ekranu
             self.add_widget(main_layout)
+
+            logout_button = MDFillRoundFlatButton(text="Wyloguj", size_hint=(1 /10 , 1 / 11),
+                                                  pos_hint={'x': 0.45, 'y': 0.1},
+                                                  theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                  md_bg_color='deepskyblue',
+                                                  elevation_normal=20, )
+            logout_button.bind(on_press=self.show_logout_confirmation)
+            self.add_widget(logout_button)
 
         def create_right_layout(self, groups):
             for group_name in groups:
@@ -741,6 +749,27 @@ if __name__ == '__main__':
             for widget in Window.children[:]:
                 if isinstance(widget, Popup):
                     widget.dismiss()
+
+        def show_logout_confirmation(self, instance):
+            # Funkcja wywoływana po naciśnięciu przycisku wylogowania
+            confirmation_popup = Popup(title='Wylogowywanie',
+                                       content=BoxLayout(orientation='vertical', spacing=20),
+                                       size_hint=(1 / 3, 1 / 3))
+            confirmation_popup.content.add_widget(Label(text='Czy na pewno chcesz się wylogować?'))
+            buttons_layout = BoxLayout(orientation='horizontal')
+            yes_button = Button(text='Tak', size_hint=(1 / 2, 2 / 3))
+            yes_button.bind(on_press=self.logout_user)
+            no_button = Button(text='Nie', size_hint=(1 / 2, 2 / 3))
+            no_button.bind(on_press=confirmation_popup.dismiss)
+            buttons_layout.add_widget(yes_button)
+            buttons_layout.add_widget(no_button)
+            confirmation_popup.content.add_widget(buttons_layout)
+            confirmation_popup.open()
+
+        def logout_user(self, instance):
+            self.dismiss_popup()
+            toast("Zostałeś wylogowany")
+            self.manager.current = 'login'
 
 
     class MyApp(MDApp):

@@ -9,6 +9,7 @@ INCORRECT_EMAIL = 3
 INCORRECT_PASSWORD = 4
 INCORRECT_USERNAME = 5
 NONEXISTENT_EMAIL = 6
+LOGOUT_SUCCESSFUL = 7
 
 
 def validate_email(email: str) -> bool:
@@ -49,3 +50,13 @@ def login(email: str, password: str) -> int:
     except OperationalError:
         return INCORRECT_EMAIL
     return OPERATION_SUCCESSFUL
+
+
+def logout(email: str) -> int:
+    try:
+        if db_management.select('Uzytkownicy', 'Email', ('Email', email)):
+            return LOGOUT_SUCCESSFUL
+        else:
+            return NONEXISTENT_EMAIL
+    except OperationalError:
+        return INCORRECT_EMAIL
