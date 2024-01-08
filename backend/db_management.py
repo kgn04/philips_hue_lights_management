@@ -6,7 +6,7 @@ attributes: dict[str, str] = {
     'Przydzielenia': '(Email, AdresMAC)',
     'Kasetony': '(IdK, Rzad, Kolumna, CzyWlaczony, Jasnosc, KolorR, KolorG, KolorB, AdresMAC)',
     'Grupy': '(IdGr, NazwaGr, CzyWlaczone, Jasnosc, KolorR, KolorG, KolorB, AdresMAC)',
-    'Przypisania': '(IdGr, IdK)'
+    'Przypisania': '(IdGr, IdK, AdresMAC)'
 }
 
 DB_ABS_PATH = f'{os.path.join(os.path.dirname(__file__), "..")}/database'
@@ -84,18 +84,41 @@ def delete(table_name: str, where_attribute: tuple):
     if table_name == 'Huby':
         for mac_address in select('Huby', 'AdresMAC', where_attribute):
             delete('Kasetony', ('AdresMAC', mac_address))
-            delete('Przydzielenia', ('AdresMAC', mac_address))
             delete('Grupy', ('AdresMAC', mac_address))
+            delete('Przypisania', ('AdresMAC', mac_address))
+            update('Uzytkownicy', ('AdresMAC', ''), ('AdresMAC', mac_address))
     elif table_name == 'Kasetony':
-        for light_id in select('Kasetony', 'IdK', where_attribute):
-            delete('Przypisania', ('IdK', light_id))
+        for mac_address in select('Kasetony', 'AdresMAC', where_attribute):
+            for light_id in select('Kasetony', 'IdK', where_attribute):
+                delete_with_two_conditions('Przypisania', ('IdK', light_id), ('AdresMAC', mac_address))
     elif table_name == 'Grupy':
-        for group_id in select('Grupy', 'IdGr', where_attribute):
-            delete('Przypisania', ('IdGr', group_id))
-    elif table_name == 'Uzytkownicy':
-        for email in select('Uzytkownicy', 'Email', where_attribute):
-            delete('Przydzielenia', ('Email', email))
+        for mac_address in select('Grupy', 'AdresMAC', where_attribute):
+            for group_id in select('Grupy', 'IdGr', where_attribute):
+                delete_with_two_conditions('Przypisania', ('IdGr', group_id), ('AdresMAC', mac_address))
     cursor.execute(f"DELETE FROM {table_name} WHERE {where_attribute[0]} = {parsed_where_value};")
+    disconnect_from_db(connection, cursor)
+
+
+def delete_with_two_conditions(table_name: str, where_attribute_1: tuple, where_attribute_2: tuple):
+    parsed_where_value_1 = parse_to_sql(where_attribute_1[1])
+    parsed_where_value_2 = parse_to_sql(where_attribute_2[1])
+    connection, cursor = connect_to_db()
+    if table_name == 'Huby':
+        for mac_address in select_with_two_conditions('Huby', 'AdresMAC', where_attribute_1, where_attribute_2):
+            delete('Kasetony', ('AdresMAC', mac_address))
+            delete('Grupy', ('AdresMAC', mac_address))
+            delete('Przypisania', ('AdresMAC', mac_address))
+            update('Uzytkownicy', ('AdresMAC', ''), ('AdresMAC', mac_address))
+    elif table_name == 'Kasetony':
+        for mac_address in select_with_two_conditions('Kasetony', 'AdresMAC', where_attribute_1, where_attribute_2):
+            for light_id in select_with_two_conditions('Kasetony', 'IdK', where_attribute_1, where_attribute_2):
+                delete_with_two_conditions('Przypisania', ('IdK', light_id), ('AdresMAC', mac_address))
+    elif table_name == 'Grupy':
+        for mac_address in select_with_two_conditions('Grupy', 'AdresMAC', where_attribute_1, where_attribute_2):
+            for group_id in select_with_two_conditions('Grupy', 'IdGr', where_attribute_1, where_attribute_2):
+                delete_with_two_conditions('Przypisania', ('IdGr', group_id), ('AdresMAC', mac_address))
+    cursor.execute(f"DELETE FROM {table_name} WHERE {where_attribute_1[0]} = {parsed_where_value_1} "
+                   f"AND {where_attribute_2[0]} = {parsed_where_value_2};")
     disconnect_from_db(connection, cursor)
 
 
@@ -141,11 +164,4 @@ def print_db():
 
 if __name__ == '__main__':
     # init_db()
-    # insert('Kasetony', (4, 2, 1, 64, 64, 64, 196, '00:11:22:33:44:55'))
-    # update('Uzytkownicy', ('Haslo', 'NewPassword'), ('Email', 'user3@example.com'))
-    # update('Uzytkownicy', ('AdresMAC', 'AA:BB:CC:DD:EE:FF'), ('LoginU', 'User3'))
-    # delete('Huby', ('AdresIP', '192.168.1.2'))
-    # delete('Uzytkownicy', ('Username', 'User1'))
-    # delete('Kasetony', ('IdK', 2))
-    # print(select('Uzytkownicy', 'AdresMAC', ('Haslo', 'NewPassword')))
     print_db()

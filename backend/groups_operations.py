@@ -43,7 +43,9 @@ def remove(group_name: str, xd=None) -> int:
     group_id = get_id_from_name(group_name)
     if group_id not in db_management.select_all('Grupy', 'IdGr'):
         return GROUP_DOES_NOT_EXIST
-    db_management.delete('Grupy', ('IdGr', group_id))
+    global current_hub_mac_address
+    db_management.delete_with_two_conditions('Grupy', ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
+    db_management.delete_with_two_conditions('Przypisania', ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
     global request_prefix
     if USE_EMULATOR:
         emulator.remove_group(group_id)
@@ -55,7 +57,8 @@ def remove(group_name: str, xd=None) -> int:
 def add_to_group(group_id: int, light_id: int) -> int:
     if light_id in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
         return LIGHT_ALREADY_IN_GROUP
-    db_management.insert('Przypisania', (group_id, light_id))
+    global current_hub_mac_address
+    db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
     if USE_EMULATOR:
         emulator.add_light_to_group(group_id, light_id)
     else:
@@ -64,9 +67,11 @@ def add_to_group(group_id: int, light_id: int) -> int:
 
 
 def delete_from_group(group_id: int, light_id: int) -> int:
-    if light_id not in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
+    global current_hub_mac_address
+    if light_id not in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                                ('AdresMAC', current_hub_mac_address)):
         return LIGHT_NOT_IN_GROUP
-    db_management.delete('Przypisania', ('IdK', light_id))
+    db_management.delete_with_two_conditions('Przypisania', ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
     if USE_EMULATOR:
         emulator.remove_light_from_group(group_id, light_id)
     else:
@@ -109,7 +114,8 @@ def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
         emulator.change_color_group(group_id, rgb)
     else:
         pass  # TODO
-    for light_id in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
+    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                             ('AdresMAC', current_hub_mac_address)):
         for i, color in enumerate(['R', 'G', 'B']):
             db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
                                                      ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
@@ -128,7 +134,8 @@ def change_brightness(group_name: str, brightness: int, xd=None) -> None:
     else:
         pass  # TODO
     global current_hub_mac_address
-    for light_id in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
+    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                             ('AdresMAC', current_hub_mac_address)):
         db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
                                                  ('AdresMAC', current_hub_mac_address))
     db_management.update_with_two_conditions('Grupy', ('Jasnosc', brightness), ('IdGr', group_id),
@@ -142,7 +149,8 @@ def turn_off(group_name: str, xd=None) -> None:
     else:
         pass  # TODO
     global current_hub_mac_address
-    for light_id in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
+    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                             ('AdresMAC', current_hub_mac_address)):
         db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
                                                  ('AdresMAC', current_hub_mac_address))
     db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', False), ('IdGr', group_id),
@@ -156,7 +164,8 @@ def turn_on(group_name: str, xd=None) -> None:
     else:
         pass  # TODO
     global current_hub_mac_address
-    for light_id in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
+    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                             ('AdresMAC', current_hub_mac_address)):
         db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
                                                  ('AdresMAC', current_hub_mac_address))
     db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', True), ('IdGr', group_id),
@@ -193,11 +202,16 @@ def update_groups_data():
         try:
             db_management.insert('Grupy',
                                  (group_id, name, is_on, brightness, rgb[0], rgb[1], rgb[2], current_hub_mac_address))
-        except IntegrityError as e:
+        except IntegrityError:
             for attribute_name, attribute_value in [('NazwaGr', name), ('CzyWlaczone', int(is_on)), ('KolorR', rgb[0]),
                                                     ('KolorG', rgb[1]), ('KolorB', rgb[2]), ('Jasnosc', brightness)]:
                 db_management.update_with_two_conditions('Grupy', (attribute_name, attribute_value),
                                                          ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
+        try:
+            for light_id in lights_ids:
+                db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
+        except IntegrityError:
+            pass
 
 
 def __change_current_hub_2(mac_address: str) -> None:
