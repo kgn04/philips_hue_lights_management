@@ -1,4 +1,3 @@
-
 if __name__ == '__main__':
     from array import *
     from multiprocessing import freeze_support
@@ -154,7 +153,6 @@ if __name__ == '__main__':
         def choose_shape_add_name(self, instance):
             # przekierowanie do ekraniu ScreenChooseShape
 
-
             global current_mac_address
             current_mac_address = instance.hub_mac
 
@@ -174,9 +172,6 @@ if __name__ == '__main__':
                 self.manager.current = 'shape'
                 hub_operations.change_current_hub(self.hub_mac)
                 print(f"Dodaj huba o adresie MAC: {self.hub_mac}")
-
-
-
 
 
     # wybieranie z hubów które są już w bazie i łączenie się z nim
@@ -456,6 +451,7 @@ if __name__ == '__main__':
             self.group_name_input = None
             self.right_layout = None
             self.left_layout = None
+            self.current_hub_label = None
 
             print(current_mac_address_after_login)
             self.create_layout()
@@ -521,10 +517,12 @@ if __name__ == '__main__':
             # Dodaj główny układ do ekranu
             self.add_widget(main_layout)
 
+            self.update_hub_name_label()
+
             hub_button = MDFillRoundFlatButton(
                 text="Zmień huba",
-                size_hint=(1 / 4, 1 / 11),
-                pos_hint={'x': 0.10, 'y': 0.1},
+                size_hint=(1 / 4, 1 / 12),
+                pos_hint={'x': 0.10, 'y': 0.05},
                 theme_text_color="Custom",
                 text_color=[0, 0, 0, 1],
                 md_bg_color='deepskyblue',
@@ -534,8 +532,8 @@ if __name__ == '__main__':
 
             self.add_widget(hub_button)
 
-            logout_button = MDFillRoundFlatButton(text="Wyloguj", size_hint=(1 / 10, 1 / 11),
-                                                  pos_hint={'x': 0.65, 'y': 0.1},
+            logout_button = MDFillRoundFlatButton(text="Wyloguj", size_hint=(1 / 10, 1 / 12),
+                                                  pos_hint={'x': 0.65, 'y': 0.05},
                                                   theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                   md_bg_color='deepskyblue',
                                                   elevation_normal=20, )
@@ -561,6 +559,23 @@ if __name__ == '__main__':
             add_group_button.bind(on_press=self.add_group_popup)
             self.right_layout.add_widget(add_group_button)
             return self.right_layout
+
+        def update_hub_name_label(self):
+            current_hub_name = (db_management.select("Huby", "Nazwa", ("AdresMAC", current_mac_address_after_login)))
+            print(current_hub_name)
+            current_hub_name2 = ''
+            if len(current_hub_name) > 0:
+                current_hub_name2 = current_hub_name[0]
+
+            if not self.current_hub_label:
+                self.current_hub_label = Label(
+                    text=f"Twój Hub: {current_hub_name2} ({current_mac_address_after_login})",
+                    size_hint=(1 / 2, 1 / 12),
+                    pos_hint={'x': 0, 'y': 0.15},
+                    color='deepskyblue', )
+                self.add_widget(self.current_hub_label)
+            else:
+                self.current_hub_label.text = f"Twój Hub: {current_hub_name2} ({current_mac_address_after_login})"
 
         def show_light_controls(self, instance):
             light_id = int(instance.text)
@@ -821,13 +836,9 @@ if __name__ == '__main__':
         def show_hub_menu(self, instance):
             hubs_available_names = db_management.select_all("Huby", "Nazwa")
             hubs_available_macs = db_management.select_all("Huby", "AdresMAC")
-            # hubs_combined = ["{}:   {}".format(name, mac) for name, mac in
-            #                  zip(hubs_available_names, hubs_available_macs)]
-            #
-            # menu_items = [{"viewclass": "OneLineListItem", "text": str(hub_info)} for hub_info in
-            #               hubs_combined]
+
             menu_items = [{"viewclass": "OneLineListItem", "text": str(name + ":  " + mac),
-                           "on_release": lambda x=mac: self.set_current_hub(x)} for name, mac in
+                           "on_release": lambda x=mac: self.set_current_hub(x, menu)} for name, mac in
                           zip(hubs_available_names, hubs_available_macs)]
 
             menu = MDDropdownMenu(
@@ -837,18 +848,18 @@ if __name__ == '__main__':
                 width_mult=4,
             )
 
-            # TODO change current hub here?
+            instance.menu = menu
             menu.open()
 
-        def set_current_hub(self, new_mac_address):
+        def set_current_hub(self, new_mac_address, instance):
             print('nowy hub: ' + new_mac_address)
             global current_mac_address_after_login
             current_mac_address_after_login = new_mac_address
             print('nowy hub2: ' + current_mac_address_after_login)
             hub_operations.change_current_hub(new_mac_address)
             self.update_whole_layout()
+            instance.dismiss()
 
-            # hub_operations.change_current_hub()
 
         def update_whole_layout(self):
             self.left_layout.clear_widgets()
