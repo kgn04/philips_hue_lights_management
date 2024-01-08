@@ -406,6 +406,23 @@ if __name__ == '__main__':
             elif result == 5:
                 show_popup("Rejestracja", "Niepoprawna nazwa użytkownika")
 
+        def show_info_dialog(self):
+            content = BoxLayout(orientation='vertical', spacing=10, padding=20)
+            email_requirements = "Wymagania dotyczące adresu e-mail:"
+            email_label = Label(text=f"[b]{email_requirements}[/b]", markup=True)
+            content.add_widget(email_label)
+            content.add_widget(Label(text="- Konto o podanym adresie e-mail nie może już istnieć"))
+
+            password_requirements = "Wymagania dotyczące hasła:"
+            password_label = Label(text=f"[b]{password_requirements}[/b]", markup=True)
+            content.add_widget(password_label)
+            content.add_widget(Label(text="- Hasło powinno zawierać co najmniej 8 znaków"))
+            content.add_widget(Label(text="- Hasło powinno zawierać przynajmniej jedną wielką literę"))
+            content.add_widget(Label(text="- Hasło powinno zawierać przynajmniej jedną cyfrę"))
+
+            info_popup = Popup(title="Pomoc", content=content, size_hint=(0.55, 0.55))
+            info_popup.open()
+
 
     class ManageLightsScreen(Screen):
         def __init__(self, **kwargs):
@@ -480,7 +497,7 @@ if __name__ == '__main__':
             # Dodaj główny układ do ekranu
             self.add_widget(main_layout)
 
-            logout_button = MDFillRoundFlatButton(text="Wyloguj", size_hint=(1 /10 , 1 / 11),
+            logout_button = MDFillRoundFlatButton(text="Wyloguj", size_hint=(1 / 10, 1 / 11),
                                                   pos_hint={'x': 0.45, 'y': 0.1},
                                                   theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                   md_bg_color='deepskyblue',

@@ -408,12 +408,18 @@ ScreenManager:
             Rectangle:
                 pos: self.pos
                 size: self.size
+        MDIconButton:
+            icon: "help-circle"
+            pos_hint: {"right": 1, "top": 1}
+            spacing: 0
+            theme_text_color: "Custom"
+            text_color: "deepskyblue"
+            on_press: root.show_info_dialog()
         BoxLayout:
             orientation: 'vertical'
             spacing: 20
             #pos_hint: 'center'
             pos_hint: {"center_y": .5}
-
 
             MDLabel:
                 text: 'REJESTRACJA'
