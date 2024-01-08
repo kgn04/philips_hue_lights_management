@@ -1,4 +1,3 @@
-
 if __name__ == '__main__':
     from array import *
     from multiprocessing import freeze_support
@@ -154,7 +153,6 @@ if __name__ == '__main__':
         def choose_shape_add_name(self, instance):
             # przekierowanie do ekraniu ScreenChooseShape
 
-
             global current_mac_address
             current_mac_address = instance.hub_mac
 
@@ -174,9 +172,6 @@ if __name__ == '__main__':
                 self.manager.current = 'shape'
                 hub_operations.change_current_hub(self.hub_mac)
                 print(f"Dodaj huba o adresie MAC: {self.hub_mac}")
-
-
-
 
 
     # wybieranie z hubów które są już w bazie i łączenie się z nim
@@ -455,8 +450,12 @@ if __name__ == '__main__':
             self.buttons_array = [[]]
             self.group_name_input = None
             self.right_layout = None
+            self.left_layout = None
 
             print(current_mac_address_after_login)
+            self.create_layout()
+
+        def create_layout(self):
             if current_mac_address_after_login:
                 hub_operations.change_current_hub(current_mac_address_after_login)
 
@@ -478,8 +477,8 @@ if __name__ == '__main__':
             self.hub_array = np.arange(rows * cols).reshape(rows, cols)
             print(self.hub_array)
 
-            new_buttons_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
-                                            spacing=10)
+            self.left_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
+                                          spacing=10)
 
             # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
             for row in self.hub_array:
@@ -491,16 +490,17 @@ if __name__ == '__main__':
                                         size_hint=(0.5, 0.5))
                         button.bind(on_press=self.show_light_controls)
                         # buttons_layout.add_widget(button)
-                        new_buttons_layout.add_widget(button)
+                        self.left_layout.add_widget(button)
                     except TypeError:
                         pass
-
 
             # ScrollView na prawej stronie ekranu
             scroll_view = ScrollView()
             self.right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
             self.right_layout.bind(minimum_height=self.right_layout.setter('height'))
-            groups = db_management.select_all("Grupy", "NazwaGr")
+            groups_names = db_management.select_all("Grupy", "NazwaGr")
+            groups_macs = db_management.select_all("Grupy", "AdresMAC")
+            groups = list(zip(groups_names, groups_macs))
             # groups = ["Grupa 1","Grupa 2"]
 
             # Dodaj utworzone grupy kasetonów
@@ -510,7 +510,7 @@ if __name__ == '__main__':
 
             # Utwórz główny układ (BoxLayout) dla całego ekranu
             main_layout = BoxLayout(spacing=30, size_hint=(0.9, 0.5), pos_hint={'x': 0.05, 'y': 0.2})
-            main_layout.add_widget(new_buttons_layout)
+            main_layout.add_widget(self.left_layout)
             main_layout.add_widget(scroll_view)
 
             # Dodaj główny układ do ekranu
@@ -538,14 +538,15 @@ if __name__ == '__main__':
             self.add_widget(logout_button)
 
         def create_right_layout(self, groups):
-            for group_name in groups:
-                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
-                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                     elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
-                # group_button = Button(text=group_name, size_hint_y=None, height=40)
-                group_button.bind(on_press=self.show_group_controls)
-                self.right_layout.add_widget(group_button)
+            for group_name, group_mac in groups:
+                if group_mac == current_mac_address_after_login:
+                    group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
+                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                         md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                         elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
+                    # group_button = Button(text=group_name, size_hint_y=None, height=40)
+                    group_button.bind(on_press=self.show_group_controls)
+                    self.right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
             add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, size_hint_x=1 / 2,
@@ -787,7 +788,9 @@ if __name__ == '__main__':
 
         def update_group_view(self):
             # Funkcja do aktualizacji widoku grup
-            groups = db_management.select_all("Grupy", "NazwaGr")
+            groups_names = db_management.select_all("Grupy", "NazwaGr")
+            groups_macs = db_management.select_all("Grupy", "AdresMAC")
+            groups = list(zip(groups_names, groups_macs))
             right_layout = self.right_layout  # Uzyskaj dostęp do kontenera przechowującego przyciski grup
             right_layout.clear_widgets()  # Wyczyść obecne przyciski grup
 
@@ -802,10 +805,14 @@ if __name__ == '__main__':
         def show_hub_menu(self, instance):
             hubs_available_names = db_management.select_all("Huby", "Nazwa")
             hubs_available_macs = db_management.select_all("Huby", "AdresMAC")
-            hubs_combined = ["{}:   {}".format(name, mac) for name, mac in zip(hubs_available_names, hubs_available_macs)]
-
-            menu_items = [{"viewclass": "OneLineListItem", "text": str(hub_info)} for hub_info in
-                          hubs_combined]
+            # hubs_combined = ["{}:   {}".format(name, mac) for name, mac in
+            #                  zip(hubs_available_names, hubs_available_macs)]
+            #
+            # menu_items = [{"viewclass": "OneLineListItem", "text": str(hub_info)} for hub_info in
+            #               hubs_combined]
+            menu_items = [{"viewclass": "OneLineListItem", "text": str(name + ":  " + mac),
+                           "on_release": lambda x=mac: self.set_current_hub(x)} for name, mac in
+                          zip(hubs_available_names, hubs_available_macs)]
 
             menu = MDDropdownMenu(
                 caller=instance,
@@ -813,9 +820,25 @@ if __name__ == '__main__':
                 position="auto",
                 width_mult=4,
             )
+
             # TODO change current hub here?
-            #menu.bind(on_release=self.set_current_hub)
             menu.open()
+
+        def set_current_hub(self, new_mac_address):
+            print('nowy hub: ' + new_mac_address)
+            global current_mac_address_after_login
+            current_mac_address_after_login = new_mac_address
+            print('nowy hub2: ' + current_mac_address_after_login)
+            hub_operations.change_current_hub(new_mac_address)
+            self.update_whole_layout()
+
+            # hub_operations.change_current_hub()
+
+        def update_whole_layout(self):
+            self.left_layout.clear_widgets()
+            self.right_layout.clear_widgets()
+            self.create_layout()
+            # self.update_group_view()
 
         def show_logout_confirmation(self, instance):
             # Funkcja wywoływana po naciśnięciu przycisku wylogowania
