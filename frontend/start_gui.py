@@ -86,7 +86,8 @@ if __name__ == '__main__':
             super(LoadingScreen, self).__init__(**kwargs)
             self.orientation = 'vertical'
             label = Label(text='Właśnie szukam hubów, może to potrwać kilkanaście sekund, proszę o cierpliwość',
-                          color=[128 / 255, 0 / 255, 128 / 255, 1],  # Set text color here
+                          color=[128 / 255, 0 / 255, 128 / 255, 1],
+                          font_size=20
                           )
             self.add_widget(label)
 
@@ -360,7 +361,7 @@ if __name__ == '__main__':
             # Dodaj przycisk do przerwania identyfikacji i zaczęcia od nowa
             reset_button = MDFillRoundFlatButton(text="Przerwij", size_hint=(None, None)
                                                  , theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                 md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                 md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
                                                  pos_hint={'center_x': 0.5, 'y': 0.1})
 
             reset_button.bind(on_press=self.reset_identification)
@@ -643,23 +644,26 @@ if __name__ == '__main__':
             def on_slider_r(inst, value):
                 self.r_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                                             self.brightness / 255.0]
 
             def on_slider_g(inst, value):
                 self.g_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                                             self.brightness / 255.0]
 
             def on_slider_b(inst, value):
                 self.b_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                                             self.brightness / 255.0]
 
             def on_slider_brightness(inst, value):
                 self.brightness = int(value)
                 lights_operations.change_brightness(light_id, self.brightness)
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
-
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                                             self.brightness / 255.0]
 
             brightness_label = Label(text="Jasność")
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
@@ -699,8 +703,8 @@ if __name__ == '__main__':
 
             global current_mac_address_after_login
             lights_ids = db_management.select_with_two_conditions('Przypisania', 'IdK',
-                                                                 ('IdGr', group_id),
-                                                                 ('AdresMAC', current_mac_address_after_login))
+                                                                  ('IdGr', group_id),
+                                                                  ('AdresMAC', current_mac_address_after_login))
 
             group_name_label = Label(text=f"Grupa {instance.text}", halign='center')
             popup_content.add_widget(group_name_label)
@@ -753,8 +757,6 @@ if __name__ == '__main__':
             brightness_label = Label(text="Jasność")
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
             brightness_slider.bind(value=on_slider_brightness)
-
-
 
             popup_content.add_widget(turn_on_button)
             popup_content.add_widget(turn_off_button)
