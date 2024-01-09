@@ -12,7 +12,10 @@ current_hub_mac_address = ''
 request_prefix: str = ''
 LAST_SEND_TIME = time()
 
-USE_EMULATOR = False
+USE_EMULATOR = True
+
+
+def using_emulator() -> bool: return current_hub_mac_address == '00:00:00:00:00:00'
 
 
 def get_light_id(column: int, row: int) -> int:
@@ -41,7 +44,7 @@ def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> None:
     :param rgb: (red[0-255], green[0-255], blue[0-255])
     """
     global current_hub_mac_address
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.change_color(light_id, rgb)
         response = 'OK'
     else:
@@ -57,7 +60,7 @@ def change_brightness(light_id: int, brightness: int, xd=None) -> None:
     """
     :param brightness: 0-255
     """
-    if USE_EMULATOR:
+    if using_emulator():
         response = 'OK'
     else:
         response = __send_put(light_id, {"bri": brightness})
@@ -68,7 +71,7 @@ def change_brightness(light_id: int, brightness: int, xd=None) -> None:
 
 
 def turn_off(light_id: int, xd=None) -> None:
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.turn_off(light_id)
         response = 'OK'
     else:
@@ -80,7 +83,7 @@ def turn_off(light_id: int, xd=None) -> None:
 
 
 def turn_on(light_id: int, xd=None) -> None:
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.turn_on(light_id)
         response = 'OK'
     else:
@@ -150,19 +153,19 @@ def xy_to_rgb(xy: tuple[float, float]):
 
 def update_lights_data():
     global current_hub_mac_address
-    if current_hub_mac_address == '00:00:00:00:00:00':
+    if using_emulator():
         with open(f'{os.path.join(os.path.dirname(__file__), "..")}/TEST/emulator_config.json') as f:
             info_dict: dict = load(f)
     else:
         global request_prefix
         info_dict: dict = loads(get(url=request_prefix).text)
     for light_id in info_dict:
-        if USE_EMULATOR:
+        if using_emulator():
             state_dict = info_dict[(str(light_id))]
         else:
             state_dict = info_dict[(str(light_id))]['state']
         is_on = state_dict['on']
-        if USE_EMULATOR:
+        if using_emulator():
             rgb = state_dict['red'], state_dict['green'], state_dict['blue']
             brightness = state_dict['brightness']
         else:

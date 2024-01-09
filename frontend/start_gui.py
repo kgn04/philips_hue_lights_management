@@ -345,7 +345,6 @@ if __name__ == '__main__':
                                             spacing=10)
 
             lights_operations.update_lights_data()
-            # groups_operations.update_groups_data()
 
             self.identifier = LightsIdentifier(current_mac_address)
 
@@ -389,9 +388,15 @@ if __name__ == '__main__':
             result = user_operations.login(email, password)
             print(result)
             if result == 0:
-                show_popup("Logowanie", "Zalogowano pomyślnie")
-                global current_user
+                toast('Zalogowano pomyślnie')
+                global current_user, current_mac_address_after_login
                 current_user = email
+                current_mac_address_after_login = db_management.select('Uzytkownicy',
+                                                                       'AdresMAC',
+                                                                       ('Email', email))[0]
+                hub_operations.change_current_hub(current_mac_address_after_login)
+                groups_operations.update_groups_data()
+                lights_operations.update_lights_data()
                 self.manager.add_widget(ManageLightsScreen(name='manage'))
                 self.manager.current = 'manage'
             elif result == 3:
@@ -471,6 +476,7 @@ if __name__ == '__main__':
             self.create_layout()
 
         def create_layout(self):
+            global current_mac_address_after_login
             if current_mac_address_after_login:
                 hub_operations.change_current_hub(current_mac_address_after_login)
 
@@ -526,13 +532,11 @@ if __name__ == '__main__':
             scroll_view = ScrollView()
             self.right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
             self.right_layout.bind(minimum_height=self.right_layout.setter('height'))
-            groups_names = db_management.select_all("Grupy", "NazwaGr")
-            groups_macs = db_management.select_all("Grupy", "AdresMAC")
-            groups = list(zip(groups_names, groups_macs))
+            groups_names = db_management.select("Grupy", "NazwaGr", ('AdresMAC', current_mac_address_after_login))
             # groups = ["Grupa 1","Grupa 2"]
 
             # Dodaj utworzone grupy kasetonów
-            self.create_right_layout(groups)
+            self.create_right_layout(groups_names)
 
             scroll_view.add_widget(self.right_layout)
 
@@ -568,15 +572,15 @@ if __name__ == '__main__':
             self.add_widget(logout_button)
 
         def create_right_layout(self, groups):
-            for group_name, group_mac in groups:
-                if group_mac == current_mac_address_after_login:
-                    group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
-                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                         md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
-                                                         elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
-                    # group_button = Button(text=group_name, size_hint_y=None, height=40)
-                    group_button.bind(on_press=self.show_group_controls)
-                    self.right_layout.add_widget(group_button)
+            for group_name in groups:
+                print(group_name)
+                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
+                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
+                # group_button = Button(text=group_name, size_hint_y=None, height=40)
+                group_button.bind(on_press=self.show_group_controls)
+                self.right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
             add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, size_hint_x=1 / 2,
@@ -869,13 +873,12 @@ if __name__ == '__main__':
 
         def update_group_view(self):
             # Funkcja do aktualizacji widoku grup
-            groups_names = db_management.select_all("Grupy", "NazwaGr")
-            groups_macs = db_management.select_all("Grupy", "AdresMAC")
-            groups = list(zip(groups_names, groups_macs))
+            global current_mac_address_after_login
+            groups_names = db_management.select("Grupy", "NazwaGr", ('AdresMAC', current_mac_address_after_login))
             right_layout = self.right_layout  # Uzyskaj dostęp do kontenera przechowującego przyciski grup
             right_layout.clear_widgets()  # Wyczyść obecne przyciski grup
 
-            self.create_right_layout(groups)
+            self.create_right_layout(groups_names)
 
         def dismiss_popup(self):
             # Dismiss the currently open popup
@@ -903,10 +906,13 @@ if __name__ == '__main__':
 
         def set_current_hub(self, new_mac_address, instance):
             print('nowy hub: ' + new_mac_address)
-            global current_mac_address_after_login
+            global current_mac_address_after_login, current_user
             current_mac_address_after_login = new_mac_address
             print('nowy hub2: ' + current_mac_address_after_login)
             hub_operations.change_current_hub(new_mac_address)
+            db_management.update('Uzytkownicy', ('AdresMAC', current_mac_address_after_login),
+                                 ('Email', current_user))
+            print(db_management.select('Uzytkownicy', 'AdresMAC', ('Email', current_user)))
             self.update_whole_layout()
             instance.dismiss()
 

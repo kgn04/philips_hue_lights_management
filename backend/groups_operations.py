@@ -2,7 +2,7 @@ import backend.db_management as db_management
 from backend.lights_operations import rgb_to_xy, xy_to_rgb
 from sqlite3 import OperationalError, IntegrityError
 from requests import delete
-from backend.lights_operations import USE_EMULATOR
+from backend.lights_operations import USE_EMULATOR, using_emulator
 from TEST import emulator
 from requests import get, put, post
 import os
@@ -29,19 +29,21 @@ def create(group_name: str, lights: list[int]) -> int:
     global current_hub_mac_address
     if group_name in db_management.select('Grupy', 'NazwaGr', ('AdresMAC', current_hub_mac_address)):
         return GROUP_NAME_ALREADY_USED
-    if USE_EMULATOR:
+    if using_emulator():
         try:
             group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
         except (OperationalError, ValueError):
             group_id = 1
         db_management.insert('Grupy', (group_id, group_name, 0, 0, 0, 0, 0, current_hub_mac_address))
-        emulator.create_group(group_id, group_name)
+        for light_id in lights:
+            db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
+        emulator.create_group(group_id, group_name, lights)
     else:
         global request_prefix, LAST_SEND_TIME
         if time() - LAST_SEND_TIME > 1.0:
             LAST_SEND_TIME = time()
             response = post(url=request_prefix, json={"name": group_name, "lights": [str(light_id) for light_id in lights]}).text
-            update_groups_data()
+    update_groups_data()
     return SUCCESSFUL_OPERATION
 
 
@@ -53,7 +55,7 @@ def remove(group_name: str, xd=None) -> int:
     db_management.delete_with_two_conditions('Grupy', ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
     db_management.delete_with_two_conditions('Przypisania', ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
     global request_prefix
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.remove_group(group_id)
     else:
         delete(url=f'{request_prefix}{group_id}')
@@ -84,7 +86,7 @@ def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
     """
     group_id = get_id_from_name(group_name)
     global current_hub_mac_address
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.change_color_group(group_id, rgb)
         response = 'OK'
     else:
@@ -106,7 +108,7 @@ def change_brightness(group_name: str, brightness: int, xd=None) -> None:
     :param brightness: 0-255
     """
     group_id = get_id_from_name(group_name)
-    if USE_EMULATOR:
+    if using_emulator():
         response = 'OK'
     else:
         response = __send_put(group_id, {"bri": brightness})
@@ -122,7 +124,7 @@ def change_brightness(group_name: str, brightness: int, xd=None) -> None:
 
 def turn_off(group_name: str, xd=None) -> None:
     group_id = get_id_from_name(group_name)
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.turn_off_group(group_id)
         response = 'OK'
     else:
@@ -139,7 +141,7 @@ def turn_off(group_name: str, xd=None) -> None:
 
 def turn_on(group_name: str, xd=None) -> None:
     group_id = get_id_from_name(group_name)
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.turn_on_group(group_id)
         response = 'OK'
     else:
@@ -156,15 +158,16 @@ def turn_on(group_name: str, xd=None) -> None:
 
 def update_groups_data():
     global current_hub_mac_address
-    if current_hub_mac_address == '00:00:00:00:00:00':
-        with open(f'{os.path.join(os.path.dirname(__file__), "..")}/TEST/emulator_config.json') as f:
+    if using_emulator():
+        with open(f'{os.path.join(os.path.dirname(__file__), "..")}/TEST/emulator_groups.json') as f:
             info_dict: dict = load(f)
+            print(info_dict)
     else:
         global request_prefix
         info_dict: dict = loads(get(url=request_prefix).text)
     for group_id in info_dict:
         state_dict = info_dict[(str(group_id))]
-        if USE_EMULATOR:
+        if using_emulator():
             is_on = state_dict['on']
             name = state_dict['name']
             rgb = state_dict['red'], state_dict['green'], state_dict['blue']

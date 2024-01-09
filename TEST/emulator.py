@@ -124,10 +124,10 @@ def change_color(light_id, rgb):
     semaphore.release()
 
 
-def create_group(group_id, group_name):
+def create_group(group_id, group_name, lights):
     with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
         groups_dict = load(f)
-    groups_dict[str(group_id)] = {'name': group_name, 'lights': [], 'on': True, 'brightness': 255, 'red': 255,
+    groups_dict[str(group_id)] = {'name': group_name, 'lights': lights, 'on': True, 'brightness': 255, 'red': 255,
                                   'green': 255, 'blue': 255}
     with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
         dump(groups_dict, f)
