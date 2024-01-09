@@ -701,7 +701,6 @@ if __name__ == '__main__':
             self.r_color, self.g_color, self.b_color = tuple(groups_operations.get_rgb(group_name))
             self.brightness = groups_operations.get_brightness(group_name)
 
-            rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=11)
             red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
             green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
             blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
@@ -730,18 +729,18 @@ if __name__ == '__main__':
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
             brightness_slider.bind(value=on_slider_brightness)
 
-            rgb_sliders_layout.add_widget(Label(text="Czerwony"))
-            rgb_sliders_layout.add_widget(red_slider)
-            rgb_sliders_layout.add_widget(Label(text="Zielony"))
-            rgb_sliders_layout.add_widget(green_slider)
-            rgb_sliders_layout.add_widget(Label(text="Niebieski"))
-            rgb_sliders_layout.add_widget(blue_slider)
+
 
             popup_content.add_widget(turn_on_button)
             popup_content.add_widget(turn_off_button)
             popup_content.add_widget(brightness_label)
             popup_content.add_widget(brightness_slider)
-            popup_content.add_widget(rgb_sliders_layout)
+            popup_content.add_widget(Label(text="Czerwony"))
+            popup_content.add_widget(red_slider)
+            popup_content.add_widget(Label(text="Zielony"))
+            popup_content.add_widget(green_slider)
+            popup_content.add_widget(Label(text="Niebieski"))
+            popup_content.add_widget(blue_slider)
 
             remove_group_button = MDFillRoundFlatButton(text="Usuń grupę", size_hint_y=None, size_hint_x=1 / 2,
                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
@@ -832,14 +831,12 @@ if __name__ == '__main__':
             print(f"Dodaj grupę o nazwie: {group_name}")
             print("Współrzędne wybranych przycisków:", self.selected_buttons)
 
-            result = groups_operations.create(group_name)
+            lights = [lights_operations.get_light_id(button_id % self.cols, int(button_id / self.cols))
+                      for button_id in list(self.selected_buttons)]
+            result = groups_operations.create(group_name, lights)
             if result == 0:
                 # Tworzenie grupy powiodło się
                 toast("Tworzenie grupy powiodło się")
-                group_id = db_management.select('Grupy', 'IdGr', ('NazwaGr', group_name))[0]
-                for button_id in list(self.selected_buttons):
-                    light_id = lights_operations.get_light_id(button_id % self.cols, int(button_id / self.cols))
-                    groups_operations.add_to_group(int(group_id), light_id)
                 self.update_group_view()
                 self.selected_buttons.clear()
                 self.dismiss_popup()
@@ -847,7 +844,7 @@ if __name__ == '__main__':
                 # Grupa o takiej nazwie już istnieje
                 toast("Grupa o takiej nazwie już istnieje, wybierz inną nazwę")
             else:
-                toast("Wystąpił błąd podczas tworzenia grupy")
+                toast("Nie można utworzyć pustej grupy.")
 
         def update_group_view(self):
             # Funkcja do aktualizacji widoku grup

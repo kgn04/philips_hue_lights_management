@@ -58,7 +58,6 @@ def change_brightness(light_id: int, brightness: int, xd=None) -> None:
     :param brightness: 0-255
     """
     if USE_EMULATOR:
-        pass  # TODO
         response = 'OK'
     else:
         response = __send_put(light_id, {"bri": brightness})
