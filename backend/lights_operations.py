@@ -12,7 +12,7 @@ current_hub_mac_address = ''
 request_prefix: str = ''
 LAST_SEND_TIME = time()
 
-USE_EMULATOR = False
+USE_EMULATOR = True
 
 
 def get_light_id(column: int, row: int) -> int:
@@ -204,6 +204,3 @@ def __send_put(light_id: int, body: dict) -> str:
 
 if __name__ == '__main__':
     pass
-    # __change_current_hub_1('00:00:00:00:00:00')
-    # __change_current_hub_1('ec:b5:fa:98:1c:cd')
-    # update_lights_data()
