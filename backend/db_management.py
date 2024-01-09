@@ -152,7 +152,7 @@ def insert_example():
 
 def print_db():
     connection, cursor = connect_to_db()
-    for table_name in ['Huby', 'Uzytkownicy', 'Przydzielenia', 'Kasetony', 'Grupy', 'Przypisania']:
+    for table_name in ['Huby', 'Uzytkownicy', 'Kasetony', 'Grupy', 'Przypisania']:
         print('- - - - - - - - - - - - - - - - -')
         print(table_name)
         cursor.execute(f"SELECT * FROM {table_name};")
@@ -162,5 +162,5 @@ def print_db():
 
 
 if __name__ == '__main__':
-    init_db()
+    # init_db()
     print_db()

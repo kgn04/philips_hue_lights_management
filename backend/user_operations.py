@@ -1,6 +1,7 @@
 import backend.db_management as db_management
 from re import match
 from sqlite3 import OperationalError
+from passlib.hash import sha256_crypt
 
 OPERATION_SUCCESSFUL = 0
 EMAIL_ALREADY_EXISTS = 1
@@ -36,14 +37,15 @@ def register(email: str, username: str, password1: str, password2: str) -> int:
         return INCORRECT_PASSWORD
     elif not username:
         return INCORRECT_USERNAME
-    db_management.insert('Uzytkownicy', (email, username, password1, ''))
+    db_management.insert('Uzytkownicy', (email, username,
+                                         sha256_crypt.using(rounds=5000).hash(password1), ''))
     return OPERATION_SUCCESSFUL
 
 
 def login(email: str, password: str) -> int:
     try:
         if db_management.select('Uzytkownicy', 'Haslo', ('Email', email)):
-            if db_management.select('Uzytkownicy', 'Haslo', ('Email', email))[0] != password:
+            if not sha256_crypt.verify(password, db_management.select('Uzytkownicy', 'Haslo', ('Email', email))[0]):
                 return INCORRECT_PASSWORD
         else:
             return NONEXISTENT_EMAIL
