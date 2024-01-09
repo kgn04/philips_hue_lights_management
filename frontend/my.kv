@@ -45,7 +45,7 @@ ScreenManager:
                 spacing: 20
                 #font_size: 18
                 theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
-                md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
+                md_bg_color: [158/255, 0/255, 158/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
                 on_press: root.manager.current = 'addhub'
             MDFillRoundFlatButton:
@@ -54,14 +54,14 @@ ScreenManager:
                 spacing: 20
                 #font_size: 18
                 theme_text_color: "Primary"  # Ustaw kolor tekstu przycisku na domyślny
-                md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
+                md_bg_color: [158/255, 0/255, 158/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
                 on_press: root.manager.current = 'login'
             MDTextButton:
                 text: "Nie masz konta? Zarejestruj się"
                 #font_size: 16
                 height: self.texture_size[1] + dp(40)
-                color: [128/255, 0/255, 128/255, 1]
+                color: [168/255, 0/255, 168/255, 1]
                 pos_hint: {"center_x": .5,"center_y": .5}
                 #on_release: app.root.current = 'registration'  # Przekierowanie do ekranu rejestracji
                 on_press: root.register()
@@ -88,7 +88,7 @@ ScreenManager:
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
-                color: [128/255, 0/255, 128/255, 1]
+                color: [158/255, 0/255, 158/255, 1]
 
             MDFillRoundFlatButton:
                 text: 'DODAJ AUTOMATYCZNIE'
@@ -96,7 +96,7 @@ ScreenManager:
                 spacing: 20
                 #font_size: 17
                 theme_text_color: "Primary"
-                md_bg_color: [128/255, 0/255, 128/255, 1]
+                md_bg_color: [158/255, 0/255, 158/255, 1]
                 elevation_normal: 10
                 on_press: root.add_hub()  # Dodaj funkcję automatycznego łaczenia z hubem
             MDLabel:
@@ -106,7 +106,7 @@ ScreenManager:
                 halign: "center"
                 size_hint_y: None
                 #height: self.texture_size[1]
-                color: [128/255, 0/255, 128/255, 1]
+                color: [168/255, 0/255, 168/255, 1]
             MDIconButton:
                 icon: "keyboard-backspace"
                 pos_hint: {"center_x": .5}
@@ -135,7 +135,7 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             #height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [158/255, 0/255, 158/255, 1]
         MDLabel:
             text: 'Wybierz huba, by dodać go do bazy'
             text_size: root.width, None
@@ -146,7 +146,7 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [168/255, 0/255, 168/255, 1]
         BoxLayout:
             orientation: 'vertical'
             spacing: 60
@@ -166,6 +166,13 @@ ScreenManager:
             Rectangle:
                 pos: self.pos
                 size: self.size
+        MDIconButton:
+            icon: "help-circle"
+            pos_hint: {"right": 1, "top": 1}
+            spacing: 0
+            theme_text_color: "Custom"
+            text_color: "deepskyblue"
+            on_press: root.show_info_dialog()
         MDLabel:
             pos_hint: {'x':0, 'y':0.8}
             text: 'DOSTĘPNE HUBY'
@@ -174,7 +181,7 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [158/255, 0/255, 158/255, 1]
         MDLabel:
             text: 'Wybierz huba, którym chcesz zarządzać.'
             pos_hint: {'x':0, 'y':0.7}
@@ -183,7 +190,7 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [168/255, 0/255, 168/255, 1]
         GridLayout:
             cols: 7
             spacing: 30
@@ -204,13 +211,13 @@ ScreenManager:
                 size: self.size
         MDLabel:
             pos_hint: {'x':0, 'y':0.85}
-            text: 'DOSTĘPNE SIATKI'
+            text: 'WYBIERANIE SIATKI'
             font_style: 'Button'
             font_size: 50
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [158/255, 0/255, 158/255, 1]
         MDLabel:
             id: label_shape
             text: 'Wybierz jedną z możliwości ustawienia kasetonów i nadaj mu nazwę, by przejść dalej'
@@ -220,7 +227,7 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [168/255, 0/255, 168/255, 1]
         MDGridLayout:
             id: buttons_layout
             cols: 6
@@ -251,7 +258,7 @@ ScreenManager:
                 size_hint: (None, None)
                 spacing: 30
                 theme_text_color: "Primary"
-                md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
+                md_bg_color: [158/255, 0/255, 158/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
                 on_release: root.add_hub_to_database()
 
@@ -267,14 +274,14 @@ ScreenManager:
                 pos: self.pos
                 size: self.size
         MDLabel:
-            pos_hint: {'x':0, 'y':0.85}
+            pos_hint: {'x':0, 'y':0.89}
             text: 'IDENTYFIKACJA KASETONÓW'
             font_style: 'Button'
             font_size: 50
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [158/255, 0/255, 158/255, 1]
         MDLabel:
             text: 'Wybieraj po kolei te kasetony na ekranie, które migają na twoim suficie. Identyfikacja zakończy się, gdy wszystkie kasetony zostaną zidentyfikowane'
             pos_hint: {'x':0, 'y':0.8}
@@ -283,7 +290,7 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [168/255, 0/255, 168/255, 1]
         BoxLayout:
             orientation: 'horizontal'
             spacing: 100
@@ -324,7 +331,7 @@ ScreenManager:
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
-                color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tekstu
+                color: [158/255, 0/255, 158/255, 1]  # Fioletowy kolor tekstu
             MDTextField:
                 id : email
                 mode : "rectangle"
@@ -355,13 +362,6 @@ ScreenManager:
                 #font_size: 20
                 pos_hint: {"center_x": .5}
                 password: True
-#            MDIconButton:
-#                icon: "eye-off"
-#                pos_hint: {"center_x": .5}
-#                spacing: 0
-#                theme_text_color: "Custom"
-#                text_color: "deepskyblue"
-#                on_press: root.toggle_password_visibility()
             MDFillRoundFlatButton:
                # border: (10,10,10,10)
                # font_size: "18sp"
@@ -371,7 +371,7 @@ ScreenManager:
                 spacing: 20
                 #font_size: 17
                 theme_text_color: "Primary"
-                md_bg_color: [128/255, 0/255, 128/255, 1]  # Fioletowy kolor tła przycisku
+                md_bg_color: [158/255, 0/255, 158/255, 1]  # Fioletowy kolor tła przycisku
                 elevation_normal: 10
                 on_press: root.login(str(root.ids.email.text),str(root.ids.password.text))
                 #on_press: root.manager.current = 'simulator'
@@ -379,7 +379,7 @@ ScreenManager:
                 text: "Nie masz konta? Zarejestruj się"
                 #font_size: 16
                 height: self.texture_size[1] + dp(20)
-                color: [128/255, 0/255, 128/255, 1]
+                color: [168/255, 0/255, 168/255, 1]
                 pos_hint: {"center_x": .5}
                 on_press: root.manager.current = 'register'
             MDIconButton:
@@ -420,7 +420,7 @@ ScreenManager:
                 halign: "center"
                 size_hint_y: None
                 height: self.texture_size[1]
-                color: [128/255, 0/255, 128/255, 1]
+                color: [158/255, 0/255, 158/255, 1]
 
             MDTextField:
                 id: username
@@ -494,7 +494,7 @@ ScreenManager:
                 spacing: 20
                 #font_size: 17
                 theme_text_color: "Primary"
-                md_bg_color: [128/255, 0/255, 128/255, 1]
+                md_bg_color: [158/255, 0/255, 158/255, 1]
                 elevation_normal: 10
                 on_release: root.register(str(root.ids.email.text),str(root.ids.username.text),str(root.ids.password.text),str(root.ids.confirm_password.text))  # Dodaj funkcję rejestracji
 
@@ -502,7 +502,7 @@ ScreenManager:
                 text: "Masz już konto? Zaloguj się"
                 #font_size: 16
                 height: self.texture_size[1] + dp(20)
-                color: [128/255, 0/255, 128/255, 1]
+                color: [168/255, 0/255, 168/255, 1]
                 pos_hint: {"center_x": .5}
                 on_press: root.manager.current = 'login'  # Przekierowanie do ekranu logowania
 
@@ -534,7 +534,7 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [158/255, 0/255, 158/255, 1]
         MDLabel:
             text: 'Tu możesz zarządzać swoimi kasetonami'
             pos_hint: {'x':0, 'y':0.82}
@@ -543,5 +543,5 @@ ScreenManager:
             halign: "center"
             size_hint_y: None
             height: self.texture_size[1]
-            color: [128/255, 0/255, 128/255, 1]
+            color: [168/255, 0/255, 168/255, 1]
 

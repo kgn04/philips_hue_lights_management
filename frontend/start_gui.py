@@ -206,8 +206,21 @@ if __name__ == '__main__':
             db_management.update("Uzytkownicy", ("AdresMAC", instance.mac_address), ("Email", current_user))
             print(current_user)
             print(db_management.select('Uzytkownicy', 'AdresMAC', ('Email', current_user)))
-            toast('Zarejestrowano pomyślnie')
             self.manager.current = 'login'
+            toast('Zarejestrowano pomyślnie, możesz teraz się zalogować')
+
+        def show_info_dialog(self):
+            content = BoxLayout(orientation='vertical', spacing=10, padding=10)
+
+            content.add_widget(Label(text="Wybierz z listy huba, z którym chcesz się połączyć.\n"
+                                          " Hub zostanie przypisany do twojego konta\n"
+                                          " i po kolejnym zalogowaniu "
+                                          "zostaniesz automatycznie\n przekierowany do panelu zarzadzania tym hubem."
+                                            ))
+            content.add_widget(Label(text="Później w panelu zarządzania możesz zmienić swój wybór\n tak, by zarządzać też innymi hubami. "))
+
+            info_popup = Popup(title="Pomoc", content=content, size_hint=(0.55, 0.45))
+            info_popup.open()
 
 
     class ScreenChooseShape(Screen):
@@ -361,7 +374,7 @@ if __name__ == '__main__':
             # Dodaj przycisk do przerwania identyfikacji i zaczęcia od nowa
             reset_button = MDFillRoundFlatButton(text="Przerwij", size_hint=(None, None)
                                                  , theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                 md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                 md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
                                                  pos_hint={'center_x': 0.5, 'y': 0.1})
 
             reset_button.bind(on_press=self.reset_identification)
@@ -575,7 +588,7 @@ if __name__ == '__main__':
                 if group_mac == current_mac_address_after_login:
                     group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
                                                          theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                         md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                         md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
                                                          elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
                     # group_button = Button(text=group_name, size_hint_y=None, height=40)
                     group_button.bind(on_press=self.show_group_controls)
@@ -584,7 +597,7 @@ if __name__ == '__main__':
             # Przycisk do dodawania nowej grupy
             add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, size_hint_x=1 / 2,
                                                      theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
                                                      elevation_normal=20, pos_hint={'x': 0.34})
             add_group_button.bind(on_press=self.add_group_popup)
             self.right_layout.add_widget(add_group_button)
@@ -745,7 +758,7 @@ if __name__ == '__main__':
 
             remove_group_button = MDFillRoundFlatButton(text="Usuń grupę", size_hint_y=None, size_hint_x=1 / 2,
                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                        md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                        md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
                                                         elevation_normal=20, pos_hint={'x': 0.34})
 
             def delete_group(instance):
@@ -807,7 +820,7 @@ if __name__ == '__main__':
 
             add_group_button = MDFillRoundFlatButton(text="Dodaj grupę", pos_hint={'x': 0.4},
                                                      theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
                                                      padding=10)
             add_group_button.bind(on_press=self.add_group_action)
 
