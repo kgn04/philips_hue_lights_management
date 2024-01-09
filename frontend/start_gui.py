@@ -465,6 +465,7 @@ if __name__ == '__main__':
             self.right_layout = None
             self.left_layout = None
             self.current_hub_label = None
+            self.buttons = {}
 
             print(current_mac_address_after_login)
             self.create_layout()
@@ -493,34 +494,30 @@ if __name__ == '__main__':
 
             self.update_username_label()
 
-            # # background_layout = self.ids.floating_layout
-            # current_username = db_management.select("Uzytkownicy", "Username", ("Email", current_user))
-            # if len(current_username) > 0:
-            #     current_username = current_username[0]
-            # user_label = Label(
-            #     text=f"Hello, {current_username}",
-            #     size_hint=(1 / 2, 1 / 12),
-            #     pos_hint={'x': 0.63, 'y': 0.89},
-            #     color='deepskyblue',
-            #     bold=True
-            # )
-            # self.add_widget(user_label)
-
             self.left_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
                                           spacing=10)
 
-            # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
+            # groups_operations.update_groups_data()
+
+            ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', current_mac_address_after_login))
+            r_colors = db_management.select('Kasetony', 'KolorR', ('AdresMAC', current_mac_address_after_login))
+            g_colors = db_management.select('Kasetony', 'KolorG', ('AdresMAC', current_mac_address_after_login))
+            b_colors = db_management.select('Kasetony', 'KolorB', ('AdresMAC', current_mac_address_after_login))
+            brightnesses = db_management.select('Kasetony', 'KolorB', ('AdresMAC', current_mac_address_after_login))
+
             for row in self.hub_array:
                 for value in row:
                     try:
-                        print(
-                            f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
-                        button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
-                                        size_hint=(0.5, 0.5), color=[0, 0, 0, 0])
+                        light_id = lights_operations.get_light_id(value % cols, int(value / cols))
+                        index = ids.index(light_id)
+                        button = Button(text=str(light_id), size_hint=(0.5, 0.5), color=[0, 0, 0, 0],
+                                        background_color=[r_colors[index] / 255.0, g_colors[index] / 255.0,
+                                                          b_colors[index] / 255.0, brightnesses[index] / 255.0])
                         button.bind(on_press=self.show_light_controls)
-                        # buttons_layout.add_widget(button)
                         self.left_layout.add_widget(button)
-                    except TypeError:
+                        self.buttons[light_id] = button
+                    except TypeError as e:
+                        print(e)
                         button = Button(size_hint=(0.5, 0.5), background_color='black')
                         # buttons_layout.add_widget(button)
                         self.left_layout.add_widget(button)
@@ -639,21 +636,26 @@ if __name__ == '__main__':
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
             self.brightness = lights_operations.get_brightness(light_id)
 
-            def on_slider_r(instance, value):
+            def on_slider_r(inst, value):
                 self.r_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_g(instance, value):
+            def on_slider_g(inst, value):
                 self.g_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_b(instance, value):
+            def on_slider_b(inst, value):
                 self.b_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_brightness(instance, value):
+            def on_slider_brightness(inst, value):
                 self.brightness = int(value)
                 lights_operations.change_brightness(light_id, self.brightness)
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+
 
             brightness_label = Label(text="Jasność")
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
@@ -689,6 +691,13 @@ if __name__ == '__main__':
             group_name = instance.text
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
+            group_id = groups_operations.get_id_from_name(group_name)
+
+            global current_mac_address_after_login
+            lights_ids = db_management.select_with_two_conditions('Przypisania', 'IdK',
+                                                                 ('IdGr', group_id),
+                                                                 ('AdresMAC', current_mac_address_after_login))
+
             group_name_label = Label(text=f"Grupa {instance.text}", halign='center')
             popup_content.add_widget(group_name_label)
 
@@ -705,21 +714,33 @@ if __name__ == '__main__':
             green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
             blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
 
-            def on_slider_r(instance, value):
+            def on_slider_r(inst, value):
                 self.r_color = int(value)
                 groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_g(instance, value):
+            def on_slider_g(inst, value):
                 self.g_color = int(value)
                 groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_b(instance, value):
+            def on_slider_b(inst, value):
                 self.b_color = int(value)
                 groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_brightness(instance, value):
+            def on_slider_brightness(inst, value):
                 self.brightness = int(value)
                 groups_operations.change_brightness(group_name, self.brightness)
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
             red_slider.bind(value=on_slider_r)
             green_slider.bind(value=on_slider_g)
