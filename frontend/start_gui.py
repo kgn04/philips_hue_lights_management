@@ -201,9 +201,11 @@ if __name__ == '__main__':
             self.add_widget(grid_layout)
 
         def hub_chosen(self, instance):
-            global current_mac_address_after_login
+            global current_mac_address_after_login, current_user
             current_mac_address_after_login = str(instance.mac_address)
             db_management.update("Uzytkownicy", ("AdresMAC", instance.mac_address), ("Email", current_user))
+            print(current_user)
+            print(db_management.select('Uzytkownicy', 'AdresMAC', ('Email', current_user)))
             toast('Zarejestrowano pomyślnie')
             self.manager.current = 'login'
 
@@ -410,6 +412,8 @@ if __name__ == '__main__':
 
         def register(self, email: str, username: str, password1: str, password2: str) -> int:
             result = user_operations.register(email, username, password1, password2)
+            global current_user
+            current_user = email
             if result == 0:
                 # show_popup("Rejestracja", "Rejestracja przebiegła pomyślnie")
                 self.manager.current = 'choose'

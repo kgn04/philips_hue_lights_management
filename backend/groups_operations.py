@@ -24,13 +24,13 @@ request_prefix: str = ''
 
 
 def create(group_name: str) -> int:
-    if group_name in db_management.select_all('Grupy', 'NazwaGr'):
+    global current_hub_mac_address
+    if group_name in db_management.select('Grupy', 'NazwaGr', ('AdresMAC', current_hub_mac_address)):
         return GROUP_NAME_ALREADY_USED
     try:
         group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
     except (OperationalError, ValueError):
         group_id = 1
-    global current_hub_mac_address
     db_management.insert('Grupy', (group_id, group_name, 0, 0, 0, 0, 0, current_hub_mac_address))
     if USE_EMULATOR:
         emulator.create_group(group_id, group_name)
