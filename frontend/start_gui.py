@@ -64,7 +64,11 @@ if __name__ == '__main__':
 
 
     class ScreenStart(Screen):
-        pass
+        def register(self):
+            if db_management.select_all('Huby', 'AdresMAC'):
+                self.manager.current = 'register'
+            else:
+                toast('Przed rejestracją należy dodać huba.')
 
 
     class ScreenAddHub(Screen):

@@ -64,7 +64,7 @@ ScreenManager:
                 color: [128/255, 0/255, 128/255, 1]
                 pos_hint: {"center_x": .5,"center_y": .5}
                 #on_release: app.root.current = 'registration'  # Przekierowanie do ekranu rejestracji
-                on_press: root.manager.current = 'register'
+                on_press: root.register()
 
 <ScreenAddHub>:
     name: 'addhub'
