@@ -206,21 +206,8 @@ if __name__ == '__main__':
             db_management.update("Uzytkownicy", ("AdresMAC", instance.mac_address), ("Email", current_user))
             print(current_user)
             print(db_management.select('Uzytkownicy', 'AdresMAC', ('Email', current_user)))
+            toast('Zarejestrowano pomyślnie')
             self.manager.current = 'login'
-            toast('Zarejestrowano pomyślnie, możesz teraz się zalogować')
-
-        def show_info_dialog(self):
-            content = BoxLayout(orientation='vertical', spacing=10, padding=10)
-
-            content.add_widget(Label(text="Wybierz z listy huba, z którym chcesz się połączyć.\n"
-                                          " Hub zostanie przypisany do twojego konta\n"
-                                          " i po kolejnym zalogowaniu "
-                                          "zostaniesz automatycznie\n przekierowany do panelu zarzadzania tym hubem."
-                                            ))
-            content.add_widget(Label(text="Później w panelu zarządzania możesz zmienić swój wybór\n tak, by zarządzać też innymi hubami. "))
-
-            info_popup = Popup(title="Pomoc", content=content, size_hint=(0.55, 0.45))
-            info_popup.open()
 
 
     class ScreenChooseShape(Screen):
@@ -358,7 +345,6 @@ if __name__ == '__main__':
                                             spacing=10)
 
             lights_operations.update_lights_data()
-            # groups_operations.update_groups_data()
 
             self.identifier = LightsIdentifier(current_mac_address)
 
@@ -374,7 +360,7 @@ if __name__ == '__main__':
             # Dodaj przycisk do przerwania identyfikacji i zaczęcia od nowa
             reset_button = MDFillRoundFlatButton(text="Przerwij", size_hint=(None, None)
                                                  , theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                 md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
+                                                 md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
                                                  pos_hint={'center_x': 0.5, 'y': 0.1})
 
             reset_button.bind(on_press=self.reset_identification)
@@ -402,9 +388,15 @@ if __name__ == '__main__':
             result = user_operations.login(email, password)
             print(result)
             if result == 0:
-                show_popup("Logowanie", "Zalogowano pomyślnie")
-                global current_user
+                toast('Zalogowano pomyślnie')
+                global current_user, current_mac_address_after_login
                 current_user = email
+                current_mac_address_after_login = db_management.select('Uzytkownicy',
+                                                                       'AdresMAC',
+                                                                       ('Email', email))[0]
+                hub_operations.change_current_hub(current_mac_address_after_login)
+                groups_operations.update_groups_data()
+                lights_operations.update_lights_data()
                 self.manager.add_widget(ManageLightsScreen(name='manage'))
                 self.manager.current = 'manage'
             elif result == 3:
@@ -478,11 +470,13 @@ if __name__ == '__main__':
             self.right_layout = None
             self.left_layout = None
             self.current_hub_label = None
+            self.buttons = {}
 
             print(current_mac_address_after_login)
             self.create_layout()
 
         def create_layout(self):
+            global current_mac_address_after_login
             if current_mac_address_after_login:
                 hub_operations.change_current_hub(current_mac_address_after_login)
 
@@ -506,34 +500,30 @@ if __name__ == '__main__':
 
             self.update_username_label()
 
-            # # background_layout = self.ids.floating_layout
-            # current_username = db_management.select("Uzytkownicy", "Username", ("Email", current_user))
-            # if len(current_username) > 0:
-            #     current_username = current_username[0]
-            # user_label = Label(
-            #     text=f"Hello, {current_username}",
-            #     size_hint=(1 / 2, 1 / 12),
-            #     pos_hint={'x': 0.63, 'y': 0.89},
-            #     color='deepskyblue',
-            #     bold=True
-            # )
-            # self.add_widget(user_label)
-
             self.left_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
                                           spacing=10)
 
-            # Iteruj po macierzy GRID i dodaj przyciski do GridLayout
+            # groups_operations.update_groups_data()
+
+            ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', current_mac_address_after_login))
+            r_colors = db_management.select('Kasetony', 'KolorR', ('AdresMAC', current_mac_address_after_login))
+            g_colors = db_management.select('Kasetony', 'KolorG', ('AdresMAC', current_mac_address_after_login))
+            b_colors = db_management.select('Kasetony', 'KolorB', ('AdresMAC', current_mac_address_after_login))
+            brightnesses = db_management.select('Kasetony', 'KolorB', ('AdresMAC', current_mac_address_after_login))
+
             for row in self.hub_array:
                 for value in row:
                     try:
-                        print(
-                            f'x: {value % cols}; y: {int(value / cols)}; ID: {lights_operations.get_light_id(value % cols, int(value / cols))}')
-                        button = Button(text=str(lights_operations.get_light_id(value % cols, int(value / cols))),
-                                        size_hint=(0.5, 0.5), color=[0, 0, 0, 0])
+                        light_id = lights_operations.get_light_id(value % cols, int(value / cols))
+                        index = ids.index(light_id)
+                        button = Button(text=str(light_id), size_hint=(0.5, 0.5), color=[0, 0, 0, 0],
+                                        background_color=[r_colors[index] / 255.0, g_colors[index] / 255.0,
+                                                          b_colors[index] / 255.0, brightnesses[index] / 255.0])
                         button.bind(on_press=self.show_light_controls)
-                        # buttons_layout.add_widget(button)
                         self.left_layout.add_widget(button)
-                    except TypeError:
+                        self.buttons[light_id] = button
+                    except TypeError as e:
+                        print(e)
                         button = Button(size_hint=(0.5, 0.5), background_color='black')
                         # buttons_layout.add_widget(button)
                         self.left_layout.add_widget(button)
@@ -542,13 +532,11 @@ if __name__ == '__main__':
             scroll_view = ScrollView()
             self.right_layout = BoxLayout(orientation='vertical', spacing=20, size_hint_y=None)
             self.right_layout.bind(minimum_height=self.right_layout.setter('height'))
-            groups_names = db_management.select_all("Grupy", "NazwaGr")
-            groups_macs = db_management.select_all("Grupy", "AdresMAC")
-            groups = list(zip(groups_names, groups_macs))
+            groups_names = db_management.select("Grupy", "NazwaGr", ('AdresMAC', current_mac_address_after_login))
             # groups = ["Grupa 1","Grupa 2"]
 
             # Dodaj utworzone grupy kasetonów
-            self.create_right_layout(groups)
+            self.create_right_layout(groups_names)
 
             scroll_view.add_widget(self.right_layout)
 
@@ -584,20 +572,20 @@ if __name__ == '__main__':
             self.add_widget(logout_button)
 
         def create_right_layout(self, groups):
-            for group_name, group_mac in groups:
-                if group_mac == current_mac_address_after_login:
-                    group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
-                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                         md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
-                                                         elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
-                    # group_button = Button(text=group_name, size_hint_y=None, height=40)
-                    group_button.bind(on_press=self.show_group_controls)
-                    self.right_layout.add_widget(group_button)
+            for group_name in groups:
+                print(group_name)
+                group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
+                                                     theme_text_color="Custom", text_color=[0, 0, 0, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
+                                                     elevation_normal=20, pos_hint={'x': 0.4, 'y': 0.2})
+                # group_button = Button(text=group_name, size_hint_y=None, height=40)
+                group_button.bind(on_press=self.show_group_controls)
+                self.right_layout.add_widget(group_button)
 
             # Przycisk do dodawania nowej grupy
             add_group_button = MDFillRoundFlatButton(text="Dodaj nową grupę", size_hint_y=None, size_hint_x=1 / 2,
                                                      theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                     md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
                                                      elevation_normal=20, pos_hint={'x': 0.34})
             add_group_button.bind(on_press=self.add_group_popup)
             self.right_layout.add_widget(add_group_button)
@@ -652,21 +640,26 @@ if __name__ == '__main__':
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
             self.brightness = lights_operations.get_brightness(light_id)
 
-            def on_slider_r(instance, value):
+            def on_slider_r(inst, value):
                 self.r_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_g(instance, value):
+            def on_slider_g(inst, value):
                 self.g_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_b(instance, value):
+            def on_slider_b(inst, value):
                 self.b_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_brightness(instance, value):
+            def on_slider_brightness(inst, value):
                 self.brightness = int(value)
                 lights_operations.change_brightness(light_id, self.brightness)
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+
 
             brightness_label = Label(text="Jasność")
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
@@ -702,6 +695,13 @@ if __name__ == '__main__':
             group_name = instance.text
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
+            group_id = groups_operations.get_id_from_name(group_name)
+
+            global current_mac_address_after_login
+            lights_ids = db_management.select_with_two_conditions('Przypisania', 'IdK',
+                                                                 ('IdGr', group_id),
+                                                                 ('AdresMAC', current_mac_address_after_login))
+
             group_name_label = Label(text=f"Grupa {instance.text}", halign='center')
             popup_content.add_widget(group_name_label)
 
@@ -714,26 +714,37 @@ if __name__ == '__main__':
             self.r_color, self.g_color, self.b_color = tuple(groups_operations.get_rgb(group_name))
             self.brightness = groups_operations.get_brightness(group_name)
 
-            rgb_sliders_layout = BoxLayout(orientation='vertical', spacing=11)
             red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
             green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
             blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
 
-            def on_slider_r(instance, value):
+            def on_slider_r(inst, value):
                 self.r_color = int(value)
                 groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_g(instance, value):
+            def on_slider_g(inst, value):
                 self.g_color = int(value)
                 groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_b(instance, value):
+            def on_slider_b(inst, value):
                 self.b_color = int(value)
                 groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
-            def on_slider_brightness(instance, value):
+            def on_slider_brightness(inst, value):
                 self.brightness = int(value)
                 groups_operations.change_brightness(group_name, self.brightness)
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = \
+                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
 
             red_slider.bind(value=on_slider_r)
             green_slider.bind(value=on_slider_g)
@@ -743,22 +754,22 @@ if __name__ == '__main__':
             brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
             brightness_slider.bind(value=on_slider_brightness)
 
-            rgb_sliders_layout.add_widget(Label(text="Czerwony"))
-            rgb_sliders_layout.add_widget(red_slider)
-            rgb_sliders_layout.add_widget(Label(text="Zielony"))
-            rgb_sliders_layout.add_widget(green_slider)
-            rgb_sliders_layout.add_widget(Label(text="Niebieski"))
-            rgb_sliders_layout.add_widget(blue_slider)
+
 
             popup_content.add_widget(turn_on_button)
             popup_content.add_widget(turn_off_button)
             popup_content.add_widget(brightness_label)
             popup_content.add_widget(brightness_slider)
-            popup_content.add_widget(rgb_sliders_layout)
+            popup_content.add_widget(Label(text="Czerwony"))
+            popup_content.add_widget(red_slider)
+            popup_content.add_widget(Label(text="Zielony"))
+            popup_content.add_widget(green_slider)
+            popup_content.add_widget(Label(text="Niebieski"))
+            popup_content.add_widget(blue_slider)
 
             remove_group_button = MDFillRoundFlatButton(text="Usuń grupę", size_hint_y=None, size_hint_x=1 / 2,
                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                        md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
+                                                        md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
                                                         elevation_normal=20, pos_hint={'x': 0.34})
 
             def delete_group(instance):
@@ -820,7 +831,7 @@ if __name__ == '__main__':
 
             add_group_button = MDFillRoundFlatButton(text="Dodaj grupę", pos_hint={'x': 0.4},
                                                      theme_text_color="Custom", text_color=[0, 0, 0, 1],
-                                                     md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
+                                                     md_bg_color=[128 / 255, 0 / 255, 128 / 255, 1],
                                                      padding=10)
             add_group_button.bind(on_press=self.add_group_action)
 
@@ -845,14 +856,12 @@ if __name__ == '__main__':
             print(f"Dodaj grupę o nazwie: {group_name}")
             print("Współrzędne wybranych przycisków:", self.selected_buttons)
 
-            result = groups_operations.create(group_name)
+            lights = [lights_operations.get_light_id(button_id % self.cols, int(button_id / self.cols))
+                      for button_id in list(self.selected_buttons)]
+            result = groups_operations.create(group_name, lights)
             if result == 0:
                 # Tworzenie grupy powiodło się
                 toast("Tworzenie grupy powiodło się")
-                group_id = db_management.select('Grupy', 'IdGr', ('NazwaGr', group_name))[0]
-                for button_id in list(self.selected_buttons):
-                    light_id = lights_operations.get_light_id(button_id % self.cols, int(button_id / self.cols))
-                    groups_operations.add_to_group(int(group_id), light_id)
                 self.update_group_view()
                 self.selected_buttons.clear()
                 self.dismiss_popup()
@@ -860,17 +869,16 @@ if __name__ == '__main__':
                 # Grupa o takiej nazwie już istnieje
                 toast("Grupa o takiej nazwie już istnieje, wybierz inną nazwę")
             else:
-                toast("Wystąpił błąd podczas tworzenia grupy")
+                toast("Nie można utworzyć pustej grupy.")
 
         def update_group_view(self):
             # Funkcja do aktualizacji widoku grup
-            groups_names = db_management.select_all("Grupy", "NazwaGr")
-            groups_macs = db_management.select_all("Grupy", "AdresMAC")
-            groups = list(zip(groups_names, groups_macs))
+            global current_mac_address_after_login
+            groups_names = db_management.select("Grupy", "NazwaGr", ('AdresMAC', current_mac_address_after_login))
             right_layout = self.right_layout  # Uzyskaj dostęp do kontenera przechowującego przyciski grup
             right_layout.clear_widgets()  # Wyczyść obecne przyciski grup
 
-            self.create_right_layout(groups)
+            self.create_right_layout(groups_names)
 
         def dismiss_popup(self):
             # Dismiss the currently open popup
@@ -898,10 +906,13 @@ if __name__ == '__main__':
 
         def set_current_hub(self, new_mac_address, instance):
             print('nowy hub: ' + new_mac_address)
-            global current_mac_address_after_login
+            global current_mac_address_after_login, current_user
             current_mac_address_after_login = new_mac_address
             print('nowy hub2: ' + current_mac_address_after_login)
             hub_operations.change_current_hub(new_mac_address)
+            db_management.update('Uzytkownicy', ('AdresMAC', current_mac_address_after_login),
+                                 ('Email', current_user))
+            print(db_management.select('Uzytkownicy', 'AdresMAC', ('Email', current_user)))
             self.update_whole_layout()
             instance.dismiss()
 

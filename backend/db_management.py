@@ -135,7 +135,6 @@ def update_with_two_conditions(table_name: str, set_attribute: tuple, where_attr
     parsed_set_value = parse_to_sql(set_attribute[1])
     parsed_where_value_1 = parse_to_sql(where_attribute_1[1])
     parsed_where_value_2 = parse_to_sql(where_attribute_2[1])
-    print(set_attribute)
     cursor.execute(f"UPDATE {table_name} SET {set_attribute[0]} = {parsed_set_value}"
                    f" WHERE {where_attribute_1[0]} = {parsed_where_value_1} AND "
                    f"{where_attribute_2[0]} = {parsed_where_value_2};")

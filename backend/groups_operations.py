@@ -1,9 +1,10 @@
 import backend.db_management as db_management
+from backend.lights_operations import rgb_to_xy, xy_to_rgb
 from sqlite3 import OperationalError, IntegrityError
 from requests import delete
-from backend.lights_operations import USE_EMULATOR
+from backend.lights_operations import USE_EMULATOR, using_emulator
 from TEST import emulator
-from requests import get, put
+from requests import get, put, post
 import os
 from json import load, loads
 from time import time
@@ -12,8 +13,7 @@ from time import time
 SUCCESSFUL_OPERATION = 0
 GROUP_NAME_ALREADY_USED = 1
 GROUP_DOES_NOT_EXIST = 2
-LIGHT_ALREADY_IN_GROUP = 3
-LIGHT_NOT_IN_GROUP = 4
+NO_LIGHTS_PROVIDED = 3
 
 LAST_SEND_TIME = time()
 
@@ -23,19 +23,27 @@ current_hub_ip: str = ''
 request_prefix: str = ''
 
 
-def create(group_name: str) -> int:
+def create(group_name: str, lights: list[int]) -> int:
+    if not lights:
+        return NO_LIGHTS_PROVIDED
     global current_hub_mac_address
     if group_name in db_management.select('Grupy', 'NazwaGr', ('AdresMAC', current_hub_mac_address)):
         return GROUP_NAME_ALREADY_USED
-    try:
-        group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
-    except (OperationalError, ValueError):
-        group_id = 1
-    db_management.insert('Grupy', (group_id, group_name, 0, 0, 0, 0, 0, current_hub_mac_address))
-    if USE_EMULATOR:
-        emulator.create_group(group_id, group_name)
+    if using_emulator():
+        try:
+            group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
+        except (OperationalError, ValueError):
+            group_id = 1
+        db_management.insert('Grupy', (group_id, group_name, 0, 0, 0, 0, 0, current_hub_mac_address))
+        for light_id in lights:
+            db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
+        emulator.create_group(group_id, group_name, lights)
     else:
-        pass  # TODO
+        global request_prefix, LAST_SEND_TIME
+        if time() - LAST_SEND_TIME > 1.0:
+            LAST_SEND_TIME = time()
+            response = post(url=request_prefix, json={"name": group_name, "lights": [str(light_id) for light_id in lights]}).text
+    update_groups_data()
     return SUCCESSFUL_OPERATION
 
 
@@ -47,43 +55,11 @@ def remove(group_name: str, xd=None) -> int:
     db_management.delete_with_two_conditions('Grupy', ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
     db_management.delete_with_two_conditions('Przypisania', ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
     global request_prefix
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.remove_group(group_id)
     else:
-        delete(url=f'{request_prefix}{group_id}')  # TODO
+        delete(url=f'{request_prefix}{group_id}')
     return SUCCESSFUL_OPERATION
-
-
-def add_to_group(group_id: int, light_id: int) -> int:
-    if light_id in db_management.select('Przypisania', 'IdK', ('IdGr', group_id)):
-        return LIGHT_ALREADY_IN_GROUP
-    global current_hub_mac_address
-    db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
-    if USE_EMULATOR:
-        emulator.add_light_to_group(group_id, light_id)
-    else:
-        pass  # TODO
-    return SUCCESSFUL_OPERATION
-
-
-def delete_from_group(group_id: int, light_id: int) -> int:
-    global current_hub_mac_address
-    if light_id not in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
-                                                                ('AdresMAC', current_hub_mac_address)):
-        return LIGHT_NOT_IN_GROUP
-    db_management.delete_with_two_conditions('Przypisania', ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
-    if USE_EMULATOR:
-        emulator.remove_light_from_group(group_id, light_id)
-    else:
-        pass  # TODO
-    return SUCCESSFUL_OPERATION
-
-
-def update_groups_data_in_database():
-    if USE_EMULATOR:
-        emulator.get_groups_dict()
-    else:
-        groups_dict = {}  # TODO
 
 
 def get_rgb(group_name: str) -> list[int, int, int]:
@@ -110,18 +86,21 @@ def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
     """
     group_id = get_id_from_name(group_name)
     global current_hub_mac_address
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.change_color_group(group_id, rgb)
+        response = 'OK'
     else:
-        pass  # TODO
-    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
-                                                             ('AdresMAC', current_hub_mac_address)):
+        xy = rgb_to_xy(rgb)
+        response = __send_put(group_id, {"xy": xy})
+    if response:
+        for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                                 ('AdresMAC', current_hub_mac_address)):
+            for i, color in enumerate(['R', 'G', 'B']):
+                db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
+                                                         ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
         for i, color in enumerate(['R', 'G', 'B']):
-            db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
-                                                     ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
-    for i, color in enumerate(['R', 'G', 'B']):
-        db_management.update_with_two_conditions('Grupy', (f'Kolor{color}', rgb[i]),
-                                                 ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
+            db_management.update_with_two_conditions('Grupy', (f'Kolor{color}', rgb[i]),
+                                                     ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
 
 
 def change_brightness(group_name: str, brightness: int, xd=None) -> None:
@@ -129,76 +108,78 @@ def change_brightness(group_name: str, brightness: int, xd=None) -> None:
     :param brightness: 0-255
     """
     group_id = get_id_from_name(group_name)
-    if USE_EMULATOR:
-        pass  # TODO
+    if using_emulator():
+        response = 'OK'
     else:
-        pass  # TODO
-    global current_hub_mac_address
-    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
-                                                             ('AdresMAC', current_hub_mac_address)):
-        db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
+        response = __send_put(group_id, {"bri": brightness})
+    if response:
+        global current_hub_mac_address
+        for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                                 ('AdresMAC', current_hub_mac_address)):
+            db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
+                                                     ('AdresMAC', current_hub_mac_address))
+        db_management.update_with_two_conditions('Grupy', ('Jasnosc', brightness), ('IdGr', group_id),
                                                  ('AdresMAC', current_hub_mac_address))
-    db_management.update_with_two_conditions('Grupy', ('Jasnosc', brightness), ('IdGr', group_id),
-                                             ('AdresMAC', current_hub_mac_address))
 
 
 def turn_off(group_name: str, xd=None) -> None:
     group_id = get_id_from_name(group_name)
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.turn_off_group(group_id)
+        response = 'OK'
     else:
-        pass  # TODO
-    global current_hub_mac_address
-    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
-                                                             ('AdresMAC', current_hub_mac_address)):
-        db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
+        response = __send_put(group_id, {"on": False})
+    if response:
+        global current_hub_mac_address
+        for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                                 ('AdresMAC', current_hub_mac_address)):
+            db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
+                                                     ('AdresMAC', current_hub_mac_address))
+        db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', False), ('IdGr', group_id),
                                                  ('AdresMAC', current_hub_mac_address))
-    db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', False), ('IdGr', group_id),
-                                             ('AdresMAC', current_hub_mac_address))
 
 
 def turn_on(group_name: str, xd=None) -> None:
     group_id = get_id_from_name(group_name)
-    if USE_EMULATOR:
+    if using_emulator():
         emulator.turn_on_group(group_id)
+        response = 'OK'
     else:
-        pass  # TODO
-    global current_hub_mac_address
-    for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
-                                                             ('AdresMAC', current_hub_mac_address)):
-        db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
+        response = __send_put(group_id, {"on": True})
+    if response:
+        global current_hub_mac_address
+        for light_id in db_management.select_with_two_conditions('Przypisania', 'IdK', ('IdGr', group_id),
+                                                                 ('AdresMAC', current_hub_mac_address)):
+            db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
+                                                     ('AdresMAC', current_hub_mac_address))
+        db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', True), ('IdGr', group_id),
                                                  ('AdresMAC', current_hub_mac_address))
-    db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', True), ('IdGr', group_id),
-                                             ('AdresMAC', current_hub_mac_address))
 
 
 def update_groups_data():
     global current_hub_mac_address
-    if current_hub_mac_address == '00:00:00:00:00:00':
-        with open(f'{os.path.join(os.path.dirname(__file__), "..")}/TEST/emulator_config.json') as f:
+    if using_emulator():
+        with open(f'{os.path.join(os.path.dirname(__file__), "..")}/TEST/emulator_groups.json') as f:
             info_dict: dict = load(f)
+            print(info_dict)
     else:
-        pass  # TODO
-        # global request_prefix
-        # info_dict: dict = loads(get(url=request_prefix).text)
+        global request_prefix
+        info_dict: dict = loads(get(url=request_prefix).text)
     for group_id in info_dict:
-        if USE_EMULATOR:
-            state_dict = info_dict[(str(group_id))]
-        else:
-            pass  # TODO
-            # state_dict = info_dict[(str(group_id))]['state']
-        is_on = state_dict['on']
-        if USE_EMULATOR:
+        state_dict = info_dict[(str(group_id))]
+        if using_emulator():
+            is_on = state_dict['on']
             name = state_dict['name']
             rgb = state_dict['red'], state_dict['green'], state_dict['blue']
             brightness = state_dict['brightness']
             lights_ids = state_dict['lights']
         else:
-            pass  # TODO
-            # color_x = state_dict['xy'][0]
-            # color_y = state_dict['xy'][1]
-            # rgb = xy_to_rgb((color_x, color_y))
-            # brightness = state_dict['bri']
+            is_on = state_dict['action']['on']
+            name = state_dict['name']
+            xy = state_dict['action']['xy']
+            rgb = xy_to_rgb((xy[0], xy[1]))
+            brightness = state_dict['action']['bri']
+            lights_ids = state_dict['lights']
         try:
             db_management.insert('Grupy',
                                  (group_id, name, is_on, brightness, rgb[0], rgb[1], rgb[2], current_hub_mac_address))
@@ -226,10 +207,19 @@ def __send_put(group_id: int, body: dict) -> str:
     global request_prefix, LAST_SEND_TIME
     if time() - LAST_SEND_TIME > 1.0:
         LAST_SEND_TIME = time()
-        request = f'{request_prefix}{group_id}/state'
+        request = f'{request_prefix}{group_id}/action'
         return put(url=request, json=body).text
     return ''
 
 
 if __name__ == '__main__':
-    pass
+    print(__change_current_hub_2('ec:b5:fa:98:1c:cd'))
+    # update_groups_data()
+    # print(post(url=request_prefix, json={"name": "NewOne", "lights": ["1"]}).text)
+    print(request_prefix)
+    # from time import sleep
+    # sleep(2)
+    # create('NewOne')
+    update_groups_data()
+    db_management.print_db()
+
