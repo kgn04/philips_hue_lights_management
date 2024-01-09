@@ -85,9 +85,10 @@ if __name__ == '__main__':
         def __init__(self, **kwargs):
             super(LoadingScreen, self).__init__(**kwargs)
             self.orientation = 'vertical'
-            label = Label(text='Właśnie szukam hubów, może to potrwać kilkanaście sekund, proszę o cierpliwość',
+            label = Label(text='Właśnie szukam hubów,\n może to potrwać kilkanaście sekund, proszę o cierpliwość',
                           color=[168 / 255, 0 / 255, 168 / 255, 1],
-                          font_size=30
+                          font_size=25,
+                          halign='center'
                           )
             self.add_widget(label)
 
@@ -218,8 +219,9 @@ if __name__ == '__main__':
                                           " Hub zostanie przypisany do twojego konta\n"
                                           " i po kolejnym zalogowaniu "
                                           "zostaniesz automatycznie\n przekierowany do panelu zarzadzania tym hubem."
-                                            ))
-            content.add_widget(Label(text="Później w panelu zarządzania możesz zmienić swój wybór\n tak, by zarządzać też innymi hubami. "))
+                                     ))
+            content.add_widget(Label(
+                text="Później w panelu zarządzania możesz zmienić swój wybór\n tak, by zarządzać też innymi hubami. "))
 
             info_popup = Popup(title="Pomoc", content=content, size_hint=(0.55, 0.45))
             info_popup.open()
