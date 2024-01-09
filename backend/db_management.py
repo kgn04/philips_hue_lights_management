@@ -2,8 +2,7 @@ from sqlite3 import connect, OperationalError, IntegrityError
 import os
 attributes: dict[str, str] = {
     'Huby': '(AdresMAC, AdresIP, LoginH, Nazwa, Rzedy, Kolumny)',
-    'Uzytkownicy': '(Email, Username, Haslo)',
-    'Przydzielenia': '(Email, AdresMAC)',
+    'Uzytkownicy': '(Email, Username, Haslo, AdresMAC)',
     'Kasetony': '(IdK, Rzad, Kolumna, CzyWlaczony, Jasnosc, KolorR, KolorG, KolorB, AdresMAC)',
     'Grupy': '(IdGr, NazwaGr, CzyWlaczone, Jasnosc, KolorR, KolorG, KolorB, AdresMAC)',
     'Przypisania': '(IdGr, IdK, AdresMAC)'
