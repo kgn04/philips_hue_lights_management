@@ -203,9 +203,10 @@ if __name__ == '__main__':
         def hub_chosen(self, instance):
             global current_mac_address_after_login
             current_mac_address_after_login = str(instance.mac_address)
+            print("Test")
+            print(instance.mac_address)
             db_management.update("Uzytkownicy", ("AdresMAC", instance.mac_address), ("Email", current_user))
 
-            self.manager.add_widget(ManageLightsScreen(name='manage'))
             self.manager.current = 'login'
 
 
@@ -391,7 +392,8 @@ if __name__ == '__main__':
                 show_popup("Logowanie", "Zalogowano pomyślnie")
                 global current_user
                 current_user = email
-                self.manager.current = 'choose'
+                self.manager.add_widget(ManageLightsScreen(name='manage'))
+                self.manager.current = 'manage'
             elif result == 3:
                 show_popup("Logowanie", "Niepoprawny adres email")
             elif result == 4:

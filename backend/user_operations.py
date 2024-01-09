@@ -36,7 +36,7 @@ def register(email: str, username: str, password1: str, password2: str) -> int:
         return INCORRECT_PASSWORD
     elif not username:
         return INCORRECT_USERNAME
-    db_management.insert('Uzytkownicy', (email, username, password1))
+    db_management.insert('Uzytkownicy', (email, username, password1, ''))
     return OPERATION_SUCCESSFUL
 
 
