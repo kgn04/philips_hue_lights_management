@@ -12,7 +12,7 @@ current_hub_mac_address = ''
 request_prefix: str = ''
 LAST_SEND_TIME = time()
 
-USE_EMULATOR = True
+USE_EMULATOR = False
 
 
 def get_light_id(column: int, row: int) -> int:

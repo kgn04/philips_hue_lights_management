@@ -176,7 +176,7 @@ ScreenManager:
             height: self.texture_size[1]
             color: [128/255, 0/255, 128/255, 1]
         MDLabel:
-            text: 'Upewnij się, że wybrany hub jest w tej samej sieci, co twoje urządzenie'
+            text: 'Wybierz huba, którym chcesz zarządzać.'
             pos_hint: {'x':0, 'y':0.7}
             #font_style: 'Button'
             #font_size: 16
@@ -184,14 +184,6 @@ ScreenManager:
             size_hint_y: None
             height: self.texture_size[1]
             color: [128/255, 0/255, 128/255, 1]
-        MDIconButton:
-            icon: "keyboard-backspace"
-            pos_hint: {'x':0.45, 'y':0.3}
-            spacing: 0
-            #font_size: 13
-            theme_text_color: "Custom"
-            text_color: "deepskyblue"
-            on_press: root.manager.current = 'start'
         GridLayout:
             cols: 7
             spacing: 30
