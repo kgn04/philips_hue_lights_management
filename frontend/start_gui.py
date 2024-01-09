@@ -33,6 +33,7 @@ if __name__ == '__main__':
 
     current_mac_address = ''
     current_mac_address_after_login = ''
+    current_user = ''
 
     SCREENS_INITIALIZED = False
 
@@ -383,6 +384,8 @@ if __name__ == '__main__':
             print(result)
             if result == 0:
                 show_popup("Logowanie", "Zalogowano pomyślnie")
+                global current_user
+                current_user = email
                 self.manager.current = 'choose'
             elif result == 3:
                 show_popup("Logowanie", "Niepoprawny adres email")
@@ -437,6 +440,7 @@ if __name__ == '__main__':
     class ManageLightsScreen(Screen):
         def __init__(self, **kwargs):
             super(ManageLightsScreen, self).__init__(**kwargs)
+            self.current_username_label = None
             self.selected_buttons = set()
 
             self.brightness: int
@@ -477,6 +481,21 @@ if __name__ == '__main__':
 
             self.hub_array = np.arange(rows * cols).reshape(rows, cols)
             print(self.hub_array)
+
+            self.update_username_label()
+
+            # # background_layout = self.ids.floating_layout
+            # current_username = db_management.select("Uzytkownicy", "Username", ("Email", current_user))
+            # if len(current_username) > 0:
+            #     current_username = current_username[0]
+            # user_label = Label(
+            #     text=f"Hello, {current_username}",
+            #     size_hint=(1 / 2, 1 / 12),
+            #     pos_hint={'x': 0.63, 'y': 0.89},
+            #     color='deepskyblue',
+            #     bold=True
+            # )
+            # self.add_widget(user_label)
 
             self.left_layout = GridLayout(cols=rows, size_hint=(4 / 5, 3 / 4), pos_hint={'x': 0.15, 'y': 0.25},
                                           spacing=10)
@@ -576,6 +595,23 @@ if __name__ == '__main__':
                 self.add_widget(self.current_hub_label)
             else:
                 self.current_hub_label.text = f"Twój Hub: {current_hub_name2} ({current_mac_address_after_login})"
+
+        def update_username_label(self):
+            current_username = db_management.select("Uzytkownicy", "Username", ("Email", current_user))
+            if len(current_username) > 0:
+                current_username = current_username[0]
+            user_label = Label(
+                text=f"Hello, {current_username}",
+                size_hint=(1 / 2, 1 / 12),
+                pos_hint={'x': 0.63, 'y': 0.89},
+                color='deepskyblue',
+                bold=True
+            )
+            # Remove any existing username label before adding the new one
+            if self.current_username_label is not None:
+                self.remove_widget(self.current_username_label)
+            self.add_widget(user_label)
+            self.current_username_label = user_label
 
         def show_light_controls(self, instance):
             light_id = int(instance.text)
@@ -860,7 +896,6 @@ if __name__ == '__main__':
             self.update_whole_layout()
             instance.dismiss()
 
-
         def update_whole_layout(self):
             self.left_layout.clear_widgets()
             self.right_layout.clear_widgets()
@@ -887,6 +922,7 @@ if __name__ == '__main__':
             self.dismiss_popup()
             toast("Zostałeś wylogowany")
             self.manager.current = 'login'
+
 
 
     class MyApp(MDApp):
