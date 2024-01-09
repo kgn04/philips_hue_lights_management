@@ -199,9 +199,10 @@ if __name__ == '__main__':
         def hub_chosen(self, instance):
             global current_mac_address_after_login
             current_mac_address_after_login = str(instance.mac_address)
+            db_management.update("Uzytkownicy", ("AdresMAC", instance.mac_address), ("Email", current_user))
 
             self.manager.add_widget(ManageLightsScreen(name='manage'))
-            self.manager.current = 'manage'
+            self.manager.current = 'login'
 
 
     class ScreenChooseShape(Screen):
@@ -407,7 +408,7 @@ if __name__ == '__main__':
             result = user_operations.register(email, username, password1, password2)
             if result == 0:
                 show_popup("Rejestracja", "Rejestracja przebiegła pomyślnie")
-                self.manager.current = 'login'
+                self.manager.current = 'choose'
             elif result == 1:
                 show_popup("Rejestracja", "Konto o takim adresie e-mail już istnieje")
             elif result == 2:
@@ -909,7 +910,6 @@ if __name__ == '__main__':
             self.dismiss_popup()
             toast("Zostałeś wylogowany")
             self.manager.current = 'login'
-
 
 
     class MyApp(MDApp):
