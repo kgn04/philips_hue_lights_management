@@ -141,15 +141,6 @@ def remove_group(group_id):
         dump(groups_dict, f)
 
 
-def add_light_to_group(group_id, light_id):
-    with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
-        groups_dict = load(f)
-    groups_dict[str(int(group_id))]['lights'].append(int(light_id))
-    print(groups_dict)
-    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
-        dump(groups_dict, f)
-
-
 def remove_light_from_group(group_id, light_id):
     with open(EMULATOR_GROUPS_CONFIG_PATH, 'r+') as f:
         groups_dict = load(f)
@@ -170,9 +161,6 @@ def turn_on_group(group_id):
         groups_dict = load(f)
     for light_id in groups_dict[str(group_id)]['lights']:
         turn_on(light_id)
-    groups_dict[str(group_id)]['on'] = True
-    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
-        dump(groups_dict, f)
 
 
 def turn_off_group(group_id):
@@ -180,9 +168,7 @@ def turn_off_group(group_id):
         groups_dict = load(f)
     for light_id in groups_dict[str(group_id)]['lights']:
         turn_off(light_id)
-    groups_dict[str(group_id)]['on'] = False
-    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
-        dump(groups_dict, f)
+
 
 
 def change_color_group(group_id, rgb):
@@ -190,11 +176,7 @@ def change_color_group(group_id, rgb):
         groups_dict = load(f)
     for light_id in groups_dict[str(group_id)]['lights']:
         change_color(light_id, rgb)
-    groups_dict[str(group_id)]['red'] = rgb[0]
-    groups_dict[str(group_id)]['green'] = rgb[1]
-    groups_dict[str(group_id)]['blue'] = rgb[2]
-    with open(EMULATOR_GROUPS_CONFIG_PATH, 'w+') as f:
-        dump(groups_dict, f)
+
 
 
 def get_groups_dict():

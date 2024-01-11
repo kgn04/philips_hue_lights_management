@@ -180,7 +180,6 @@ if __name__ == '__main__':
                 self.manager.add_widget(ScreenChooseShape(name='shape'))
                 self.manager.current = 'shape'
                 hub_operations.change_current_hub(self.hub_mac)
-                print(f"Dodaj huba o adresie MAC: {self.hub_mac}")
 
 
     # wybieranie z hubów które są już w bazie i łączenie się z nim
@@ -208,8 +207,6 @@ if __name__ == '__main__':
             global current_mac_address_after_login, current_user
             current_mac_address_after_login = str(instance.mac_address)
             db_management.update("Uzytkownicy", ("AdresMAC", instance.mac_address), ("Email", current_user))
-            print(current_user)
-            print(db_management.select('Uzytkownicy', 'AdresMAC', ('Email', current_user)))
             toast('Zarejestrowano pomyślnie')
             self.manager.current = 'login'
             toast('Zarejestrowano pomyślnie, możesz teraz się zalogować')
@@ -261,10 +258,8 @@ if __name__ == '__main__':
         def button_pressed(self, instance):
             # Ta metoda zostanie wywołana po naciśnięciu przycisku
             button_id = instance.button_id
-            print(f'Naciśnięto przycisk {button_id}')
 
         def on_touch_down(self, touch):
-            print("TOUCH DOWN")
             if super(ScreenChooseShape, self).on_touch_down(touch):
                 return True
 
@@ -274,20 +269,14 @@ if __name__ == '__main__':
                 return True
 
         def on_touch_move(self, touch):
-            print("TOUCH MOVE")
             if touch.grab_current == self:
                 self.selected_buttons_end = self.find_button_at_pos(touch.pos)
-                print(self.selected_buttons_end)
-                # self.update_button_colors()
                 return True
 
         def on_touch_up(self, touch):
-            # if touch.grab_current == self:
             touch.ungrab(self)
             button_id = self.find_button_at_pos(touch.pos)
             if button_id is not None:
-                print(f'Touch up on button {button_id}')
-
                 self.update_button_colors(button_id)
 
         def find_button_at_pos(self, pos):
@@ -300,9 +289,7 @@ if __name__ == '__main__':
         def update_button_colors(self, button_id):
             buttons_layout = self.ids.buttons_layout
 
-            # siatka 6x6
             a = np.array(self.buttons_array)
-            print(a)
             x, y = np.where(a == button_id)
             coord = np.array(list(zip(y, x)))[0]
             rows = coord[0] + 1
@@ -405,7 +392,6 @@ if __name__ == '__main__':
     class ScreenLogin(Screen):
         def login(self, email: str, password: str):
             result = user_operations.login(email, password)
-            print(result)
             if result == 0:
                 toast('Zalogowano pomyślnie')
                 global current_user, current_mac_address_after_login
@@ -490,7 +476,6 @@ if __name__ == '__main__':
             self.current_hub_label = None
             self.buttons = {}
 
-            print(current_mac_address_after_login)
             self.create_layout()
 
         def create_layout(self):
@@ -508,13 +493,10 @@ if __name__ == '__main__':
             # Convert the returned values to integers
             rows = int(rows[0]) if rows else 0
             cols = int(cols[0]) if cols else 0
-            print(rows)
-            print(cols)
             self.rows = rows
             self.cols = cols
 
             self.hub_array = np.arange(rows * cols).reshape(rows, cols)
-            print(self.hub_array)
 
             self.update_username_label()
 
@@ -523,25 +505,19 @@ if __name__ == '__main__':
 
             # groups_operations.update_groups_data()
 
-            ids = db_management.select('Kasetony', 'IdK', ('AdresMAC', current_mac_address_after_login))
-            r_colors = db_management.select('Kasetony', 'KolorR', ('AdresMAC', current_mac_address_after_login))
-            g_colors = db_management.select('Kasetony', 'KolorG', ('AdresMAC', current_mac_address_after_login))
-            b_colors = db_management.select('Kasetony', 'KolorB', ('AdresMAC', current_mac_address_after_login))
-            brightnesses = db_management.select('Kasetony', 'Jasnosc', ('AdresMAC', current_mac_address_after_login))
-            states = db_management.select('Kasetony', 'CzyWlaczony', ('AdresMAC', current_mac_address_after_login))
-
             for row in self.hub_array:
                 for value in row:
                     try:
                         light_id = lights_operations.get_light_id(value % cols, int(value / cols))
-                        index = ids.index(light_id)
-                        if not states[index]:
-                            brightnesses[index] = 0
+                        rgb = lights_operations.get_rgb(light_id)
+                        brightness = lights_operations.get_brightness(light_id)
+                        is_on = lights_operations.is_on(light_id)
+                        if not is_on:
+                            brightness = 0
                         button = Button(text=str(light_id), size_hint=(0.5, 0.5), color=[0, 0, 0, 0],
-                                        background_color=[r_colors[index] / 255.0, g_colors[index] / 255.0,
-                                                          b_colors[index] / 255.0, brightnesses[index] / 255.0])
+                                        background_color=[rgb[0] / 128.0, rgb[1] / 128.0,
+                                                          rgb[2] / 128.0, brightness / 255.0])
                         button.bind(on_press=self.show_light_controls)
-                        print(button.x, button.y, button.height, button.width)
 
                         def update_border(instance, value):
                             # Callback function to update the border when the button's position or size changes
@@ -555,7 +531,6 @@ if __name__ == '__main__':
                         self.left_layout.add_widget(button)
                         self.buttons[light_id] = button
                     except TypeError as e:
-                        print(e)
                         button = Button(size_hint=(0.5, 0.5), background_color='black')
                         # buttons_layout.add_widget(button)
                         self.left_layout.add_widget(button)
@@ -605,7 +580,6 @@ if __name__ == '__main__':
 
         def create_right_layout(self, groups):
             for group_name in groups:
-                print(group_name)
                 group_button = MDFillRoundFlatButton(text=group_name, size_hint_y=None, size_hint_x=1 / 2,
                                                      theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                      md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
@@ -625,7 +599,6 @@ if __name__ == '__main__':
 
         def update_hub_name_label(self):
             current_hub_name = (db_management.select("Huby", "Nazwa", ("AdresMAC", current_mac_address_after_login)))
-            print(current_hub_name)
             current_hub_name2 = ''
             if len(current_hub_name) > 0:
                 current_hub_name2 = current_hub_name[0]
@@ -660,22 +633,22 @@ if __name__ == '__main__':
         def show_light_controls(self, instance):
             light_id = int(instance.text)
             popup_content = BoxLayout(orientation='vertical', spacing=5)
-            self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
-            self.brightness = lights_operations.get_brightness(light_id)
 
-            def update_button_view(rgb):
-                instance.background_color = [rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, self.brightness / 255.0]
-                self.r_color, self.g_color, self.b_color = rgb
+            def update_button_view():
+                rgb = lights_operations.get_rgb(light_id)
+                brightness = lights_operations.get_brightness(light_id)
+                is_on = lights_operations.is_on(light_id)
+                if not is_on:
+                    brightness = 0.0
+                instance.background_color = [rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, brightness / 255.0]
 
             def on_turn_on(inst=None):
-                if lights_operations.is_on(light_id):
-                    return
                 lights_operations.turn_on(light_id)
-                update_button_view((self.r_color, self.g_color, self.b_color))
+                update_button_view()
 
             def on_turn_off(inst=None):
                 lights_operations.turn_off(light_id)
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, 0.0]
+                instance.background_color = [0.0, 0.0, 0.0, 0.0]
 
             buttons_layout = BoxLayout(orientation='horizontal', spacing=5)
             turn_on_button = Button(text="Włącz")
@@ -687,8 +660,7 @@ if __name__ == '__main__':
                 if not lights_operations.is_on(light_id):
                     return
                 lights_operations.change_brightness(light_id, brightness)
-                self.brightness = brightness
-                update_button_view((self.r_color, self.g_color, self.b_color))
+                update_button_view()
 
             brightness_label = Label(text="JASNOŚĆ")
             brightness_layout = BoxLayout(orientation='horizontal', spacing=2)
@@ -706,7 +678,7 @@ if __name__ == '__main__':
                 if not lights_operations.is_on(light_id):
                     return
                 lights_operations.change_color(light_id, rgb)
-                update_button_view(rgb)
+                update_button_view()
 
             for i, colors in enumerate([(0, 128, 255), (102, 178, 255), (204, 229, 255)]):
                 for i1, i2, i3 in [(2, 0, 0), (2, 1, 0), (2, 2, 0), (1, 2, 0), (0, 2, 0), (0, 2, 1), (0, 2, 2),
@@ -716,7 +688,6 @@ if __name__ == '__main__':
                                     background_color=[rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, 1.0])
                     button.bind(on_press=partial(on_color_button, rgb))
                     colors_layout.add_widget(button)
-
 
             upper_layout = BoxLayout(orientation='vertical', spacing=5)
             buttons_layout.add_widget(turn_on_button)
@@ -734,28 +705,30 @@ if __name__ == '__main__':
             group_name = instance.text
             group_id = groups_operations.get_id_from_name(group_name)
             popup_content = BoxLayout(orientation='vertical', spacing=5)
-            self.r_color, self.g_color, self.b_color = tuple(groups_operations.get_rgb(group_name))
-            self.brightness = groups_operations.get_brightness(group_name)
 
             global current_mac_address_after_login
             lights_ids = db_management.select_with_two_conditions('Przypisania', 'IdK',
                                                                   ('IdGr', group_id),
                                                                   ('AdresMAC', current_mac_address_after_login))
 
-
-            def update_button_view(rgb):
-                instance.background_color = [rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, self.brightness / 255.0]
-                self.r_color, self.g_color, self.b_color = rgb
+            def update_buttons_view():
+                for light_id in lights_ids:
+                    rgb = lights_operations.get_rgb(light_id)
+                    brightness = lights_operations.get_brightness(light_id)
+                    is_on = lights_operations.is_on(light_id)
+                    if not is_on:
+                        brightness = 0.0
+                    self.buttons[light_id].background_color = [rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0,
+                                                               brightness / 255.0]
 
             def on_turn_on(inst=None):
-                if groups_operations.is_on(group_name):
-                    return
                 groups_operations.turn_on(group_name)
-                update_button_view((self.r_color, self.g_color, self.b_color))
+                update_buttons_view()
 
             def on_turn_off(inst=None):
                 groups_operations.turn_off(group_name)
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, 0.0]
+                for light_id in lights_ids:
+                    self.buttons[light_id].background_color = [0.0, 0.0, 0.0, 0.0]
 
             buttons_layout = BoxLayout(orientation='horizontal', spacing=5)
             turn_on_button = Button(text="Włącz")
@@ -764,11 +737,10 @@ if __name__ == '__main__':
             turn_off_button.bind(on_press=on_turn_off)
 
             def on_brightness_button(brightness, inst=None):
-                if not groups_operations.is_on(group_name):
+                if not groups_operations.is_any_on(group_name):
                     return
                 groups_operations.change_brightness(group_name, brightness)
-                self.brightness = brightness
-                update_button_view((self.r_color, self.g_color, self.b_color))
+                update_buttons_view()
 
             brightness_label = Label(text="JASNOŚĆ")
             brightness_layout = BoxLayout(orientation='horizontal', spacing=2)
@@ -783,10 +755,10 @@ if __name__ == '__main__':
             colors_label = Label(text="KOLORY")
 
             def on_color_button(rgb, inst=None):
-                if not groups_operations.is_on(group_name):
+                if not groups_operations.is_any_on(group_name):
                     return
                 groups_operations.change_color(group_name, rgb)
-                update_button_view(rgb)
+                update_buttons_view()
 
             for i, colors in enumerate([(0, 128, 255), (102, 178, 255), (204, 229, 255)]):
                 for i1, i2, i3 in [(2, 0, 0), (2, 1, 0), (2, 2, 0), (1, 2, 0), (0, 2, 0), (0, 2, 1), (0, 2, 2),
@@ -860,9 +832,6 @@ if __name__ == '__main__':
                     button.button_id = value
                     button.row = row_index
                     button.col = col_index
-                    print(value)
-                    print(row_index)
-                    print(col_index)
                     button.bind(on_press=self.button_pressed)
                     buttons_layout.add_widget(button)
 
@@ -884,17 +853,13 @@ if __name__ == '__main__':
         def button_pressed(self, instance):
             # Funkcja wywoływana po naciśnięciu przycisku (ToggleButton)
             if instance.state == 'down':
-                print(f"Przycisk {instance.button_id} włączony")
                 self.selected_buttons.add(instance.button_id)  # Dodaj współrzędne do zbioru
             else:
-                print(f"Przycisk {instance.button_id} wyłączony")
                 self.selected_buttons.discard(instance.button_id)  # Usuń współrzędne ze zbioru
 
         def add_group_action(self, instance):
             # Funkcja wywoływana po naciśnięciu przycisku "Dodaj grupę"
             group_name = self.group_name_input.text
-            print(f"Dodaj grupę o nazwie: {group_name}")
-            print("Współrzędne wybranych przycisków:", self.selected_buttons)
 
             lights = [lights_operations.get_light_id(button_id % self.cols, int(button_id / self.cols))
                       for button_id in list(self.selected_buttons)]
@@ -946,14 +911,11 @@ if __name__ == '__main__':
             menu.open()
 
         def set_current_hub(self, new_mac_address, instance):
-            print('nowy hub: ' + new_mac_address)
             global current_mac_address_after_login, current_user
             current_mac_address_after_login = new_mac_address
-            print('nowy hub2: ' + current_mac_address_after_login)
             hub_operations.change_current_hub(new_mac_address)
             db_management.update('Uzytkownicy', ('AdresMAC', current_mac_address_after_login),
                                  ('Email', current_user))
-            print(db_management.select('Uzytkownicy', 'AdresMAC', ('Email', current_user)))
             self.update_whole_layout()
             instance.dismiss()
 

@@ -34,11 +34,6 @@ CREATE TABLE Kasetony (
 CREATE TABLE Grupy (
     IdGr int NOT NULL,
     NazwaGr varchar(255) NOT NULL,
-    CzyWlaczone bit NOT NULL,
-    Jasnosc int NOT NULL,
-    KolorR float NOT NULL,
-    KolorG float NOT NULL,
-    KolorB float NOT NULL,
     AdresMAC varchar (255) NOT NULL,
     PRIMARY KEY(IdGr, AdresMAC)
 );

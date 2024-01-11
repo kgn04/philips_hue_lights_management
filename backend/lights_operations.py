@@ -167,25 +167,19 @@ def update_lights_data():
     for light_id in info_dict:
         if using_emulator():
             state_dict = info_dict[(str(light_id))]
-        else:
-            state_dict = info_dict[(str(light_id))]['state']
-        is_on = state_dict['on']
-        if using_emulator():
             rgb = state_dict['red'], state_dict['green'], state_dict['blue']
             brightness = state_dict['brightness']
         else:
+            state_dict = info_dict[(str(light_id))]['state']
             color_x = state_dict['xy'][0]
             color_y = state_dict['xy'][1]
             rgb = xy_to_rgb((color_x, color_y))
             brightness = state_dict['bri']
+        is_on = state_dict['on']
         try:
             db_management.insert('Kasetony',
                                  (light_id, 0, 0, is_on, brightness, rgb[0], rgb[1], rgb[2], current_hub_mac_address))
-        except IntegrityError as e:
-            print(f'{e} - {light_id}')
-            print(('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]), ('KolorB', rgb[2]),
-                  ('Jasnosc', brightness))
-            print(current_hub_mac_address)
+        except IntegrityError:
             for attribute_name, attribute_value in [('CzyWlaczony', int(is_on)), ('KolorR', rgb[0]), ('KolorG', rgb[1]),
                                                     ('KolorB', rgb[2]), ('Jasnosc', brightness)]:
                 db_management.update_with_two_conditions('Kasetony', (attribute_name, attribute_value),

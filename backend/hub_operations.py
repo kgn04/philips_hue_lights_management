@@ -64,7 +64,6 @@ def __get_login(ip_address: str):
             return response.split('"')[-2]
         sleep(1)
         timeout -= 1
-        print(timeout)
     return TIMEOUT
 
 
@@ -103,5 +102,3 @@ def change_grid(x: int, y: int):
 
 if __name__ == '__main__':
     pass
-    # print(find_hubs())
-    # add_new_hub('0.0.0.0', '00:00:00:00:00:00', 'emulator')

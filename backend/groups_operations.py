@@ -1,8 +1,8 @@
 import backend.db_management as db_management
-from backend.lights_operations import rgb_to_xy, xy_to_rgb
+from backend.lights_operations import rgb_to_xy
 from sqlite3 import OperationalError, IntegrityError
 from requests import delete
-from backend.lights_operations import USE_EMULATOR, using_emulator
+from backend.lights_operations import using_emulator
 from TEST import emulator
 from requests import get, put, post
 import os
@@ -62,26 +62,21 @@ def remove(group_name: str, xd=None) -> int:
     return SUCCESSFUL_OPERATION
 
 
-def get_rgb(group_name: str) -> list[int, int, int]:
-    return [db_management.select_with_two_conditions('Grupy', f'Kolor{color}', ('NazwaGr', group_name),
-                                                     ('AdresMAC', current_hub_mac_address))[0]
-            for color in ['R', 'G', 'B']
-            ]
-
-
-def get_brightness(group_name: str) -> int:
-    return db_management.select_with_two_conditions('Grupy', f'Jasnosc', ('NazwaGr', group_name),
-                                                    ('AdresMAC', current_hub_mac_address))[0]
-
-
 def get_id_from_name(group_name: str) -> int:
     global current_hub_mac_address
     return db_management.select_with_two_conditions('Grupy', 'IdGr', ('NazwaGr', group_name),
                                                     ('AdresMAC', current_hub_mac_address))[0]
 
-def is_on(group_name: str) -> int:
-    return db_management.select_with_two_conditions('Grupy', f'CzyWlaczone', ('NazwaGr', group_name),
-                                                    ('AdresMAC', current_hub_mac_address))[0]
+def is_any_on(group_name: str) -> int:
+    global current_hub_mac_address
+    lights_ids = db_management.select_with_two_conditions('Przypisania', 'IdK',
+                                                          ('IdGr', get_id_from_name(group_name)),
+                                                          ('AdresMAC', current_hub_mac_address))
+    for light_id in lights_ids:
+        if db_management.select_with_two_conditions('Kasetony', 'CzyWlaczony',
+                                                    ('IdK', light_id), ('AdresMAC', current_hub_mac_address))[0]:
+            return True
+    return False
 
 
 def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
@@ -102,9 +97,6 @@ def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
             for i, color in enumerate(['R', 'G', 'B']):
                 db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
                                                          ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
-        for i, color in enumerate(['R', 'G', 'B']):
-            db_management.update_with_two_conditions('Grupy', (f'Kolor{color}', rgb[i]),
-                                                     ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
 
 
 def change_brightness(group_name: str, brightness: int, xd=None) -> None:
@@ -122,8 +114,6 @@ def change_brightness(group_name: str, brightness: int, xd=None) -> None:
                                                                  ('AdresMAC', current_hub_mac_address)):
             db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))
-        db_management.update_with_two_conditions('Grupy', ('Jasnosc', brightness), ('IdGr', group_id),
-                                                 ('AdresMAC', current_hub_mac_address))
 
 
 def turn_off(group_name: str, xd=None) -> None:
@@ -139,8 +129,6 @@ def turn_off(group_name: str, xd=None) -> None:
                                                                  ('AdresMAC', current_hub_mac_address)):
             db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))
-        db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', False), ('IdGr', group_id),
-                                                 ('AdresMAC', current_hub_mac_address))
 
 
 def turn_on(group_name: str, xd=None) -> None:
@@ -156,8 +144,6 @@ def turn_on(group_name: str, xd=None) -> None:
                                                                  ('AdresMAC', current_hub_mac_address)):
             db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))
-        db_management.update_with_two_conditions('Grupy', ('CzyWlaczone', True), ('IdGr', group_id),
-                                                 ('AdresMAC', current_hub_mac_address))
 
 
 def update_groups_data():
@@ -165,33 +151,19 @@ def update_groups_data():
     if using_emulator():
         with open(f'{os.path.join(os.path.dirname(__file__), "..")}/TEST/emulator_groups.json') as f:
             info_dict: dict = load(f)
-            print(info_dict)
     else:
         global request_prefix
         info_dict: dict = loads(get(url=request_prefix).text)
     for group_id in info_dict:
         state_dict = info_dict[(str(group_id))]
-        if using_emulator():
-            is_on = state_dict['on']
-            name = state_dict['name']
-            rgb = state_dict['red'], state_dict['green'], state_dict['blue']
-            brightness = state_dict['brightness']
-            lights_ids = state_dict['lights']
-        else:
-            is_on = state_dict['action']['on']
-            name = state_dict['name']
-            xy = state_dict['action']['xy']
-            rgb = xy_to_rgb((xy[0], xy[1]))
-            brightness = state_dict['action']['bri']
-            lights_ids = state_dict['lights']
+        name = state_dict['name']
+        lights_ids = state_dict['lights']
         try:
-            db_management.insert('Grupy',
-                                 (group_id, name, is_on, brightness, rgb[0], rgb[1], rgb[2], current_hub_mac_address))
+            db_management.insert('Grupy', (group_id, name, current_hub_mac_address))
         except IntegrityError:
-            for attribute_name, attribute_value in [('NazwaGr', name), ('CzyWlaczone', int(is_on)), ('KolorR', rgb[0]),
-                                                    ('KolorG', rgb[1]), ('KolorB', rgb[2]), ('Jasnosc', brightness)]:
-                db_management.update_with_two_conditions('Grupy', (attribute_name, attribute_value),
-                                                         ('IdGr', group_id), ('AdresMAC', current_hub_mac_address))
+            db_management.update_with_two_conditions('Grupy', ('NazwaGr', name),
+                                                     ('IdGr', group_id),
+                                                     ('AdresMAC', current_hub_mac_address))
         try:
             for light_id in lights_ids:
                 db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
@@ -209,7 +181,7 @@ def __change_current_hub_2(mac_address: str) -> None:
 
 def __send_put(group_id: int, body: dict) -> str:
     global request_prefix, LAST_SEND_TIME
-    if time() - LAST_SEND_TIME > 1.0:
+    if time() - LAST_SEND_TIME > 2.0:
         LAST_SEND_TIME = time()
         request = f'{request_prefix}{group_id}/action'
         return put(url=request, json=body).text
@@ -217,13 +189,5 @@ def __send_put(group_id: int, body: dict) -> str:
 
 
 if __name__ == '__main__':
-    print(__change_current_hub_2('ec:b5:fa:98:1c:cd'))
-    # update_groups_data()
-    # print(post(url=request_prefix, json={"name": "NewOne", "lights": ["1"]}).text)
-    print(request_prefix)
-    # from time import sleep
-    # sleep(2)
-    # create('NewOne')
-    update_groups_data()
-    db_management.print_db()
+    pass
 

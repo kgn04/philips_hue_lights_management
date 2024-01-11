@@ -4,7 +4,7 @@ attributes: dict[str, str] = {
     'Huby': '(AdresMAC, AdresIP, LoginH, Nazwa, Rzedy, Kolumny)',
     'Uzytkownicy': '(Email, Username, Haslo, AdresMAC)',
     'Kasetony': '(IdK, Rzad, Kolumna, CzyWlaczony, Jasnosc, KolorR, KolorG, KolorB, AdresMAC)',
-    'Grupy': '(IdGr, NazwaGr, CzyWlaczone, Jasnosc, KolorR, KolorG, KolorB, AdresMAC)',
+    'Grupy': '(IdGr, NazwaGr, AdresMAC)',
     'Przypisania': '(IdGr, IdK, AdresMAC)'
 }
 
