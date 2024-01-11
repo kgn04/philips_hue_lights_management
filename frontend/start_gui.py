@@ -643,12 +643,12 @@ if __name__ == '__main__':
                 instance.background_color = [rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, brightness / 255.0]
 
             def on_turn_on(inst=None):
-                lights_operations.turn_on(light_id)
-                update_button_view()
+                if lights_operations.turn_on(light_id) == 0:
+                    update_button_view()
 
             def on_turn_off(inst=None):
-                lights_operations.turn_off(light_id)
-                instance.background_color = [0.0, 0.0, 0.0, 0.0]
+                if lights_operations.turn_off(light_id) == 0:
+                    instance.background_color = [0.0, 0.0, 0.0, 0.0]
 
             buttons_layout = BoxLayout(orientation='horizontal', spacing=5)
             turn_on_button = Button(text="Włącz")
@@ -659,8 +659,8 @@ if __name__ == '__main__':
             def on_brightness_button(brightness, inst=None):
                 if not lights_operations.is_on(light_id):
                     return
-                lights_operations.change_brightness(light_id, brightness)
-                update_button_view()
+                if lights_operations.change_brightness(light_id, brightness) == 0:
+                    update_button_view()
 
             brightness_label = Label(text="JASNOŚĆ")
             brightness_layout = BoxLayout(orientation='horizontal', spacing=2)
@@ -677,8 +677,8 @@ if __name__ == '__main__':
             def on_color_button(rgb, inst=None):
                 if not lights_operations.is_on(light_id):
                     return
-                lights_operations.change_color(light_id, rgb)
-                update_button_view()
+                if lights_operations.change_color(light_id, rgb) == 0:
+                    update_button_view()
 
             for i, colors in enumerate([(0, 128, 255), (102, 178, 255), (204, 229, 255)]):
                 for i1, i2, i3 in [(2, 0, 0), (2, 1, 0), (2, 2, 0), (1, 2, 0), (0, 2, 0), (0, 2, 1), (0, 2, 2),
@@ -722,13 +722,13 @@ if __name__ == '__main__':
                                                                brightness / 255.0]
 
             def on_turn_on(inst=None):
-                groups_operations.turn_on(group_name)
-                update_buttons_view()
+                if groups_operations.turn_on(group_name) == 0:
+                    update_buttons_view()
 
             def on_turn_off(inst=None):
-                groups_operations.turn_off(group_name)
-                for light_id in lights_ids:
-                    self.buttons[light_id].background_color = [0.0, 0.0, 0.0, 0.0]
+                if groups_operations.turn_off(group_name) == 0:
+                    for light_id in lights_ids:
+                        self.buttons[light_id].background_color = [0.0, 0.0, 0.0, 0.0]
 
             buttons_layout = BoxLayout(orientation='horizontal', spacing=5)
             turn_on_button = Button(text="Włącz")
@@ -739,8 +739,8 @@ if __name__ == '__main__':
             def on_brightness_button(brightness, inst=None):
                 if not groups_operations.is_any_on(group_name):
                     return
-                groups_operations.change_brightness(group_name, brightness)
-                update_buttons_view()
+                if groups_operations.change_brightness(group_name, brightness) == 0:
+                    update_buttons_view()
 
             brightness_label = Label(text="JASNOŚĆ")
             brightness_layout = BoxLayout(orientation='horizontal', spacing=2)
@@ -757,8 +757,8 @@ if __name__ == '__main__':
             def on_color_button(rgb, inst=None):
                 if not groups_operations.is_any_on(group_name):
                     return
-                groups_operations.change_color(group_name, rgb)
-                update_buttons_view()
+                if groups_operations.change_color(group_name, rgb) == 0:
+                    update_buttons_view()
 
             for i, colors in enumerate([(0, 128, 255), (102, 178, 255), (204, 229, 255)]):
                 for i1, i2, i3 in [(2, 0, 0), (2, 1, 0), (2, 2, 0), (1, 2, 0), (0, 2, 0), (0, 2, 1), (0, 2, 2),

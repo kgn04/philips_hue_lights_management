@@ -14,6 +14,7 @@ SUCCESSFUL_OPERATION = 0
 GROUP_NAME_ALREADY_USED = 1
 GROUP_DOES_NOT_EXIST = 2
 NO_LIGHTS_PROVIDED = 3
+HUB_IS_RESTING = 4
 
 LAST_SEND_TIME = time()
 
@@ -38,13 +39,15 @@ def create(group_name: str, lights: list[int]) -> int:
         for light_id in lights:
             db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
         emulator.create_group(group_id, group_name, lights)
+        return SUCCESSFUL_OPERATION
     else:
         global request_prefix, LAST_SEND_TIME
         if time() - LAST_SEND_TIME > 1.0:
             LAST_SEND_TIME = time()
             response = post(url=request_prefix, json={"name": group_name, "lights": [str(light_id) for light_id in lights]}).text
-    update_groups_data()
-    return SUCCESSFUL_OPERATION
+            update_groups_data()
+            return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
 def remove(group_name: str, xd=None) -> int:
@@ -67,6 +70,7 @@ def get_id_from_name(group_name: str) -> int:
     return db_management.select_with_two_conditions('Grupy', 'IdGr', ('NazwaGr', group_name),
                                                     ('AdresMAC', current_hub_mac_address))[0]
 
+
 def is_any_on(group_name: str) -> int:
     global current_hub_mac_address
     lights_ids = db_management.select_with_two_conditions('Przypisania', 'IdK',
@@ -79,7 +83,7 @@ def is_any_on(group_name: str) -> int:
     return False
 
 
-def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
+def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> int:
     """
     :param rgb: (red[0-255], green[0-255], blue[0-255])
     """
@@ -97,9 +101,11 @@ def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
             for i, color in enumerate(['R', 'G', 'B']):
                 db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
                                                          ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
-def change_brightness(group_name: str, brightness: int, xd=None) -> None:
+def change_brightness(group_name: str, brightness: int, xd=None) -> int:
     """
     :param brightness: 0-255
     """
@@ -114,9 +120,11 @@ def change_brightness(group_name: str, brightness: int, xd=None) -> None:
                                                                  ('AdresMAC', current_hub_mac_address)):
             db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
-def turn_off(group_name: str, xd=None) -> None:
+def turn_off(group_name: str, xd=None) -> int:
     group_id = get_id_from_name(group_name)
     if using_emulator():
         emulator.turn_off_group(group_id)
@@ -129,9 +137,11 @@ def turn_off(group_name: str, xd=None) -> None:
                                                                  ('AdresMAC', current_hub_mac_address)):
             db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
-def turn_on(group_name: str, xd=None) -> None:
+def turn_on(group_name: str, xd=None) -> int:
     group_id = get_id_from_name(group_name)
     if using_emulator():
         emulator.turn_on_group(group_id)
@@ -144,6 +154,8 @@ def turn_on(group_name: str, xd=None) -> None:
                                                                  ('AdresMAC', current_hub_mac_address)):
             db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
                                                      ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
 def update_groups_data():

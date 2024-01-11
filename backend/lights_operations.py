@@ -6,6 +6,9 @@ from sqlite3 import IntegrityError
 import os
 from time import time
 
+SUCCESSFUL_OPERATION = 0
+HUB_IS_RESTING = 4
+
 current_hub_login: str = ''
 current_hub_ip: str = ''
 current_hub_mac_address = ''
@@ -44,7 +47,7 @@ def is_on(light_id: int) -> int:
                                                     ('AdresMAC', current_hub_mac_address))[0]
 
 
-def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> None:
+def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> int:
     """
     :param rgb: (red[0-255], green[0-255], blue[0-255])
     """
@@ -59,9 +62,11 @@ def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> None:
         for i, color in enumerate(['R', 'G', 'B']):
             db_management.update_with_two_conditions('Kasetony', (f'Kolor{color}', rgb[i]),
                                                      ('IdK', light_id), ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
-def change_brightness(light_id: int, brightness: int, xd=None) -> None:
+def change_brightness(light_id: int, brightness: int, xd=None) -> int:
     """
     :param brightness: 0-255
     """
@@ -73,9 +78,11 @@ def change_brightness(light_id: int, brightness: int, xd=None) -> None:
         global current_hub_mac_address
         db_management.update_with_two_conditions('Kasetony', ('Jasnosc', brightness), ('IdK', light_id),
                                                  ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
-def turn_off(light_id: int, xd=None) -> None:
+def turn_off(light_id: int, xd=None) -> int:
     if using_emulator():
         emulator.turn_off(light_id)
         response = 'OK'
@@ -85,9 +92,11 @@ def turn_off(light_id: int, xd=None) -> None:
         global current_hub_mac_address
         db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', False), ('IdK', light_id),
                                                  ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
-def turn_on(light_id: int, xd=None) -> None:
+def turn_on(light_id: int, xd=None) -> int:
     if using_emulator():
         emulator.turn_on(light_id)
         response = 'OK'
@@ -97,6 +106,8 @@ def turn_on(light_id: int, xd=None) -> None:
         global current_hub_mac_address
         db_management.update_with_two_conditions('Kasetony', ('CzyWlaczony', True), ('IdK', light_id),
                                                  ('AdresMAC', current_hub_mac_address))
+        return SUCCESSFUL_OPERATION
+    return HUB_IS_RESTING
 
 
 def rgb_to_xy(rgb: tuple[int, int, int]):
