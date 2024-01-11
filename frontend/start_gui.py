@@ -535,7 +535,8 @@ if __name__ == '__main__':
                         index = ids.index(light_id)
                         button = Button(text=str(light_id), size_hint=(0.5, 0.5), color=[0, 0, 0, 0],
                                         background_color=[r_colors[index] / 255.0, g_colors[index] / 255.0,
-                                                          b_colors[index] / 255.0, brightnesses[index] / 255.0])
+                                                          b_colors[index] / 255.0, brightnesses[index] / 255.0],
+                                        border=(1,1,1,1))
                         button.bind(on_press=self.show_light_controls)
                         self.left_layout.add_widget(button)
                         self.buttons[light_id] = button
@@ -651,34 +652,44 @@ if __name__ == '__main__':
             turn_on_button = Button(text="Włącz", size_hint_y=None, )
             turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
 
-            turn_on_button.bind(on_press=partial(lights_operations.turn_on, light_id))
-            turn_off_button.bind(on_press=partial(lights_operations.turn_off, light_id))
 
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
             self.brightness = lights_operations.get_brightness(light_id)
 
+            def on_turn_on(light_id: int, inst=None):
+                lights_operations.turn_on(light_id)
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                                             self.brightness / 255.0]
+
+            def on_turn_off(light_id: int, inst=None):
+                lights_operations.turn_off(light_id)
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, 0.0]
+
+            turn_on_button.bind(on_press=partial(on_turn_on, light_id))
+            turn_off_button.bind(on_press=partial(on_turn_off, light_id))
+
             def on_slider_r(inst, value):
                 self.r_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
                                              self.brightness / 255.0]
 
             def on_slider_g(inst, value):
                 self.g_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
                                              self.brightness / 255.0]
 
             def on_slider_b(inst, value):
                 self.b_color = int(value)
                 lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
                                              self.brightness / 255.0]
 
             def on_slider_brightness(inst, value):
                 self.brightness = int(value)
                 lights_operations.change_brightness(light_id, self.brightness)
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
+                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
                                              self.brightness / 255.0]
 
             brightness_label = Label(text="Jasność")
