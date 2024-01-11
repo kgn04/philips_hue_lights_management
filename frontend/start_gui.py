@@ -811,7 +811,6 @@ if __name__ == '__main__':
         def create_add_group_layout(self):
             popup_content = BoxLayout(orientation='vertical', spacing=10)
 
-            group_name_label = Label(text='Nazwa grupy:', pos_hint={'x': 0, 'y': 0.1}, padding=(0, 0))
             self.group_name_input = MDTextField(
                 mode="rectangle",
                 spacing=5,
@@ -825,28 +824,32 @@ if __name__ == '__main__':
             grid_size = (self.rows, self.cols)  # Rozmiar siatki
             self.buttons_array = [[None for _ in range(grid_size[1])] for _ in range(grid_size[0])]
 
-            buttons_layout = GridLayout(cols=self.rows, size_hint=(3 / 4, 3 / 4), pos_hint={'x': 0.15, 'y': 0.7},
+            buttons_layout = GridLayout(cols=self.rows, size_hint=(3 / 4, 3 / 4), pos_hint={'x': 0.125, 'y': 0.7},
                                         spacing=10)
 
             for row_index, row in enumerate(self.hub_array):
                 for col_index, value in enumerate(row):
-                    button = ToggleButton(size_hint=(0.2, 0.2))
-                    button.button_id = value
-                    button.row = row_index
-                    button.col = col_index
-                    button.bind(on_press=self.button_pressed)
-                    buttons_layout.add_widget(button)
+                    try:
+                        lights_operations.get_light_id(col_index, row_index)
+                        button = ToggleButton(size_hint=(0.2, 0.2))
+                        button.button_id = value
+                        button.row = row_index
+                        button.col = col_index
+                        button.bind(on_press=self.button_pressed)
+                        buttons_layout.add_widget(button)
 
-                    row, col = divmod(value, grid_size[1])
-                    self.buttons_array[row][col] = button.button_id
+                        row, col = divmod(value, grid_size[1])
+                        self.buttons_array[row][col] = button.button_id
+                    except TypeError:
+                        button = Button(size_hint=(0.5, 0.5), background_color='black')
+                        buttons_layout.add_widget(button)
 
-            add_group_button = MDFillRoundFlatButton(text="Dodaj grupę", pos_hint={'x': 0.4},
+            add_group_button = MDFillRoundFlatButton(text="Dodaj grupę", pos_hint={'x': 0.7},
                                                      theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                      md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
                                                      padding=10)
             add_group_button.bind(on_press=self.add_group_action)
 
-            popup_content.add_widget(group_name_label)
             popup_content.add_widget(self.group_name_input)
             popup_content.add_widget(buttons_layout)
             popup_content.add_widget(add_group_button)
