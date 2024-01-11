@@ -928,7 +928,8 @@ if __name__ == '__main__':
 
         def show_hub_menu(self, instance):
             hubs_available_names = db_management.select_all("Huby", "Nazwa")
-            hubs_available_macs = db_management.select_all("Huby", "AdresMAC")
+            hubs_available_macs = [db_management.select('Huby', 'AdresMAC', ('Nazwa', name))[0]
+                                   for name in hubs_available_names]
 
             menu_items = [{"viewclass": "OneLineListItem", "text": str(name + ":  " + mac),
                            "on_release": lambda x=mac: self.set_current_hub(x, menu)} for name, mac in
