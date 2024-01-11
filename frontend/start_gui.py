@@ -11,6 +11,7 @@ if __name__ == '__main__':
     from kivy.uix.slider import Slider
     from kivy.clock import Clock
     from kivy.uix.boxlayout import BoxLayout
+    from kivy.uix.stacklayout import StackLayout
     from kivy.graphics import Color, Line
     from kivy.uix.button import Button
     from kivy.uix.gridlayout import GridLayout
@@ -457,7 +458,6 @@ if __name__ == '__main__':
             email_label = Label(text=f"[b]{email_requirements}[/b]", markup=True)
             content.add_widget(email_label)
             content.add_widget(Label(text="- Konto o podanym adresie e-mail nie może już istnieć"))
-
             password_requirements = "Wymagania dotyczące hasła:"
             password_label = Label(text=f"[b]{password_requirements}[/b]", markup=True)
             content.add_widget(password_label)
@@ -527,13 +527,16 @@ if __name__ == '__main__':
             r_colors = db_management.select('Kasetony', 'KolorR', ('AdresMAC', current_mac_address_after_login))
             g_colors = db_management.select('Kasetony', 'KolorG', ('AdresMAC', current_mac_address_after_login))
             b_colors = db_management.select('Kasetony', 'KolorB', ('AdresMAC', current_mac_address_after_login))
-            brightnesses = db_management.select('Kasetony', 'KolorB', ('AdresMAC', current_mac_address_after_login))
+            brightnesses = db_management.select('Kasetony', 'Jasnosc', ('AdresMAC', current_mac_address_after_login))
+            states = db_management.select('Kasetony', 'CzyWlaczony', ('AdresMAC', current_mac_address_after_login))
 
             for row in self.hub_array:
                 for value in row:
                     try:
                         light_id = lights_operations.get_light_id(value % cols, int(value / cols))
                         index = ids.index(light_id)
+                        if not states[index]:
+                            brightnesses[index] = 0
                         button = Button(text=str(light_id), size_hint=(0.5, 0.5), color=[0, 0, 0, 0],
                                         background_color=[r_colors[index] / 255.0, g_colors[index] / 255.0,
                                                           b_colors[index] / 255.0, brightnesses[index] / 255.0])
@@ -656,162 +659,148 @@ if __name__ == '__main__':
 
         def show_light_controls(self, instance):
             light_id = int(instance.text)
-
-            # Funkcja wywoływana po naciśnięciu przycisku z kasetonem
-            popup_content = BoxLayout(orientation='vertical', spacing=10)
-
-            turn_on_button = Button(text="Włącz", size_hint_y=None, )
-            turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
-
-
+            popup_content = BoxLayout(orientation='vertical', spacing=5)
             self.r_color, self.g_color, self.b_color = tuple(lights_operations.get_rgb(light_id))
             self.brightness = lights_operations.get_brightness(light_id)
 
-            def on_turn_on(light_id: int, inst=None):
-                lights_operations.turn_on(light_id)
-                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0,
-                                             self.brightness / 255.0]
+            def update_button_view(rgb):
+                instance.background_color = [rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, self.brightness / 255.0]
+                self.r_color, self.g_color, self.b_color = rgb
 
-            def on_turn_off(light_id: int, inst=None):
+            def on_turn_on(inst=None):
+                if lights_operations.is_on(light_id):
+                    return
+                lights_operations.turn_on(light_id)
+                update_button_view((self.r_color, self.g_color, self.b_color))
+
+            def on_turn_off(inst=None):
                 lights_operations.turn_off(light_id)
                 instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, 0.0]
 
-            turn_on_button.bind(on_press=partial(on_turn_on, light_id))
-            turn_off_button.bind(on_press=partial(on_turn_off, light_id))
+            buttons_layout = BoxLayout(orientation='horizontal', spacing=5)
+            turn_on_button = Button(text="Włącz")
+            turn_off_button = Button(text="Wyłącz")
+            turn_on_button.bind(on_press=on_turn_on)
+            turn_off_button.bind(on_press=on_turn_off)
 
-            def on_slider_r(inst, value):
-                self.r_color = int(value)
-                lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
-                                             self.brightness / 255.0]
+            def on_brightness_button(brightness, inst=None):
+                if not lights_operations.is_on(light_id):
+                    return
+                lights_operations.change_brightness(light_id, brightness)
+                self.brightness = brightness
+                update_button_view((self.r_color, self.g_color, self.b_color))
 
-            def on_slider_g(inst, value):
-                self.g_color = int(value)
-                lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
-                                             self.brightness / 255.0]
+            brightness_label = Label(text="JASNOŚĆ")
+            brightness_layout = BoxLayout(orientation='horizontal', spacing=2)
+            for i in range(12):
+                brightness = int(255.0/11*i)
+                button = Button(text=str(light_id), size_hint=(1.0, 1.0), color=[0, 0, 0, 0],
+                                background_color=[brightness / 128.0, brightness / 128.0, brightness / 128.0, 1.0])
+                button.bind(on_press=partial(on_brightness_button, brightness))
+                brightness_layout.add_widget(button)
 
-            def on_slider_b(inst, value):
-                self.b_color = int(value)
-                lights_operations.change_color(light_id, (self.r_color, self.g_color, self.b_color))
-                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
-                                             self.brightness / 255.0]
+            colors_layout = GridLayout(cols=12, rows=3, size_hint=(1, 1))
+            colors_label = Label(text="KOLORY")
 
-            def on_slider_brightness(inst, value):
-                self.brightness = int(value)
-                lights_operations.change_brightness(light_id, self.brightness)
-                instance.background_color = [self.r_color / 125.0, self.g_color / 125.0, self.b_color / 125.0,
-                                             self.brightness / 255.0]
+            def on_color_button(rgb, inst=None):
+                if not lights_operations.is_on(light_id):
+                    return
+                lights_operations.change_color(light_id, rgb)
+                update_button_view(rgb)
 
-            brightness_label = Label(text="Jasność")
-            brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
-            brightness_slider.bind(value=on_slider_brightness)
+            for i, colors in enumerate([(0, 128, 255), (102, 178, 255), (204, 229, 255)]):
+                for i1, i2, i3 in [(2, 0, 0), (2, 1, 0), (2, 2, 0), (1, 2, 0), (0, 2, 0), (0, 2, 1), (0, 2, 2),
+                                   (0, 1, 2), (0, 0, 2), (1, 0, 2), (2, 0, 2), (2, 0, 1)]:
+                    rgb = colors[i1], colors[i2], colors[i3]
+                    button = Button(text=str(light_id), size_hint=(0.5, 0.5), color=[0, 0, 0, 0],
+                                    background_color=[rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, 1.0])
+                    button.bind(on_press=partial(on_color_button, rgb))
+                    colors_layout.add_widget(button)
 
-            red_label = Label(text='Czerwony')
-            green_label = Label(text='Zielony')
-            blue_label = Label(text='Niebieski')
-            red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
-            green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
-            blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
-            red_slider.bind(value=on_slider_r)
-            green_slider.bind(value=on_slider_g)
-            blue_slider.bind(value=on_slider_b)
 
-            popup_content.add_widget(turn_on_button)
-            popup_content.add_widget(turn_off_button)
-            popup_content.add_widget(brightness_label)
-            popup_content.add_widget(brightness_slider)
-            popup_content.add_widget(red_label)
-            popup_content.add_widget(red_slider)
-            popup_content.add_widget(green_label)
-            popup_content.add_widget(green_slider)
-            popup_content.add_widget(blue_label)
-            popup_content.add_widget(blue_slider)
-
-            light_controls_popup = Popup(title=f"Zarządzanie kasetonem", content=popup_content,
-                                         size_hint=(0.7, 0.8), )
+            upper_layout = BoxLayout(orientation='vertical', spacing=5)
+            buttons_layout.add_widget(turn_on_button)
+            buttons_layout.add_widget(turn_off_button)
+            upper_layout.add_widget(buttons_layout)
+            upper_layout.add_widget(brightness_label)
+            upper_layout.add_widget(brightness_layout)
+            upper_layout.add_widget(colors_label)
+            popup_content.add_widget(upper_layout)
+            popup_content.add_widget(colors_layout)
+            light_controls_popup = Popup(title=f"Zarządzanie kasetonem", content=popup_content, size_hint=(0.7, 0.8))
             light_controls_popup.open()
 
         def show_group_controls(self, instance):
-            # Funkcja wywoływana po naciśnięciu przycisku z grupą kasetonów
             group_name = instance.text
-            popup_content = BoxLayout(orientation='vertical', spacing=10)
-
             group_id = groups_operations.get_id_from_name(group_name)
+            popup_content = BoxLayout(orientation='vertical', spacing=5)
+            self.r_color, self.g_color, self.b_color = tuple(groups_operations.get_rgb(group_name))
+            self.brightness = groups_operations.get_brightness(group_name)
 
             global current_mac_address_after_login
             lights_ids = db_management.select_with_two_conditions('Przypisania', 'IdK',
                                                                   ('IdGr', group_id),
                                                                   ('AdresMAC', current_mac_address_after_login))
 
-            group_name_label = Label(text=f"Grupa {instance.text}", halign='center')
-            popup_content.add_widget(group_name_label)
 
-            turn_on_button = Button(text="Włącz", size_hint_y=None, )
-            turn_off_button = Button(text="Wyłącz", size_hint_y=None, )
+            def update_button_view(rgb):
+                instance.background_color = [rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, self.brightness / 255.0]
+                self.r_color, self.g_color, self.b_color = rgb
 
-            turn_on_button.bind(on_press=partial(groups_operations.turn_on, group_name))
-            turn_off_button.bind(on_press=partial(groups_operations.turn_off, group_name))
+            def on_turn_on(inst=None):
+                if groups_operations.is_on(group_name):
+                    return
+                groups_operations.turn_on(group_name)
+                update_button_view((self.r_color, self.g_color, self.b_color))
 
-            self.r_color, self.g_color, self.b_color = tuple(groups_operations.get_rgb(group_name))
-            self.brightness = groups_operations.get_brightness(group_name)
+            def on_turn_off(inst=None):
+                groups_operations.turn_off(group_name)
+                instance.background_color = [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, 0.0]
 
-            red_slider = Slider(min=0, max=255, value=self.r_color, orientation='horizontal')
-            green_slider = Slider(min=0, max=255, value=self.g_color, orientation='horizontal')
-            blue_slider = Slider(min=0, max=255, value=self.b_color, orientation='horizontal')
+            buttons_layout = BoxLayout(orientation='horizontal', spacing=5)
+            turn_on_button = Button(text="Włącz")
+            turn_off_button = Button(text="Wyłącz")
+            turn_on_button.bind(on_press=on_turn_on)
+            turn_off_button.bind(on_press=on_turn_off)
 
-            def on_slider_r(inst, value):
-                self.r_color = int(value)
-                groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
-                for light_id in lights_ids:
-                    self.buttons[light_id].background_color = \
-                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+            def on_brightness_button(brightness, inst=None):
+                if not groups_operations.is_on(group_name):
+                    return
+                groups_operations.change_brightness(group_name, brightness)
+                self.brightness = brightness
+                update_button_view((self.r_color, self.g_color, self.b_color))
 
-            def on_slider_g(inst, value):
-                self.g_color = int(value)
-                groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
-                for light_id in lights_ids:
-                    self.buttons[light_id].background_color = \
-                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+            brightness_label = Label(text="JASNOŚĆ")
+            brightness_layout = BoxLayout(orientation='horizontal', spacing=2)
+            for i in range(12):
+                brightness = int(255.0 / 11 * i)
+                button = Button(size_hint=(1.0, 1.0),
+                                background_color=[brightness / 128.0, brightness / 128.0, brightness / 128.0, 1.0])
+                button.bind(on_press=partial(on_brightness_button, brightness))
+                brightness_layout.add_widget(button)
 
-            def on_slider_b(inst, value):
-                self.b_color = int(value)
-                groups_operations.change_color(group_name, (self.r_color, self.g_color, self.b_color))
-                for light_id in lights_ids:
-                    self.buttons[light_id].background_color = \
-                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+            colors_layout = GridLayout(cols=12, rows=3, size_hint=(1, 1))
+            colors_label = Label(text="KOLORY")
 
-            def on_slider_brightness(inst, value):
-                self.brightness = int(value)
-                groups_operations.change_brightness(group_name, self.brightness)
-                for light_id in lights_ids:
-                    self.buttons[light_id].background_color = \
-                        [self.r_color / 255.0, self.g_color / 255.0, self.b_color / 255.0, self.brightness / 255.0]
+            def on_color_button(rgb, inst=None):
+                if not groups_operations.is_on(group_name):
+                    return
+                groups_operations.change_color(group_name, rgb)
+                update_button_view(rgb)
 
-            red_slider.bind(value=on_slider_r)
-            green_slider.bind(value=on_slider_g)
-            blue_slider.bind(value=on_slider_b)
-
-            brightness_label = Label(text="Jasność")
-            brightness_slider = Slider(min=0, max=255, value=self.brightness, orientation='horizontal')
-            brightness_slider.bind(value=on_slider_brightness)
-
-            popup_content.add_widget(turn_on_button)
-            popup_content.add_widget(turn_off_button)
-            popup_content.add_widget(brightness_label)
-            popup_content.add_widget(brightness_slider)
-            popup_content.add_widget(Label(text="Czerwony"))
-            popup_content.add_widget(red_slider)
-            popup_content.add_widget(Label(text="Zielony"))
-            popup_content.add_widget(green_slider)
-            popup_content.add_widget(Label(text="Niebieski"))
-            popup_content.add_widget(blue_slider)
+            for i, colors in enumerate([(0, 128, 255), (102, 178, 255), (204, 229, 255)]):
+                for i1, i2, i3 in [(2, 0, 0), (2, 1, 0), (2, 2, 0), (1, 2, 0), (0, 2, 0), (0, 2, 1), (0, 2, 2),
+                                   (0, 1, 2), (0, 0, 2), (1, 0, 2), (2, 0, 2), (2, 0, 1)]:
+                    rgb = colors[i1], colors[i2], colors[i3]
+                    button = Button(size_hint=(0.5, 0.5),
+                                    background_color=[rgb[0] / 128.0, rgb[1] / 128.0, rgb[2] / 128.0, 1.0])
+                    button.bind(on_press=partial(on_color_button, rgb))
+                    colors_layout.add_widget(button)
 
             remove_group_button = MDFillRoundFlatButton(text="Usuń grupę", size_hint_y=None, size_hint_x=1 / 2,
                                                         theme_text_color="Custom", text_color=[0, 0, 0, 1],
                                                         md_bg_color=[158 / 255, 0 / 255, 158 / 255, 1],
-                                                        elevation_normal=20, pos_hint={'x': 0.34})
-
+                                                        elevation_normal=20, pos_hint={'x': 0.75}, padding=10)
             def delete_group(instance):
                 groups_operations.remove(group_name)
                 self.update_group_view()
@@ -819,12 +808,23 @@ if __name__ == '__main__':
                 group_controls_popup.dismiss()
 
             remove_group_button.bind(on_press=delete_group)
-            popup_content.add_widget(remove_group_button)
 
+            upper_layout = BoxLayout(orientation='vertical', spacing=5)
+            buttons_layout.add_widget(turn_on_button)
+            buttons_layout.add_widget(turn_off_button)
+            upper_layout.add_widget(buttons_layout)
+            upper_layout.add_widget(brightness_label)
+            upper_layout.add_widget(brightness_layout)
+            upper_layout.add_widget(colors_label)
+            popup_content.add_widget(upper_layout)
+            popup_content.add_widget(colors_layout)
+            popup_content.add_widget(remove_group_button)
             group_controls_popup = Popup(title=f"Zarządzaj grupą {group_name}", content=popup_content,
                                          size_hint=(0.7, 0.9), )
 
             group_controls_popup.open()
+
+
 
         def add_group_popup(self, instance):
             # Funkcja wywoływana po naciśnięciu przycisku "Dodaj grupę"

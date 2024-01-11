@@ -39,6 +39,11 @@ def get_brightness(light_id: int) -> int:
                                                     ('AdresMAC', current_hub_mac_address))[0]
 
 
+def is_on(light_id: int) -> int:
+    return db_management.select_with_two_conditions('Kasetony', f'CzyWlaczony', ('IdK', light_id),
+                                                    ('AdresMAC', current_hub_mac_address))[0]
+
+
 def change_color(light_id: int, rgb: tuple[int, int, int], xd=None) -> None:
     """
     :param rgb: (red[0-255], green[0-255], blue[0-255])

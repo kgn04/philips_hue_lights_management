@@ -79,6 +79,10 @@ def get_id_from_name(group_name: str) -> int:
     return db_management.select_with_two_conditions('Grupy', 'IdGr', ('NazwaGr', group_name),
                                                     ('AdresMAC', current_hub_mac_address))[0]
 
+def is_on(group_name: str) -> int:
+    return db_management.select_with_two_conditions('Grupy', f'CzyWlaczone', ('NazwaGr', group_name),
+                                                    ('AdresMAC', current_hub_mac_address))[0]
+
 
 def change_color(group_name: str, rgb: tuple[int, int, int], xd=None) -> None:
     """
