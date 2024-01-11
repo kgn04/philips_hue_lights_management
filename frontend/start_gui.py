@@ -11,6 +11,7 @@ if __name__ == '__main__':
     from kivy.uix.slider import Slider
     from kivy.clock import Clock
     from kivy.uix.boxlayout import BoxLayout
+    from kivy.graphics import Color, Line
     from kivy.uix.button import Button
     from kivy.uix.gridlayout import GridLayout
     from kivy.uix.label import Label
@@ -535,9 +536,19 @@ if __name__ == '__main__':
                         index = ids.index(light_id)
                         button = Button(text=str(light_id), size_hint=(0.5, 0.5), color=[0, 0, 0, 0],
                                         background_color=[r_colors[index] / 255.0, g_colors[index] / 255.0,
-                                                          b_colors[index] / 255.0, brightnesses[index] / 255.0],
-                                        border=(1,1,1,1))
+                                                          b_colors[index] / 255.0, brightnesses[index] / 255.0])
                         button.bind(on_press=self.show_light_controls)
+                        print(button.x, button.y, button.height, button.width)
+
+                        def update_border(instance, value):
+                            # Callback function to update the border when the button's position or size changes
+                            with instance.canvas.before:
+                                instance.canvas.before.clear()
+                                Color(1, 1, 1, 0.2)  # Set the border color (RGBA values)  # TODO
+                                Line(width=1, rectangle=[instance.x, instance.y, instance.width, instance.height])
+
+                        # Bind the update_border function to the button's pos and size properties
+                        button.bind(pos=update_border, size=update_border)
                         self.left_layout.add_widget(button)
                         self.buttons[light_id] = button
                     except TypeError as e:
