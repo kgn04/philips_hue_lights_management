@@ -351,6 +351,8 @@ if __name__ == '__main__':
                                             spacing=10)
 
             lights_operations.update_lights_data()
+            while not len(self.children) == 1:
+                self.remove_widget(self.children[0])
 
             self.identifier = LightsIdentifier(current_mac_address)
 
