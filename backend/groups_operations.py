@@ -35,7 +35,7 @@ def create(group_name: str, lights: list[int]) -> int:
             group_id = max(db_management.select_all('Grupy', 'IdGr')) + 1
         except (OperationalError, ValueError):
             group_id = 1
-        db_management.insert('Grupy', (group_id, group_name, 0, 0, 0, 0, 0, current_hub_mac_address))
+        db_management.insert('Grupy', (group_id, group_name, current_hub_mac_address))
         for light_id in lights:
             db_management.insert('Przypisania', (group_id, light_id, current_hub_mac_address))
         emulator.create_group(group_id, group_name, lights)
