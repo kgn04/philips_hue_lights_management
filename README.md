@@ -20,3 +20,7 @@ Change light colors using RGB sliders, providing a customizable and dynamic ligh
 
 ## Emulator
 To facilitate testing and ensure a smooth user experience, the app includes an emulator. This allows developers to simulate various scenarios and test the functionality of the application effectively.
+
+# Running app
+To run the app you can simply run frontend/start_gui.py (remember to install the requirements first!).
+
