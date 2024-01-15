@@ -381,7 +381,7 @@ ScreenManager:
                 height: self.texture_size[1] + dp(20)
                 color: [168/255, 0/255, 168/255, 1]
                 pos_hint: {"center_x": .5}
-                on_press: root.manager.current = 'register'
+                on_press: root.register()
             MDIconButton:
                 icon: "keyboard-backspace"
                 pos_hint: {"center_x": .5}
