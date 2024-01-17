@@ -419,6 +419,12 @@ if __name__ == '__main__':
                 self.manager.switch_to('addhub')
                 # self.manager.current = 'addhub'
 
+        def register(self):
+            if db_management.select_all('Huby', 'AdresMAC'):
+                self.manager.current = 'register'
+            else:
+                toast('Przed rejestracją należy dodać huba.')
+
 
     class ScreenRegister(Screen):
 
@@ -804,8 +810,7 @@ if __name__ == '__main__':
             # Funkcja wywoływana po naciśnięciu przycisku "Dodaj grupę"
 
             popup_content = self.create_add_group_layout()
-            add_group_popup = Popup(title='Dodaj nową grupę', content=popup_content, size_hint=(0.8, 0.7),
-                                    )
+            add_group_popup = Popup(title='Dodaj nową grupę', content=popup_content, size_hint=(0.8, 0.7))
             add_group_popup.open()
 
         def create_add_group_layout(self):
@@ -841,7 +846,7 @@ if __name__ == '__main__':
                         row, col = divmod(value, grid_size[1])
                         self.buttons_array[row][col] = button.button_id
                     except TypeError:
-                        button = Button(size_hint=(0.5, 0.5), background_color='black')
+                        button = Button(size_hint=(0.2, 0.2), background_color='black')
                         buttons_layout.add_widget(button)
 
             add_group_button = MDFillRoundFlatButton(text="Dodaj grupę", pos_hint={'x': 0.7},

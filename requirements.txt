@@ -4,3 +4,4 @@ requests~=2.31.0
 pygame~=2.4.0
 numpy~=1.24.3
 passlib~=1.7.4
+kivymd
