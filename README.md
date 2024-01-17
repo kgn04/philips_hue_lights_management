@@ -25,4 +25,9 @@ To facilitate testing and ensure a smooth user experience, the app includes an e
 To run the app you can simply run frontend/start_gui.py (remember to install the requirements first!).
 
 ## Screen recordings
+### Light management
 ![light_management](example1.gif)
+
+### Group management
+![group_management](example2.gif)
+
