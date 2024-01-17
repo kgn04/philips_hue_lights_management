@@ -1,6 +1,13 @@
 # Philips Hue Desktop App
 The Philips Hue Desktop App is user-friendly application designed to help users visualize and manage their Philips Hue lights set. This desktop app leverages the Philips Hue API to connect with Hue hub, allowing to control lights in a personalized and efficient manner.
 
+## Screen recordings
+### Light management
+![light_management](example1.gif)
+
+### Group management
+![group_management](example2.gif)
+
 ## Features
 - Hub Connection: Easily connect with your Philips Hue hub through HTTPS requests and add the hub to the app's database for quick access.
 
@@ -23,11 +30,4 @@ To facilitate testing and ensure a smooth user experience, the app includes an e
 
 ## Running app
 To run the app you can simply run frontend/start_gui.py (remember to install the requirements first!).
-
-## Screen recordings
-### Light management
-![light_management](example1.gif)
-
-### Group management
-![group_management](example2.gif)
 
